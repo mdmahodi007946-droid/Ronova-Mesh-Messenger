@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -64,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatCard
+import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaError
 import com.example.ui.theme.RonovaPinkContainer
 import com.example.ui.theme.RonovaPinkDark
@@ -307,11 +309,17 @@ fun RelaySettingsScreen(
     var batteryThreshold by remember { mutableFloatStateOf(15f) }
     var queueSizeLimit by remember { mutableFloatStateOf(50f) }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 680.dp)
+        ) {
             RonovaTopBar(
                 title = "Relay Participation Settings",
                 subtitle = "Store-and-forward mesh behavior",
@@ -322,16 +330,17 @@ fun RelaySettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(18.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -340,9 +349,9 @@ fun RelaySettingsScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = "Participate in Mesh Relay",
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                                     )
-                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = "Allow your device to forward encrypted packets for nearby peers.",
                                         style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
@@ -351,7 +360,10 @@ fun RelaySettingsScreen(
                                 Switch(
                                     checked = isRelayOptedIn,
                                     onCheckedChange = { viewModel.setRelayOptIn(it) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary),
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = RonovaPinkPrimary
+                                    ),
                                     modifier = Modifier.testTag("relay_opt_in_switch")
                                 )
                             }
@@ -362,19 +374,40 @@ fun RelaySettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Maximum Hop Limit: $maxHops Hops",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
+                        Column(modifier = Modifier.padding(18.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Maximum Hop Limit",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Surface(
+                                    color = RonovaPinkLight,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "$maxHops Hops",
+                                        fontWeight = FontWeight.Bold,
+                                        color = RonovaPinkDark,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Packets exceeding this hop count will be dropped to prevent network saturation.",
                                 style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
                             Slider(
                                 value = maxHops.toFloat(),
                                 onValueChange = { viewModel.setMaxHops(it.toInt()) },
@@ -382,7 +415,10 @@ fun RelaySettingsScreen(
                                 steps = 8,
                                 colors = SliderDefaults.colors(
                                     thumbColor = RonovaPinkPrimary,
-                                    activeTrackColor = RonovaPinkPrimary
+                                    activeTrackColor = RonovaPinkPrimary,
+                                    inactiveTrackColor = RonovaPinkContainer,
+                                    activeTickColor = Color.Transparent,
+                                    inactiveTickColor = Color.Transparent
                                 )
                             )
                         }
@@ -392,19 +428,40 @@ fun RelaySettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Battery Threshold: ${batteryThreshold.toInt()}%",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
+                        Column(modifier = Modifier.padding(18.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Battery Threshold",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Surface(
+                                    color = RonovaPinkLight,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "${batteryThreshold.toInt()}%",
+                                        fontWeight = FontWeight.Bold,
+                                        color = RonovaPinkDark,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Pause packet forwarding when device battery drops below this percentage.",
                                 style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
                             Slider(
                                 value = batteryThreshold,
                                 onValueChange = { batteryThreshold = it },
@@ -412,7 +469,10 @@ fun RelaySettingsScreen(
                                 steps = 4,
                                 colors = SliderDefaults.colors(
                                     thumbColor = RonovaPinkPrimary,
-                                    activeTrackColor = RonovaPinkPrimary
+                                    activeTrackColor = RonovaPinkPrimary,
+                                    inactiveTrackColor = RonovaPinkContainer,
+                                    activeTickColor = Color.Transparent,
+                                    inactiveTickColor = Color.Transparent
                                 )
                             )
                         }
@@ -422,19 +482,40 @@ fun RelaySettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(18.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Store & Forward Capacity",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Surface(
+                                    color = RonovaPinkLight,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "${queueSizeLimit.toInt()} Packets",
+                                        fontWeight = FontWeight.Bold,
+                                        color = RonovaPinkDark,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Store & Forward Queue Capacity: ${queueSizeLimit.toInt()} Packets",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = "Max encrypted packets stored while awaiting routes.",
+                                text = "Max encrypted packets stored locally while awaiting next-hop routes.",
                                 style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
                             Slider(
                                 value = queueSizeLimit,
                                 onValueChange = { queueSizeLimit = it },
@@ -442,7 +523,10 @@ fun RelaySettingsScreen(
                                 steps = 18,
                                 colors = SliderDefaults.colors(
                                     thumbColor = RonovaPinkPrimary,
-                                    activeTrackColor = RonovaPinkPrimary
+                                    activeTrackColor = RonovaPinkPrimary,
+                                    inactiveTrackColor = RonovaPinkContainer,
+                                    activeTickColor = Color.Transparent,
+                                    inactiveTickColor = Color.Transparent
                                 )
                             )
                         }
@@ -455,11 +539,13 @@ fun RelaySettingsScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(14.dp)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                     ) {
-                        Text("Save Relay Preferences", fontWeight = FontWeight.Bold)
+                        Text("Save Relay Preferences", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

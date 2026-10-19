@@ -2,24 +2,30 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Ronova LTD Brand Design Tokens
-val RonovaPinkPrimary = Color(0xFFEC4899)
-val RonovaPinkSecondary = Color(0xFFF9A8D4)
-val RonovaPinkDark = Color(0xFFDB2777)
-val RonovaPinkLight = Color(0xFFFDF2F8)
-val RonovaPinkContainer = Color(0xFFFCE7F3)
+// Ronova LTD Brand Design Tokens - Refined Modern Aesthetic
+val RonovaPinkPrimary = Color(0xFFE11D48) // Vibrant Rose 600
+val RonovaPinkSecondary = Color(0xFFFB7185) // Rose 400
+val RonovaPinkDark = Color(0xFFBE123C) // Rose 700
+val RonovaPinkLight = Color(0xFFFFF1F2) // Rose 50
+val RonovaPinkContainer = Color(0xFFFFE4E6) // Rose 100
 
-val RonovaBackground = Color(0xFFFFFFFF)
-val RonovaSurface = Color(0xFFFFF7FB)
-val RonovaSurfaceVariant = Color(0xFFF8E7F0)
+val RonovaVioletAccent = Color(0xFF6366F1) // Indigo/Violet for Mesh routes
+val RonovaVioletLight = Color(0xFFEEF2FF)
 
-val RonovaTextPrimary = Color(0xFF3F2936)
-val RonovaTextSecondary = Color(0xFF705264)
-val RonovaTextMuted = Color(0xFF9E8292)
+val RonovaBackground = Color(0xFFFAFAFC)
+val RonovaSurface = Color(0xFFFFFFFF)
+val RonovaSurfaceVariant = Color(0xFFF6F3F7)
+val RonovaCardBorder = Color(0xFFF0E6EC)
+val RonovaCardHover = Color(0xFFFDF2F8)
 
-val RonovaSuccess = Color(0xFF16A34A)
-val RonovaSuccessContainer = Color(0xFFDCFCE7)
-val RonovaWarning = Color(0xFFD97706)
-val RonovaWarningContainer = Color(0xFFFEF3C7)
-val RonovaError = Color(0xFFDC2626)
-val RonovaErrorContainer = Color(0xFFFEE2E2)
+val RonovaTextPrimary = Color(0xFF1F1622)
+val RonovaTextSecondary = Color(0xFF574656)
+val RonovaTextMuted = Color(0xFF8E7E8D)
+
+val RonovaSuccess = Color(0xFF10B981)
+val RonovaSuccessContainer = Color(0xFFECFDF5)
+val RonovaWarning = Color(0xFFF59E0B)
+val RonovaWarningContainer = Color(0xFFFFFBEB)
+val RonovaError = Color(0xFFEF4444)
+val RonovaErrorContainer = Color(0xFFFEF2F2)
+

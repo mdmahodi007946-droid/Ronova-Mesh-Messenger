@@ -17,22 +17,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.WifiOff
+import com.example.ui.components.SpecFeatureItem
+import com.example.ui.theme.RonovaCardBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -69,6 +76,7 @@ import com.example.ui.theme.RonovaPinkPrimary
 import com.example.ui.theme.RonovaSuccess
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
+import com.example.ui.theme.RonovaTextSecondary
 import com.example.ui.theme.RonovaWarning
 import com.example.viewmodel.RonovaViewModel
 
@@ -294,11 +302,17 @@ fun SecuritySettingsScreen(
 ) {
     val context = LocalContext.current
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 680.dp)
+        ) {
             RonovaTopBar(
                 title = "Security & Encryption",
                 subtitle = "Cryptographic identity verification",
@@ -309,51 +323,66 @@ fun SecuritySettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(18.dp)) {
                             Text(
                                 text = "Your Device Cryptographic Fingerprint",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = viewModel.myDeviceId,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = RonovaPinkDark
+                                Surface(
+                                    color = RonovaPinkLight,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = viewModel.myDeviceId,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = RonovaPinkDark
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                     )
-                                )
-                                IconButton(onClick = {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    clipboard.setPrimaryClip(ClipData.newPlainText("Device ID", viewModel.myDeviceId))
-                                    Toast.makeText(context, "Copied ID to clipboard", Toast.LENGTH_SHORT).show()
-                                }) {
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        clipboard.setPrimaryClip(ClipData.newPlainText("Device ID", viewModel.myDeviceId))
+                                        Toast.makeText(context, "Copied ID to clipboard", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(CircleShape)
+                                        .background(RonovaPinkLight)
+                                ) {
                                     Icon(
                                         imageVector = Icons.Default.ContentCopy,
                                         contentDescription = "Copy",
-                                        tint = RonovaPinkPrimary
+                                        tint = RonovaPinkPrimary,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Stable EC public key SHA-256 fingerprint. No centralized identity server required.",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = RonovaTextMuted,
-                                    fontSize = 11.sp
+                                    fontSize = 12.sp,
+                                    lineHeight = 16.sp
                                 )
                             )
                         }
@@ -363,20 +392,24 @@ fun SecuritySettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Column(modifier = Modifier.padding(18.dp)) {
                             Text(
                                 text = "Cryptographic Architecture",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("• Key Agreement: ECDH (Curve secp256r1 / NIST P-256)", fontSize = 12.sp, color = RonovaTextPrimary)
-                            Text("• Symmetric Cipher: AES-256-GCM (12-byte IV, 128-bit Auth Tag)", fontSize = 12.sp, color = RonovaTextPrimary)
-                            Text("• Packet Integrity: HMAC-SHA256 signature", fontSize = 12.sp, color = RonovaTextPrimary)
-                            Text("• Relay Privacy: Intermediate nodes forward encrypted payload only", fontSize = 12.sp, color = RonovaTextPrimary)
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text("• Key Agreement: ECDH (Curve secp256r1 / NIST P-256)", fontSize = 13.sp, color = RonovaTextPrimary)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("• Symmetric Cipher: AES-256-GCM (12-byte IV, 128-bit Auth Tag)", fontSize = 13.sp, color = RonovaTextPrimary)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("• Packet Integrity: HMAC-SHA256 signature", fontSize = 13.sp, color = RonovaTextPrimary)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("• Relay Privacy: Intermediate nodes forward encrypted payload only", fontSize = 13.sp, color = RonovaTextPrimary)
                         }
                     }
                 }
@@ -390,8 +423,9 @@ fun SecuritySettingsScreen(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaError),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(14.dp)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, RonovaError.copy(alpha = 0.7f))
                     ) {
                         Icon(imageVector = Icons.Default.Security, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -785,11 +819,17 @@ fun PrivacyLicensesScreen(
 fun AboutScreen(
     onBack: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 680.dp)
+        ) {
             RonovaTopBar(
                 title = "About Ronova LTD",
                 subtitle = "Decentralized Communication Innovation",
@@ -806,7 +846,7 @@ fun AboutScreen(
                 item {
                     Box(
                         modifier = Modifier
-                            .size(76.dp)
+                            .size(80.dp)
                             .clip(CircleShape)
                             .background(RonovaPinkLight),
                         contentAlignment = Alignment.Center
@@ -815,69 +855,131 @@ fun AboutScreen(
                             imageVector = Icons.Default.Info,
                             contentDescription = null,
                             tint = RonovaPinkPrimary,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(42.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     Text(
                         text = "Ronova Bluetooth Mesh Messenger",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary
+                        ),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Surface(
+                        color = RonovaPinkLight,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Version 1.0 Production Release",
+                            fontSize = 12.sp,
+                            color = RonovaPinkDark,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
-                    )
-                    Text(
-                        text = "Version 1.0 Production Release",
-                        fontSize = 12.sp,
-                        color = RonovaPinkDark,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    }
+                }
+
+                // Specification Matrix matching User Reference (Screenshot 8)
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(22.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text(
+                                text = "Technical Specifications",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = RonovaTextPrimary
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            SpecFeatureItem(
+                                icon = Icons.Default.PhoneAndroid,
+                                title = "Platform",
+                                description = "Android Native • Kotlin"
+                            )
+
+                            SpecFeatureItem(
+                                icon = Icons.Default.Bluetooth,
+                                title = "Communication",
+                                description = "Bluetooth Classic + BLE, custom multi-hop relay"
+                            )
+
+                            SpecFeatureItem(
+                                icon = Icons.Default.WifiOff,
+                                title = "Connectivity",
+                                description = "No internet, SIM, mobile data, cloud server or paid API required"
+                            )
+
+                            SpecFeatureItem(
+                                icon = Icons.Default.AccountBalanceWallet,
+                                title = "Business model",
+                                description = "Free to use • No ads • No subscription"
+                            )
+                        }
+                    }
                 }
 
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(22.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
+                        Column(modifier = Modifier.padding(20.dp)) {
                             Text(
                                 text = "Project Mission",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Ronova LTD is dedicated to providing free, sovereign communication tools that empower communities during network outages, emergency scenarios, or off-grid environments.",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = RonovaTextMuted,
-                                    lineHeight = 18.sp
+                                    color = RonovaTextSecondary,
+                                    lineHeight = 20.sp,
+                                    fontSize = 13.sp
                                 )
                             )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
                             Text(
-                                text = "Developer & Project Owner:",
-                                fontSize = 11.sp,
+                                text = "Developer & Organization:",
+                                fontSize = 11.5.sp,
                                 color = RonovaTextMuted
                             )
                             Text(
                                 text = "Ronova LTD",
                                 fontWeight = FontWeight.Bold,
-                                color = RonovaTextPrimary
+                                color = RonovaTextPrimary,
+                                fontSize = 14.sp
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Official Support Contact:",
-                                fontSize = 11.sp,
+                                fontSize = 11.5.sp,
                                 color = RonovaTextMuted
                             )
                             Text(
                                 text = "ronovaltd@gmail.com",
                                 fontWeight = FontWeight.Bold,
-                                color = RonovaPinkDark
+                                color = RonovaPinkDark,
+                                fontSize = 14.sp
                             )
                         }
                     }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

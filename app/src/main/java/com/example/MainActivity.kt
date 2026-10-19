@@ -2,6 +2,7 @@ package com.example
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -16,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.core.audio.CallState
+import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.navigation.Screen
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.ActiveVoiceCallScreen
@@ -56,7 +59,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            ),
+            navigationBarStyle = SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
         setContent {
             RonovaTheme {
                 RonovaApp(viewModel = viewModel)
@@ -79,7 +91,33 @@ fun RonovaApp(viewModel: RonovaViewModel) {
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val showStatusBar = currentRoute != null &&
+        currentRoute != Screen.Splash.route &&
+        currentRoute != Screen.Welcome.route &&
+        currentRoute != Screen.Permissions.route &&
+        !currentRoute.startsWith("active_call") &&
+        !currentRoute.startsWith("incoming_call") &&
+        !currentRoute.startsWith("outgoing_call")
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            if (showStatusBar) {
+                ConnectionStatusBar(
+                    viewModel = viewModel,
+                    onNavigateToDiscovery = {
+                        navController.navigate(Screen.Discovery.route)
+                    },
+                    onNavigateToRelayNetwork = {
+                        navController.navigate(Screen.RelayNetwork.route)
+                    }
+                )
+            }
+        }
+    ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Splash.route,

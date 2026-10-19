@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -57,6 +59,7 @@ import com.example.core.audio.CallState
 import com.example.core.database.CallHistoryEntity
 import com.example.ui.components.AudioWaveformVisualizer
 import com.example.ui.components.RonovaTopBar
+import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaError
 import com.example.ui.theme.RonovaPinkContainer
 import com.example.ui.theme.RonovaPinkDark
@@ -489,11 +492,17 @@ fun CallHistoryScreen(
 ) {
     val callHistory by viewModel.callHistory.collectAsState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 680.dp)
+        ) {
             RonovaTopBar(
                 title = "Call History",
                 subtitle = "Offline Bluetooth Voice Records",
@@ -576,8 +585,9 @@ fun CallHistoryRow(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, RonovaCardBorder)
     ) {
         Row(
             modifier = Modifier.padding(14.dp),

@@ -3,6 +3,12 @@ package com.example.ui.screens
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +22,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Call
@@ -60,6 +68,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.core.bluetooth.BluetoothStatus
+import com.example.ui.components.BluetoothScanComponent
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatusBadge
 import com.example.ui.theme.RonovaError
@@ -81,14 +90,18 @@ fun DiscoveryScreen(
     onNavigateToVerify: (String) -> Unit
 ) {
     val status by viewModel.bluetoothStatus.collectAsState()
-    val discoveredDevices by viewModel.discoveredDevices.collectAsState()
-    val connectedPeers by viewModel.connectedPeers.collectAsState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 680.dp)
+        ) {
             RonovaTopBar(
                 title = "Nearby Device Discovery",
                 subtitle = "Discover & link mesh peer nodes",
@@ -120,110 +133,19 @@ fun DiscoveryScreen(
                 }
             )
 
-            // Scanning banner
-            Card(
+            LazyColumn(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Mesh Radio Status",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = if (status == BluetoothStatus.DISCOVERING)
-                                "Actively scanning for compatible Ronova nodes..."
-                            else "Ready to connect. Tap scan to detect peers.",
-                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
-                        )
-                    }
-                    StatusBadge(status = status)
-                }
-            }
-
-            if (discoveredDevices.isEmpty() && connectedPeers.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(RonovaPinkLight),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Bluetooth,
-                                contentDescription = null,
-                                tint = RonovaPinkPrimary,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = if (status == BluetoothStatus.DISCOVERING) "Scanning nearby airwaves..." else "No devices discovered yet",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = RonovaTextPrimary
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Ensure nearby devices also run Ronova Mesh with Bluetooth enabled.",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = RonovaTextMuted,
-                                fontSize = 12.sp
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.startDiscovery() },
-                            colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("Scan Now")
-                        }
-                    }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp)
-                ) {
-                    item {
-                        Text(
-                            text = "Discovered Bluetooth Devices (${discoveredDevices.size})",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = RonovaTextPrimary
-                            ),
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
-                    items(discoveredDevices) { dev ->
-                        DiscoveredDeviceRow(
-                            device = dev,
-                            onConnect = { viewModel.connectDevice(dev) },
-                            onVerify = { onNavigateToVerify(dev.address) }
-                        )
-                    }
+                item {
+                    BluetoothScanComponent(
+                        viewModel = viewModel,
+                        onNavigateToChat = onNavigateToChat,
+                        onNavigateToVerify = onNavigateToVerify
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
@@ -517,12 +439,13 @@ fun VerifyDeviceScreen(
                     onClick = { onStartChat(deviceId) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
+                        .height(52.dp)
                         .testTag("verify_start_chat_button"),
                     colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Chat, contentDescription = null)
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Chat, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Open End-to-End Encrypted Chat", fontWeight = FontWeight.Bold)
                 }

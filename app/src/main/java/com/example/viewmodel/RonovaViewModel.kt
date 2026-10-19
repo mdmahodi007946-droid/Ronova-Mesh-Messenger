@@ -41,6 +41,8 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     val bluetoothStatus: StateFlow<BluetoothStatus> = meshManager.bluetoothStatus
     val discoveredDevices: StateFlow<List<BluetoothDevice>> = meshManager.discoveredDevices
+    val deviceRssiMap: StateFlow<Map<String, Int>> = meshManager.deviceRssiMap
+    val isDiscoverable: StateFlow<Boolean> = meshManager.isDiscoverable
     val diagnostics: StateFlow<MeshDiagnostics> = meshManager.diagnostics
     val currentCall: StateFlow<ActiveCallInfo> = audioCallManager.currentCall
 
@@ -265,6 +267,26 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     fun stopDiscovery() {
         meshManager.stopDiscovery()
+    }
+
+    fun getBondedDevices(): List<BluetoothDevice> {
+        return meshManager.getBondedDevices()
+    }
+
+    fun clearDiscoveredDevices() {
+        meshManager.clearDiscoveredDevices()
+    }
+
+    fun checkBluetoothStatus(): BluetoothStatus {
+        return meshManager.checkStatus()
+    }
+
+    fun checkDiscoverability(): Boolean {
+        return meshManager.checkDiscoverability()
+    }
+
+    fun setDiscoverable(discoverable: Boolean) {
+        meshManager.setDiscoverable(discoverable)
     }
 
     fun connectDevice(device: BluetoothDevice) {

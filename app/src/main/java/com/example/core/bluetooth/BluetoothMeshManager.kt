@@ -82,6 +82,12 @@ class BluetoothMeshManager(
     private val _discoveredDevices = MutableStateFlow<List<BluetoothDevice>>(emptyList())
     val discoveredDevices: StateFlow<List<BluetoothDevice>> = _discoveredDevices.asStateFlow()
 
+    private val _deviceRssiMap = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val deviceRssiMap: StateFlow<Map<String, Int>> = _deviceRssiMap.asStateFlow()
+
+    private val _isDiscoverable = MutableStateFlow(true)
+    val isDiscoverable: StateFlow<Boolean> = _isDiscoverable.asStateFlow()
+
     private val _diagnostics = MutableStateFlow(MeshDiagnostics())
     val diagnostics: StateFlow<MeshDiagnostics> = _diagnostics.asStateFlow()
 
@@ -122,6 +128,10 @@ class BluetoothMeshManager(
 
                     device?.let { dev ->
                         val current = _discoveredDevices.value.toMutableList()
+                        val rssiVal = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE).toInt()
+                        if (rssiVal != Short.MIN_VALUE.toInt()) {
+                            _deviceRssiMap.value = _deviceRssiMap.value + (dev.address to rssiVal)
+                        }
                         if (current.none { it.address == dev.address }) {
                             current.add(dev)
                             _discoveredDevices.value = current
@@ -132,7 +142,7 @@ class BluetoothMeshManager(
                                         bluetoothAddress = dev.address,
                                         deviceId = "",
                                         deviceName = dev.name ?: "Unknown Bluetooth Device",
-                                        rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, 0).toInt(),
+                                        rssi = if (rssiVal != Short.MIN_VALUE.toInt()) rssiVal else 0,
                                         isConnected = false,
                                         lastSeen = System.currentTimeMillis()
                                     )
@@ -155,11 +165,17 @@ class BluetoothMeshManager(
                     val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
                     if (state == BluetoothAdapter.STATE_OFF) {
                         _bluetoothStatus.value = BluetoothStatus.DISABLED
+                        _isDiscoverable.value = false
                         disconnectAll()
                     } else if (state == BluetoothAdapter.STATE_ON) {
                         _bluetoothStatus.value = BluetoothStatus.READY
+                        _isDiscoverable.value = true
                         startServer()
                     }
+                }
+                BluetoothAdapter.ACTION_SCAN_MODE_CHANGED -> {
+                    val mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.SCAN_MODE_NONE)
+                    _isDiscoverable.value = (mode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) || (serverJob?.isActive == true)
                 }
             }
         }
@@ -167,6 +183,8 @@ class BluetoothMeshManager(
 
     init {
         checkStatus()
+        registerReceiver()
+        checkDiscoverability()
     }
 
     fun hasRequiredPermissions(): Boolean {
@@ -227,6 +245,38 @@ class BluetoothMeshManager(
             _bluetoothStatus.value = BluetoothStatus.CONNECTED
         } else {
             _bluetoothStatus.value = BluetoothStatus.READY
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getBondedDevices(): List<BluetoothDevice> {
+        return if (hasRequiredPermissions() && bluetoothAdapter != null && bluetoothAdapter.isEnabled) {
+            bluetoothAdapter.bondedDevices?.toList() ?: emptyList()
+        } else {
+            emptyList()
+        }
+    }
+
+    fun clearDiscoveredDevices() {
+        _discoveredDevices.value = emptyList()
+    }
+
+    @SuppressLint("MissingPermission")
+    fun checkDiscoverability(): Boolean {
+        val adapter = bluetoothAdapter
+        val isDisc = if (hasRequiredPermissions() && adapter != null && adapter.isEnabled) {
+            (adapter.scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) || (serverJob?.isActive == true)
+        } else {
+            false
+        }
+        _isDiscoverable.value = isDisc
+        return isDisc
+    }
+
+    fun setDiscoverable(discoverable: Boolean) {
+        _isDiscoverable.value = discoverable
+        if (discoverable) {
+            startServer()
         }
     }
 
@@ -550,6 +600,7 @@ class BluetoothMeshManager(
                 addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
                 addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
                 addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+                addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
             }
             context.registerReceiver(discoveryReceiver, filter)
             isReceiverRegistered = true
