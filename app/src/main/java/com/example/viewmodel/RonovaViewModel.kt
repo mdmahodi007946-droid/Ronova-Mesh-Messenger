@@ -96,6 +96,26 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     private val _isForegroundServiceRunning = MutableStateFlow(false)
     val isForegroundServiceRunning: StateFlow<Boolean> = _isForegroundServiceRunning.asStateFlow()
 
+    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.getPersistedLanguage(app))
+    val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
+
+    fun setLanguage(languageCode: String) {
+        com.example.core.locale.LocaleHelper.setLanguage(app, languageCode)
+        _currentLanguage.value = languageCode
+    }
+
+    fun hasMicrophonePermission(): Boolean {
+        return com.example.core.permission.PermissionManager.hasMicrophonePermission(app)
+    }
+
+    fun hasBluetoothPermissions(): Boolean {
+        return com.example.core.permission.PermissionManager.hasBluetoothPermissions(app)
+    }
+
+    fun isBluetoothEnabled(): Boolean {
+        return com.example.core.permission.PermissionManager.isBluetoothEnabled(app)
+    }
+
     init {
         // Collect incoming packets to handle text messages and delivery receipts
         viewModelScope.launch {

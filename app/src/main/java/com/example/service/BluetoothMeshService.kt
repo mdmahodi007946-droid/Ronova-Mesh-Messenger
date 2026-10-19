@@ -38,8 +38,23 @@ class BluetoothMeshService : Service() {
             return START_NOT_STICKY
         }
 
-        val notification = buildMeshNotification("Ronova Mesh Active", "Relaying encrypted packets and listening for nearby peers")
-        startForeground(NOTIFICATION_ID, notification)
+        val isCallActive = intent?.getBooleanExtra(EXTRA_IS_CALL_ACTIVE, false) == true
+        val notification = buildMeshNotification(
+            if (isCallActive) "Ronova Active Voice Call" else "Ronova Mesh Active",
+            if (isCallActive) "Encrypted Bluetooth voice stream running" else "Relaying encrypted packets and listening for nearby peers"
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            var fgsType = android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                if (isCallActive && com.example.core.permission.PermissionManager.hasMicrophonePermission(this)) {
+                    fgsType = fgsType or android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                }
+            }
+            startForeground(NOTIFICATION_ID, notification, fgsType)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
 
         // Ensure Bluetooth mesh server is running
         val app = application as? RonovaApplication
@@ -112,10 +127,12 @@ class BluetoothMeshService : Service() {
         const val CHANNEL_CALLS = "ronova_calls_channel"
         const val ACTION_START = "com.example.ronova.START_SERVICE"
         const val ACTION_STOP = "com.example.ronova.STOP_SERVICE"
+        const val EXTRA_IS_CALL_ACTIVE = "extra_is_call_active"
 
-        fun startService(context: Context) {
+        fun startService(context: Context, isCallActive: Boolean = false) {
             val intent = Intent(context, BluetoothMeshService::class.java).apply {
                 action = ACTION_START
+                putExtra(EXTRA_IS_CALL_ACTIVE, isCallActive)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)

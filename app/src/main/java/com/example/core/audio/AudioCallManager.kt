@@ -49,7 +49,8 @@ data class ActiveCallInfo(
     val packetsSent: Long = 0,
     val packetsReceived: Long = 0,
     val estimatedLatencyMs: Long = 45,
-    val packetLossPercent: Int = 0
+    val packetLossPercent: Int = 0,
+    val hasMicPermission: Boolean = true
 )
 
 class AudioCallManager(
@@ -238,10 +239,17 @@ class AudioCallManager(
     private fun startActiveAudioStream() {
         callStartTime = System.currentTimeMillis()
         sequenceNumber = 0
+        val micGranted = com.example.core.permission.PermissionManager.hasMicrophonePermission(context)
         _currentCall.value = _currentCall.value.copy(
             state = CallState.ACTIVE,
-            durationSeconds = 0
+            durationSeconds = 0,
+            hasMicPermission = micGranted
         )
+
+        // Notify foreground service that call is active
+        try {
+            com.example.service.BluetoothMeshService.startService(context, isCallActive = true)
+        } catch (e: Exception) {}
 
         // Setup AudioTrack for playback
         val minBufferSizeOut = AudioTrack.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG_OUT, AUDIO_FORMAT)
@@ -270,21 +278,31 @@ class AudioCallManager(
             // Error initializing playback
         }
 
-        // Setup AudioRecord for capture
+        // Setup AudioRecord for capture only if permission granted
         val minBufferSizeIn = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG_IN, AUDIO_FORMAT)
         val bufferSizeIn = maxOf(minBufferSizeIn, FRAME_SIZE_SAMPLES * 2 * 4)
 
-        try {
-            audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-                SAMPLE_RATE,
-                CHANNEL_CONFIG_IN,
-                AUDIO_FORMAT,
-                bufferSizeIn
-            )
-            audioRecord?.startRecording()
-        } catch (e: Exception) {
-            // Microphone initialization fallback
+        if (micGranted) {
+            try {
+                val record = AudioRecord(
+                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    SAMPLE_RATE,
+                    CHANNEL_CONFIG_IN,
+                    AUDIO_FORMAT,
+                    bufferSizeIn
+                )
+                if (record.state == AudioRecord.STATE_INITIALIZED) {
+                    record.startRecording()
+                    audioRecord = record
+                } else {
+                    record.release()
+                    audioRecord = null
+                }
+            } catch (e: Exception) {
+                audioRecord = null
+            }
+        } else {
+            audioRecord = null
         }
 
         // Duration timer
@@ -353,6 +371,10 @@ class AudioCallManager(
     private fun endCall(endState: CallState, reason: String) {
         captureJob?.cancel()
         durationJob?.cancel()
+
+        try {
+            com.example.service.BluetoothMeshService.startService(context, isCallActive = false)
+        } catch (e: Exception) {}
 
         try {
             audioRecord?.stop()

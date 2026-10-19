@@ -1,0 +1,191 @@
+<resources>
+    <!-- App Branding -->
+    <string name="app_name">Ronova Mesh</string>
+    <string name="full_app_name">রোনোভা ব্লুটুথ মেশ মেসেঞ্জার</string>
+    <string name="company_name">রোনোভা লিমিটেড</string>
+    <string name="tagline">বিকেন্দ্রীভূত, ইন্টারনেট-বিহীন মেসেজিং ও ভয়েস মেশ</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_chats">চ্যাট</string>
+    <string name="nav_calls">কল</string>
+    <string name="nav_network">নেটওয়ার্ক</string>
+    <string name="nav_settings">সেটিংস</string>
+
+    <!-- Splash & Welcome -->
+    <string name="splash_title">রোনোভা মেশ</string>
+    <string name="splash_subtitle">ব্লুটুথ মেশ মেসেঞ্জার ও ভয়েস কল</string>
+    <string name="splash_initializing">ক্রিপ্টোগ্রাফিক পরিচয় প্রস্তুত হচ্ছে…</string>
+    <string name="welcome_title">রোনোভা মেশে স্বাগতম</string>
+    <string name="welcome_subtitle">সম্পূর্ণ ইন্টারনেট-বিহীন, নিরাপদ মেসেজিং ও সরাসরি অ্যান্ড্রয়েড ডিভাইসের মধ্যে ভয়েস যোগাযোগ।</string>
+    <string name="welcome_get_started">শুরু করুন</string>
+    <string name="feat_offline_title">১০০% অফলাইন ও বিকেন্দ্রীভূত</string>
+    <string name="feat_offline_desc">ইন্টারনেট, মোবাইল ডেটা, সিম কার্ড বা ক্লাউড সার্ভারের প্রয়োজন নেই। যেকোনো স্থানে কার্যকর।</string>
+    <string name="feat_relay_title">মাল্টি-হপ স্টোর অ্যান্ড ফরোয়ার্ড</string>
+    <string name="feat_relay_desc">মধ্যবর্তী ডিভাইসগুলো এনক্রিপ্ট করা বার্তা রিলে করে নেটওয়ার্কের বিস্তৃতি বহুদূর বাড়িয়ে দেয়।</string>
+    <string name="feat_crypto_title">এন্ড-টু-এন্ড এনক্রিপ্টেড</string>
+    <string name="feat_crypto_desc">ECDH secp256r1 কি-এক্সচেঞ্জ এবং AES-256-GCM। রিলে নোডগুলো আপনার বার্তা পড়তে পারে না।</string>
+    <string name="feat_voice_title">সরাসরি ব্লুটুথ ভয়েস কল</string>
+    <string name="feat_voice_desc">মাইক্রোফোন ক্যাপচার সহ হাই-এফিশিয়েন্সি ১৬kHz অফলাইন ভয়েস যোগাযোগ।</string>
+
+    <!-- Permissions & Setup -->
+    <string name="perm_screen_title">প্রাইভেসি ও পারমিশন</string>
+    <string name="perm_screen_subtitle">স্বচ্ছ অ্যান্ড্রয়েড নিরাপত্তা বিধিমালা সম্মতি</string>
+    <string name="perm_why_needed">রোনোভা কেন এই অনুমতিগুলো চায়:</string>
+    <string name="perm_bt_title">কাছাকাছি ডিভাইস ও ব্লুটুথ</string>
+    <string name="perm_bt_desc">কাছাকাছি মেশ নোড খুঁজে পেতে, সংযোগ করতে এবং এনক্রিপ্ট করা প্যাকেট আদান-প্রদান করতে ব্যবহৃত হয়।</string>
+    <string name="perm_loc_title">লোকেশন (শুধু অ্যান্ড্রয়েড ১১ স্ক্যানিং)</string>
+    <string name="perm_loc_desc">শুধুমাত্র অ্যান্ড্রয়েড ১১-এ ব্লুটুথ ডিভাইস খোঁজার জন্য আবশ্যক। কোনো জিপিএস অবস্থান ট্র্যাক করা হয় না।</string>
+    <string name="perm_mic_title">মাইক্রোফোন (কেবল ভয়েস কলের জন্য)</string>
+    <string name="perm_mic_desc">শুধুমাত্র সরাসরি ভয়েস কলের সময় কথা বলার জন্য প্রয়োজন। কোনো রেকর্ড কখনো সংরক্ষণ করা হয় না।</string>
+    <string name="perm_notif_title">নোটিফিকেশন ও ব্যাকগ্রাউন্ড সার্ভিস</string>
+    <string name="perm_notif_desc">স্ক্রিন বন্ধ থাকলেও মেশ নেটওয়ার্কে বার্তা আদান-প্রদান ও ইনকামিং কল সতর্কবার্তা দিতে ব্যবহৃত হয়।</string>
+    <string name="perm_zero_location_title">জিরো লোকেশন ট্র্যাকিং</string>
+    <string name="perm_zero_location_desc">ব্লুটুথ \'neverForLocation\' সহ কনফিগার করা। আপনার জিপিএস লোকেশন কখনোই অ্যাক্সেস বা শেয়ার করা হয় না।</string>
+    <string name="perm_grant_button">অনুমতি দিন</string>
+    <string name="perm_continue_setup">ব্লুটুথ সেটআপে যান</string>
+    <string name="perm_open_settings">অ্যাপ সেটিংস খুলুন</string>
+    <string name="perm_denied_warning">কিছু পারমিশন দেওয়া হয়নি। আপনি অ্যাপ সেটিংস থেকে এগুলো চালু করতে পারেন।</string>
+    <string name="perm_mic_required_title">মাইক্রোফোন অনুমতি প্রয়োজন</string>
+    <string name="perm_mic_required_message">ভয়েস কলের জন্য মাইক্রোফোন অনুমতি প্রয়োজন। এটি ছাড়াও ব্লুটুথ মেসেজিং স্বাভাবিকভাবে চলবে।</string>
+    <string name="perm_mic_explanation">ভয়েস কলের জন্য মাইক্রোফোন থেকে রিয়েল-টাইম অডিও নেওয়া হয়। অনুমতি না দিলেও বার্তা পাঠানো ও রিলে স্বাভাবিক থাকবে।</string>
+    <string name="perm_bt_required_message">কাছাকাছি মেশ নোডগুলোর সাথে সংযোগ স্থাপনের জন্য ব্লুটুথ অনুমতি অপরিহার্য।</string>
+
+    <!-- Bluetooth Setup -->
+    <string name="bt_setup_title">ব্লুটুথ সেটআপ</string>
+    <string name="bt_setup_subtitle">রেডিও হার্ডওয়্যারের প্রস্তুতি যাচাই করুন</string>
+    <string name="bt_status_ready">ব্লুটুথ প্রস্তুত</string>
+    <string name="bt_status_connected">মেশে সংযুক্ত</string>
+    <string name="bt_status_disabled">ব্লুটুথ বন্ধ রয়েছে</string>
+    <string name="bt_status_permission_required">অনুমতি প্রয়োজন</string>
+    <string name="bt_status_unsupported">ব্লুটুথ সমর্থিত নয়</string>
+    <string name="bt_status_checking">ব্লুটুথ যাচাই করা হচ্ছে…</string>
+    <string name="bt_turn_on">ব্লুটুথ চালু করুন</string>
+    <string name="bt_enter_mesh">রোনোভা মেশে প্রবেশ করুন</string>
+    <string name="bt_device_id_label">আপনার ক্রিপ্টোগ্রাফিক ডিভাইস আইডি:</string>
+    <string name="bt_device_id_desc">কাছাকাছি ডিভাইসগুলো এই পাবলিক ফিঙ্গারপ্রিন্ট দিয়ে আপনাকে প্রমাণীকরণ করবে।</string>
+
+    <!-- Home Dashboard -->
+    <string name="dash_peers_connected">সংযুক্ত নোড</string>
+    <string name="dash_active_chats">সক্রিয় চ্যাট</string>
+    <string name="dash_pending_relay">অপেক্ষমাণ রিলে</string>
+    <string name="dash_storage_policy">সংরক্ষণ নীতি</string>
+    <string name="dash_discover_peers">কাছাকাছি নোড খুঁজুন</string>
+    <string name="dash_start_chat">নতুন চ্যাট শুরু করুন</string>
+    <string name="dash_mesh_status">মেশ নেটওয়ার্ক অবস্থা</string>
+    <string name="dash_direct_peers">সরাসরি সংযুক্ত নোড</string>
+    <string name="dash_no_peers">বর্তমানে সরাসরি রেঞ্জে কোনো নোড নেই</string>
+    <string name="dash_view_all_chats">সব চ্যাট দেখুন</string>
+    <string name="dash_quick_actions">কুইক অ্যাকশন</string>
+    <string name="dash_relay_queue">রিলে স্টোর অ্যান্ড ফরোয়ার্ড কিউ</string>
+    <string name="dash_diagnostics">ডায়াগনস্টিকস ও সিগন্যাল</string>
+
+    <!-- Chats & Messages -->
+    <string name="chat_list_title">কথোপকথন</string>
+    <string name="chat_no_conversations">এখনও কোনো চ্যাট নেই</string>
+    <string name="chat_start_first">অফলাইনে বার্তা পাঠাতে কাছাকাছি ডিভাইস খুঁজুন।</string>
+    <string name="chat_type_hint">এনক্রিপ্ট করা বার্তা লিখুন…</string>
+    <string name="chat_send">পাঠান</string>
+    <string name="chat_online">সরাসরি নোড</string>
+    <string name="chat_offline">অফলাইন (স্টোর অ্যান্ড ফরোয়ার্ড)</string>
+    <string name="chat_call">ভয়েস কল</string>
+    <string name="chat_verify">যাচাই করুন</string>
+    <string name="chat_details">বিস্তারিত</string>
+    <string name="chat_verified_badge">বিশ্বস্ত নোড</string>
+    <string name="chat_encrypted_badge">এন্ড-টু-এন্ড এনক্রিপ্টেড (AES-256)</string>
+    <string name="status_pending">অপেক্ষমাণ</string>
+    <string name="status_sent">প্রেরিত</string>
+    <string name="status_relayed">রিলে হয়েছে</string>
+    <string name="status_delivered">পৌঁছেছে</string>
+    <string name="status_read">পড়া হয়েছে</string>
+    <string name="status_failed">ব্যর্থ</string>
+
+    <!-- Voice Calling -->
+    <string name="call_outgoing_title">আউটগোয়িং অফলাইন ভয়েস কল</string>
+    <string name="call_incoming_title">ইনকামিং অফলাইন ভয়েস কল</string>
+    <string name="call_active_title">এনক্রিপ্টেড ভয়েস স্ট্রিম (১৬kHz)</string>
+    <string name="call_signalling">ব্লুটুথ RFCOMM-এ সিগন্যালিং হচ্ছে…</string>
+    <string name="call_end">কল শেষ করুন</string>
+    <string name="call_cancel">কল বাতিল করুন</string>
+    <string name="call_accept">গ্রহণ করুন</string>
+    <string name="call_decline">প্রত্যাখ্যান করুন</string>
+    <string name="call_mute">মিউট</string>
+    <string name="call_unmute">আনমিউট</string>
+    <string name="call_speaker">স্পিকার</string>
+    <string name="call_mic_live">মাইক্রোফোন চালু</string>
+    <string name="call_mic_muted">মাইক্রোফোন মিউট</string>
+    <string name="call_mic_denied">মাইক্রোফোন অনুমতি দেওয়া হয়নি</string>
+    <string name="call_sent_packets">প্রেরিত</string>
+    <string name="call_recv_packets">গৃহীত</string>
+    <string name="call_est_latency">আনুমানিক লেটেন্সি</string>
+    <string name="call_history_title">কল হিস্ট্রি</string>
+    <string name="call_history_subtitle">অফলাইন ব্লুটুথ ভয়েস রেকর্ড</string>
+    <string name="call_history_empty">কোনো কল লগ নেই</string>
+    <string name="call_history_desc">ব্লুটুথ কল সম্পন্ন হলে এখানে দেখা যাবে।</string>
+    <string name="call_redial">পুনরায় কল</string>
+    <string name="call_clear_history">মুছুন</string>
+
+    <!-- Discovery & Verification -->
+    <string name="disc_title">পিয়ার ডিসকভারি</string>
+    <string name="disc_subtitle">কাছাকাছি ব্লুটুথ মেশ নোড খুঁজুন</string>
+    <string name="disc_scanning">কাছাকাছি ব্লুটুথ নোড খোঁজা হচ্ছে…</string>
+    <string name="disc_scan_btn">স্ক্যান করুন</string>
+    <string name="disc_stop_scan">স্ক্যান থামান</string>
+    <string name="disc_no_devices">এখনও কোনো ডিভাইস পাওয়া যায়নি</string>
+    <string name="disc_turn_on_prompt">উভয় ডিভাইসেই ব্লুটুথ চালু রাখুন।</string>
+    <string name="verify_title">ডিভাইস যাচাইকরণ</string>
+    <string name="verify_subtitle">পাবলিক কি ক্রিপ্টোগ্রাফিক ফিঙ্গারপ্রিন্ট মেলান</string>
+    <string name="verify_fingerprint">ক্রিপ্টোগ্রাফিক ফিঙ্গারপ্রিন্ট</string>
+    <string name="verify_trust_btn">বিশ্বস্ত হিসেবে চিহ্নিত করুন</string>
+    <string name="verify_block_btn">ডিভাইস ব্লক করুন</string>
+    <string name="verify_unblock_btn">ডিভাইস আনব্লক করুন</string>
+    <string name="verify_trusted_status">বিশ্বস্ত নোড</string>
+    <string name="verify_untrusted_status">অবিশ্বস্ত নোড</string>
+    <string name="verify_blocked_status">ব্লক করা</string>
+
+    <!-- Settings & Language -->
+    <string name="settings_title">সেটিংস ও নিরাপত্তা</string>
+    <string name="settings_subtitle">রোনোভা মেশ মেসেঞ্জার কন্ট্রোল হাব</string>
+    <string name="settings_language_section">Language / ভাষা</string>
+    <string name="settings_language_title">অ্যাপের ভাষা</string>
+    <string name="settings_language_subtitle">ইংরেজি বা বাংলা নির্বাচন করুন</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">বাংলা</string>
+    <string name="settings_policies_section">পলিসি ও নিরাপত্তা</string>
+    <string name="settings_privacy_policy">গোপনীয়তা নীতি</string>
+    <string name="settings_privacy_policy_sub">অফলাইন জিরো-ক্লাউড ও ক্রিপ্টোগ্রাফিক নিরাপত্তা গ্যারান্টি</string>
+    <string name="settings_user_policy">ব্যবহারকারী নীতি ও নিরাপত্তা</string>
+    <string name="settings_user_policy_sub">ব্যবহারের নিয়ম, নোড যাচাইকরণ ও নিরাপত্তা নির্দেশিকা</string>
+    <string name="settings_storage_section">স্টোরেজ ও সংরক্ষণ</string>
+    <string name="settings_storage">লোকাল স্টোরেজ ও ৩০ দিনের সংরক্ষণ নীতি</string>
+    <string name="settings_archived">আর্কাইভ করা বার্তা</string>
+    <string name="settings_security_section">নিরাপত্তা ও ডিভাইস</string>
+    <string name="settings_security">ক্রিপ্টোগ্রাফিক পরিচয় ও কী</string>
+    <string name="settings_security_sub">ডিভাইস ফিঙ্গারপ্রিন্ট ও কি-পেয়ার ব্যবস্থাপনা</string>
+    <string name="settings_trusted">বিশ্বস্ত ডিভাইসসমূহ</string>
+    <string name="settings_trusted_sub">যাচাইকৃত এবং অনুমোদিত পিয়ার পরিচিতি</string>
+    <string name="settings_blocked">ব্লক করা ডিভাইসসমূহ</string>
+    <string name="settings_blocked_sub">ব্লক করা নোড থেকে বার্তা ও কল প্রতিরোধ করুন</string>
+    <string name="settings_mesh_section">মেশ নেটওয়ার্ক ও কলিং</string>
+    <string name="settings_relay">মেশ রিলে নেটওয়ার্ক সেটিংস</string>
+    <string name="settings_calls">ভয়েস কল হিস্ট্রি</string>
+    <string name="settings_calls_sub">সরাসরি ব্লুটুথ ভয়েস কল রেকর্ড ও লগ</string>
+    <string name="settings_system_section">সিস্টেম ও ডায়াগনস্টিকস</string>
+    <string name="settings_battery">ব্যাটারি অপ্টিমাইজেশন নির্দেশিকা</string>
+    <string name="settings_battery_sub">ব্যাকগ্রাউন্ড রিলে এবং ব্লুটুথ সক্রিয় রাখুন</string>
+    <string name="settings_notifications">নোটিফিকেশন সেটিংস</string>
+    <string name="settings_notifications_sub">ফোরগ্রাউন্ড সার্ভিস ও বার্তা সতর্কবার্তা পছন্দসমূহ</string>
+    <string name="settings_diagnostics">নেটওয়ার্ক ডায়াগনস্টিকস</string>
+    <string name="settings_diagnostics_sub">রিয়েল-টাইম প্যাকেট আদান-প্রদান ও ত্রুটি পর্যবেক্ষণ</string>
+    <string name="settings_about">রোনোভা লিমিটেড সম্পর্কে</string>
+    <string name="settings_about_sub">বিকেন্দ্রীভূত যোগাযোগ প্রযুক্তি সরবরাহকারী</string>
+    <string name="settings_copied">আইডি ক্লিপবোর্ডে কপি করা হয়েছে</string>
+    <string name="settings_regenerate_keys">নতুন কি-পেয়ার তৈরি করুন</string>
+
+    <!-- Dialogs and Actions -->
+    <string name="dialog_cancel">বাতিল</string>
+    <string name="dialog_ok">ঠিক আছে</string>
+    <string name="dialog_close">বন্ধ করুন</string>
+    <string name="dialog_confirm">নিশ্চিত করুন</string>
+    <string name="dialog_settings">সেটিংস</string>
+</resources>

@@ -4,8 +4,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -1826,6 +1829,7 @@ fun SettingsHubScreen(
     onNavigateToDiagnostics: () -> Unit,
     onNavigateToAbout: () -> Unit
 ) {
+    val currentLang by viewModel.currentLanguage.collectAsState()
     val retentionPolicy by viewModel.retentionPolicy.collectAsState()
     val archivedCount by viewModel.archivedMessagesCount.collectAsState()
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
@@ -1836,8 +1840,8 @@ fun SettingsHubScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Settings & Security",
-                subtitle = "Ronova Mesh Messenger Control Hub",
+                title = stringResource(R.string.settings_title),
+                subtitle = stringResource(R.string.settings_subtitle),
                 onBack = onBack
             )
 
@@ -1847,10 +1851,109 @@ fun SettingsHubScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                // Section 0: Language Selection
+                item {
+                    Text(
+                        text = stringResource(R.string.settings_language_section),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaPinkDark
+                        ),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                    )
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = stringResource(R.string.settings_language_title),
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_language_subtitle),
+                                fontSize = 11.5.sp,
+                                color = RonovaTextMuted
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                val isEn = currentLang == "en"
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { viewModel.setLanguage("en") }
+                                        .testTag("lang_english_button"),
+                                    color = if (isEn) RonovaPinkLight else Color(0xFFF9F9F9),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = if (isEn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isEn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                            contentDescription = null,
+                                            tint = if (isEn) RonovaPinkPrimary else RonovaTextMuted,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.lang_english),
+                                            fontWeight = if (isEn) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isEn) RonovaPinkDark else RonovaTextPrimary,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                }
+
+                                val isBn = currentLang == "bn"
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { viewModel.setLanguage("bn") }
+                                        .testTag("lang_bangla_button"),
+                                    color = if (isBn) RonovaPinkLight else Color(0xFFF9F9F9),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = if (isBn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isBn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                            contentDescription = null,
+                                            tint = if (isBn) RonovaPinkPrimary else RonovaTextMuted,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.lang_bangla),
+                                            fontWeight = if (isBn) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isBn) RonovaPinkDark else RonovaTextPrimary,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Section 1: Policies & Security
                 item {
                     Text(
-                        text = "Policies & Security",
+                        text = stringResource(R.string.settings_policies_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1862,8 +1965,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Shield,
-                        title = "Privacy Policy",
-                        subtitle = "Offline zero-cloud and cryptographic security guarantee",
+                        title = stringResource(R.string.settings_privacy_policy),
+                        subtitle = stringResource(R.string.settings_privacy_policy_sub),
                         onClick = onNavigateToPrivacyPolicy
                     )
                 }
@@ -1871,8 +1974,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Gavel,
-                        title = "User Policy & Operational Safety",
-                        subtitle = "Usage rules, node verification & security guidelines",
+                        title = stringResource(R.string.settings_user_policy),
+                        subtitle = stringResource(R.string.settings_user_policy_sub),
                         onClick = onNavigateToUserPolicy
                     )
                 }
@@ -1881,7 +1984,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Storage & Retention",
+                        text = stringResource(R.string.settings_storage_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1893,7 +1996,7 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Storage,
-                        title = "Local Storage & 30-Day Policy",
+                        title = stringResource(R.string.settings_storage),
                         subtitle = "Policy: ${retentionPolicy.title}",
                         badgeText = "30-Day Policy",
                         onClick = onNavigateToStorage
@@ -1903,7 +2006,7 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.FolderZip,
-                        title = "Archived Messages",
+                        title = stringResource(R.string.settings_archived),
                         subtitle = "$archivedCount messages stored in local archive",
                         badgeText = if (archivedCount > 0) "$archivedCount" else null,
                         onClick = onNavigateToArchivedMessages
@@ -1914,7 +2017,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Security & Devices",
+                        text = stringResource(R.string.settings_security_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1926,8 +2029,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Lock,
-                        title = "Cryptographic Identity & Keys",
-                        subtitle = "Device fingerprint and key-pair management",
+                        title = stringResource(R.string.settings_security),
+                        subtitle = stringResource(R.string.settings_security_sub),
                         onClick = onNavigateToSecurity
                     )
                 }
@@ -1935,8 +2038,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.CheckCircle,
-                        title = "Trusted Devices",
-                        subtitle = "Verified and authenticated peer contacts",
+                        title = stringResource(R.string.settings_trusted),
+                        subtitle = stringResource(R.string.settings_trusted_sub),
                         onClick = onNavigateToTrustedDevices
                     )
                 }
@@ -1944,8 +2047,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Block,
-                        title = "Blocked Devices",
-                        subtitle = "Prevent packets and calls from blocked nodes",
+                        title = stringResource(R.string.settings_blocked),
+                        subtitle = stringResource(R.string.settings_blocked_sub),
                         onClick = onNavigateToBlockedDevices
                     )
                 }
@@ -1954,7 +2057,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Mesh Network & Calling",
+                        text = stringResource(R.string.settings_mesh_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1966,7 +2069,7 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Hub,
-                        title = "Mesh Relay Network Settings",
+                        title = stringResource(R.string.settings_relay),
                         subtitle = if (isRelayOn) "Relay active (Participating in mesh)" else "Relay disabled",
                         onClick = onNavigateToRelaySettings
                     )
@@ -1975,8 +2078,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Call,
-                        title = "Voice Call History",
-                        subtitle = "Direct Bluetooth voice call records and logs",
+                        title = stringResource(R.string.settings_calls),
+                        subtitle = stringResource(R.string.settings_calls_sub),
                         onClick = onNavigateToCallHistory
                     )
                 }

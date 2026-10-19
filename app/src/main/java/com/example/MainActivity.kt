@@ -1,19 +1,52 @@
 package com.example
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Hub
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,6 +54,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.core.audio.CallState
+import com.example.core.locale.LocaleHelper
+import com.example.core.permission.PermissionManager
 import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.navigation.Screen
 import com.example.ui.screens.AboutScreen
@@ -54,28 +89,9 @@ import com.example.ui.screens.TrustedDevicesScreen
 import com.example.ui.screens.UserPolicyScreen
 import com.example.ui.screens.VerifyDeviceScreen
 import com.example.ui.screens.WelcomeScreen
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Hub
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.ui.theme.AlataFontFamily
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaPinkPrimary
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
 import com.example.ui.theme.RonovaTheme
@@ -98,8 +114,24 @@ class MainActivity : ComponentActivity() {
             )
         )
         setContent {
-            RonovaTheme {
-                RonovaApp(viewModel = viewModel)
+            val currentLanguage by viewModel.currentLanguage.collectAsState()
+            val isBangla = currentLanguage == LocaleHelper.LANGUAGE_BANGLA
+            val baseContext = LocalContext.current
+
+            val localizedContext = remember(currentLanguage) {
+                LocaleHelper.getLocalizedContext(baseContext, currentLanguage)
+            }
+            val localizedConfiguration = remember(currentLanguage) {
+                LocaleHelper.getLocalizedConfiguration(baseContext, currentLanguage)
+            }
+
+            CompositionLocalProvider(
+                LocalContext provides localizedContext,
+                LocalConfiguration provides localizedConfiguration
+            ) {
+                RonovaTheme(isBangla = isBangla) {
+                    RonovaApp(viewModel = viewModel)
+                }
             }
         }
     }
@@ -109,6 +141,59 @@ class MainActivity : ComponentActivity() {
 fun RonovaApp(viewModel: RonovaViewModel) {
     val navController = rememberNavController()
     val callState by viewModel.currentCall.collectAsState()
+    val context = LocalContext.current
+
+    var showMicDeniedDialog by remember { mutableStateOf(false) }
+    var pendingCallPeerId by remember { mutableStateOf<String?>(null) }
+
+    val micLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val peer = pendingCallPeerId
+        pendingCallPeerId = null
+        if (granted && peer != null) {
+            viewModel.initiateVoiceCall(peer, peer)
+            navController.navigate(Screen.OutgoingCall.createRoute(peer))
+        } else if (!granted) {
+            showMicDeniedDialog = true
+        }
+    }
+
+    val onSafeVoiceCall: (String) -> Unit = { peerId ->
+        if (PermissionManager.hasMicrophonePermission(context)) {
+            viewModel.initiateVoiceCall(peerId, peerId)
+            navController.navigate(Screen.OutgoingCall.createRoute(peerId))
+        } else {
+            pendingCallPeerId = peerId
+            micLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    if (showMicDeniedDialog) {
+        AlertDialog(
+            onDismissRequest = { showMicDeniedDialog = false },
+            title = { Text(stringResource(R.string.perm_mic_required_title)) },
+            text = { Text(stringResource(R.string.perm_mic_required_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showMicDeniedDialog = false
+                        PermissionManager.openAppSettings(context)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary)
+                ) {
+                    Text(stringResource(R.string.perm_open_settings))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showMicDeniedDialog = false }
+                ) {
+                    Text(stringResource(R.string.dialog_close))
+                }
+            }
+        )
+    }
 
     // Automatic navigation when an incoming call arrives
     LaunchedEffect(callState.state) {
@@ -131,11 +216,11 @@ fun RonovaApp(viewModel: RonovaViewModel) {
     )
 
     val bottomNavItems = listOf(
-        Triple(Screen.Home.route, "Home", Icons.Default.Home to "bottom_nav_home"),
-        Triple(Screen.Chats.route, "Chats", Icons.Default.Chat to "bottom_nav_chats"),
-        Triple(Screen.CallHistory.route, "Calls", Icons.Default.Call to "bottom_nav_calls"),
-        Triple(Screen.RelayNetwork.route, "Network", Icons.Default.Hub to "bottom_nav_network"),
-        Triple(Screen.Settings.route, "Settings", Icons.Default.Settings to "bottom_nav_settings")
+        Triple(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home to "bottom_nav_home"),
+        Triple(Screen.Chats.route, stringResource(R.string.nav_chats), Icons.AutoMirrored.Filled.Chat to "bottom_nav_chats"),
+        Triple(Screen.CallHistory.route, stringResource(R.string.nav_calls), Icons.Default.Call to "bottom_nav_calls"),
+        Triple(Screen.RelayNetwork.route, stringResource(R.string.nav_network), Icons.Default.Hub to "bottom_nav_network"),
+        Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "bottom_nav_settings")
     )
 
     Scaffold(
@@ -175,7 +260,6 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                             label = {
                                 Text(
                                     text = label,
-                                    fontFamily = AlataFontFamily,
                                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                                     fontSize = 11.5.sp,
                                     color = if (selected) RonovaTextPrimary else RonovaTextMuted
@@ -287,8 +371,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                         navController.navigate(Screen.Chat.createRoute(deviceId))
                     },
                     onVoiceCall = {
-                        viewModel.initiateVoiceCall(deviceId, deviceId)
-                        navController.navigate(Screen.OutgoingCall.createRoute(deviceId))
+                        onSafeVoiceCall(deviceId)
                     }
                 )
             }
@@ -316,8 +399,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
                     onVoiceCall = {
-                        viewModel.initiateVoiceCall(deviceId, deviceId)
-                        navController.navigate(Screen.OutgoingCall.createRoute(deviceId))
+                        onSafeVoiceCall(deviceId)
                     },
                     onNavigateToDetails = { messageId ->
                         navController.navigate(Screen.DeliveryDetails.createRoute(messageId))
@@ -411,8 +493,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
                     onRedial = { peerId ->
-                        viewModel.initiateVoiceCall(peerId, peerId)
-                        navController.navigate(Screen.OutgoingCall.createRoute(peerId))
+                        onSafeVoiceCall(peerId)
                     }
                 )
             }

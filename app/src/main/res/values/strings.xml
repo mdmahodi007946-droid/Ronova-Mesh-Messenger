@@ -1,6 +1,191 @@
 <resources>
+    <!-- App Branding -->
     <string name="app_name">Ronova Mesh</string>
     <string name="full_app_name">Ronova Bluetooth Mesh Messenger</string>
     <string name="company_name">Ronova LTD</string>
     <string name="tagline">Decentralized, Internet-Free Messaging &amp; Voice Mesh</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_chats">Chats</string>
+    <string name="nav_calls">Calls</string>
+    <string name="nav_network">Network</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Splash & Welcome -->
+    <string name="splash_title">Ronova Mesh</string>
+    <string name="splash_subtitle">Bluetooth Mesh Messenger &amp; Voice</string>
+    <string name="splash_initializing">Initializing cryptographic identity…</string>
+    <string name="welcome_title">Welcome to Ronova Mesh</string>
+    <string name="welcome_subtitle">Free, secure, internet-independent messaging and voice communication directly between Android devices.</string>
+    <string name="welcome_get_started">Get Started</string>
+    <string name="feat_offline_title">100% Offline &amp; Decentralized</string>
+    <string name="feat_offline_desc">No internet, mobile data, SIM card, or cloud server required. Works anywhere.</string>
+    <string name="feat_relay_title">Multi-Hop Store &amp; Forward</string>
+    <string name="feat_relay_desc">Intermediary devices seamlessly relay encrypted messages to extend connection reach.</string>
+    <string name="feat_crypto_title">End-to-End Encrypted</string>
+    <string name="feat_crypto_desc">ECDH secp256r1 key exchange and AES-256-GCM. Relays cannot read your messages.</string>
+    <string name="feat_voice_title">Direct Bluetooth Voice Calls</string>
+    <string name="feat_voice_desc">High-efficiency 16kHz voice communication using real microphone capture.</string>
+
+    <!-- Permissions & Setup -->
+    <string name="perm_screen_title">Privacy &amp; Permissions</string>
+    <string name="perm_screen_subtitle">Transparent Android security compliance</string>
+    <string name="perm_why_needed">Why Ronova requires these permissions:</string>
+    <string name="perm_bt_title">Nearby Devices &amp; Bluetooth</string>
+    <string name="perm_bt_desc">Enables discovering, connecting, and exchanging encrypted packets with nearby compatible mesh nodes.</string>
+    <string name="perm_loc_title">Location (Android 11 Scanning Only)</string>
+    <string name="perm_loc_desc">Required exclusively by Android 11 OS for Bluetooth discovery. Never used to track physical location.</string>
+    <string name="perm_mic_title">Microphone Access (Voice Calls Only)</string>
+    <string name="perm_mic_desc">Used exclusively for transmitting audio during active offline voice calls. Never recorded silently.</string>
+    <string name="perm_notif_title">Notifications &amp; Background Service</string>
+    <string name="perm_notif_desc">Maintains the foreground mesh service so intermediate nodes can forward messages with the screen off.</string>
+    <string name="perm_zero_location_title">Zero Location Tracking</string>
+    <string name="perm_zero_location_desc">We configure Bluetooth with \'neverForLocation\'. Your physical GPS coordinates are never accessed or shared.</string>
+    <string name="perm_grant_button">Grant Permissions</string>
+    <string name="perm_continue_setup">Continue to Bluetooth Setup</string>
+    <string name="perm_open_settings">Open App Settings</string>
+    <string name="perm_denied_warning">Some permissions were denied. You can grant them anytime in App Settings.</string>
+    <string name="perm_mic_required_title">Microphone Permission Required</string>
+    <string name="perm_mic_required_message">Microphone access is needed for offline voice calls. Bluetooth messaging continues to work without it.</string>
+    <string name="perm_mic_explanation">Voice calls transmit real-time microphone audio over Bluetooth. If permission is denied, voice calls cannot start, but all text messaging and relay features remain fully operational.</string>
+    <string name="perm_bt_required_message">Bluetooth permissions are essential to discover and connect with nearby mesh peers.</string>
+
+    <!-- Bluetooth Setup -->
+    <string name="bt_setup_title">Bluetooth Setup</string>
+    <string name="bt_setup_subtitle">Verify radio hardware readiness</string>
+    <string name="bt_status_ready">Bluetooth is Ready</string>
+    <string name="bt_status_connected">Connected to Mesh</string>
+    <string name="bt_status_disabled">Bluetooth is Disabled</string>
+    <string name="bt_status_permission_required">Permissions Required</string>
+    <string name="bt_status_unsupported">Bluetooth Unsupported</string>
+    <string name="bt_status_checking">Checking Bluetooth…</string>
+    <string name="bt_turn_on">Turn On Bluetooth</string>
+    <string name="bt_enter_mesh">Enter Ronova Mesh</string>
+    <string name="bt_device_id_label">Your Cryptographic Device ID:</string>
+    <string name="bt_device_id_desc">Nearby peers will authenticate you using this stable public fingerprint.</string>
+
+    <!-- Home Dashboard -->
+    <string name="dash_peers_connected">Connected Peers</string>
+    <string name="dash_active_chats">Active Conversations</string>
+    <string name="dash_pending_relay">Pending Relays</string>
+    <string name="dash_storage_policy">Retention Policy</string>
+    <string name="dash_discover_peers">Discover Nearby Nodes</string>
+    <string name="dash_start_chat">Start New Chat</string>
+    <string name="dash_mesh_status">Mesh Network Status</string>
+    <string name="dash_direct_peers">Direct Peer Connections</string>
+    <string name="dash_no_peers">No peers currently in direct range</string>
+    <string name="dash_view_all_chats">View All Chats</string>
+    <string name="dash_quick_actions">Quick Actions</string>
+    <string name="dash_relay_queue">Relay Store &amp; Forward Queue</string>
+    <string name="dash_diagnostics">Diagnostics &amp; Signal</string>
+
+    <!-- Chats & Messages -->
+    <string name="chat_list_title">Conversations</string>
+    <string name="chat_no_conversations">No conversations yet</string>
+    <string name="chat_start_first">Discover nearby devices to start messaging offline.</string>
+    <string name="chat_type_hint">Type encrypted message…</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_online">Direct Peer</string>
+    <string name="chat_offline">Offline (Store &amp; Forward)</string>
+    <string name="chat_call">Voice Call</string>
+    <string name="chat_verify">Verify</string>
+    <string name="chat_details">Details</string>
+    <string name="chat_verified_badge">Verified Peer</string>
+    <string name="chat_encrypted_badge">End-to-End Encrypted (AES-256)</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_sent">Sent</string>
+    <string name="status_relayed">Relayed</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_read">Read</string>
+    <string name="status_failed">Failed</string>
+
+    <!-- Voice Calling -->
+    <string name="call_outgoing_title">Outgoing Offline Voice Call</string>
+    <string name="call_incoming_title">Incoming Offline Voice Call</string>
+    <string name="call_active_title">Encrypted Voice Stream (16kHz)</string>
+    <string name="call_signalling">Signalling over Bluetooth RFCOMM…</string>
+    <string name="call_end">End Call</string>
+    <string name="call_cancel">Cancel Call</string>
+    <string name="call_accept">Accept</string>
+    <string name="call_decline">Decline</string>
+    <string name="call_mute">Mute</string>
+    <string name="call_unmute">Unmute</string>
+    <string name="call_speaker">Speaker</string>
+    <string name="call_mic_live">Microphone Live</string>
+    <string name="call_mic_muted">Microphone Muted</string>
+    <string name="call_mic_denied">Microphone Permission Denied</string>
+    <string name="call_sent_packets">Sent</string>
+    <string name="call_recv_packets">Received</string>
+    <string name="call_est_latency">Est. Latency</string>
+    <string name="call_history_title">Call History</string>
+    <string name="call_history_subtitle">Offline Bluetooth Voice Records</string>
+    <string name="call_history_empty">No call logs yet</string>
+    <string name="call_history_desc">Direct Bluetooth calls will appear here once placed.</string>
+    <string name="call_redial">Redial</string>
+    <string name="call_clear_history">Clear</string>
+
+    <!-- Discovery & Verification -->
+    <string name="disc_title">Peer Discovery</string>
+    <string name="disc_subtitle">Find nearby Bluetooth mesh nodes</string>
+    <string name="disc_scanning">Scanning for Nearby Bluetooth Nodes…</string>
+    <string name="disc_scan_btn">Scan Nearby</string>
+    <string name="disc_stop_scan">Stop Scanning</string>
+    <string name="disc_no_devices">No devices found yet</string>
+    <string name="disc_turn_on_prompt">Please ensure Bluetooth is enabled on both devices.</string>
+    <string name="verify_title">Device Verification</string>
+    <string name="verify_subtitle">Compare public key cryptographic fingerprint</string>
+    <string name="verify_fingerprint">Cryptographic Fingerprint</string>
+    <string name="verify_trust_btn">Mark as Trusted</string>
+    <string name="verify_block_btn">Block Device</string>
+    <string name="verify_unblock_btn">Unblock Device</string>
+    <string name="verify_trusted_status">Trusted Contact</string>
+    <string name="verify_untrusted_status">Untrusted Peer</string>
+    <string name="verify_blocked_status">Blocked</string>
+
+    <!-- Settings & Language -->
+    <string name="settings_title">Settings &amp; Security</string>
+    <string name="settings_subtitle">Ronova Mesh Messenger Control Hub</string>
+    <string name="settings_language_section">Language / ভাষা</string>
+    <string name="settings_language_title">App Language</string>
+    <string name="settings_language_subtitle">Choose English or বাংলা</string>
+    <string name="lang_english">English</string>
+    <string name="lang_bangla">বাংলা</string>
+    <string name="settings_policies_section">Policies &amp; Security</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+    <string name="settings_privacy_policy_sub">Offline zero-cloud and cryptographic security guarantee</string>
+    <string name="settings_user_policy">User Policy &amp; Operational Safety</string>
+    <string name="settings_user_policy_sub">Usage rules, node verification &amp; security guidelines</string>
+    <string name="settings_storage_section">Storage &amp; Retention</string>
+    <string name="settings_storage">Local Storage &amp; 30-Day Policy</string>
+    <string name="settings_archived">Archived Messages</string>
+    <string name="settings_security_section">Security &amp; Devices</string>
+    <string name="settings_security">Cryptographic Identity &amp; Keys</string>
+    <string name="settings_security_sub">Device fingerprint and key-pair management</string>
+    <string name="settings_trusted">Trusted Devices</string>
+    <string name="settings_trusted_sub">Verified and authenticated peer contacts</string>
+    <string name="settings_blocked">Blocked Devices</string>
+    <string name="settings_blocked_sub">Prevent packets and calls from blocked nodes</string>
+    <string name="settings_mesh_section">Mesh Network &amp; Calling</string>
+    <string name="settings_relay">Mesh Relay Network Settings</string>
+    <string name="settings_calls">Voice Call History</string>
+    <string name="settings_calls_sub">Direct Bluetooth voice call records and logs</string>
+    <string name="settings_system_section">System &amp; Diagnostics</string>
+    <string name="settings_battery">Battery Optimization Guidance</string>
+    <string name="settings_battery_sub">Keep background relay and Bluetooth radio active</string>
+    <string name="settings_notifications">Notification Settings</string>
+    <string name="settings_notifications_sub">Foreground service and message alert preferences</string>
+    <string name="settings_diagnostics">Network Diagnostics</string>
+    <string name="settings_diagnostics_sub">Real-time packet throughput, hop loss and errors</string>
+    <string name="settings_about">About Ronova LTD</string>
+    <string name="settings_about_sub">Decentralized communication technology provider</string>
+    <string name="settings_copied">Copied ID to clipboard</string>
+    <string name="settings_regenerate_keys">Regenerate Identity Keypair</string>
+
+    <!-- Dialogs and Actions -->
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_close">Close</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_settings">Settings</string>
 </resources>

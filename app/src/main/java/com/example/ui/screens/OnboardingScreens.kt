@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -60,13 +61,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.core.bluetooth.BluetoothStatus
+import com.example.core.permission.PermissionManager
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatusBadge
 import com.example.ui.theme.RonovaCardBorder
@@ -116,14 +118,14 @@ fun SplashScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Router,
-                    contentDescription = "Ronova Logo",
+                    contentDescription = stringResource(R.string.app_name),
                     tint = Color.White,
                     modifier = Modifier.size(54.dp)
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Ronova Mesh",
+                text = stringResource(R.string.splash_title),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
                     color = RonovaTextPrimary
@@ -131,7 +133,7 @@ fun SplashScreen(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Bluetooth Mesh Messenger & Voice",
+                text = stringResource(R.string.splash_subtitle),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = RonovaPinkDark,
                     fontWeight = FontWeight.SemiBold
@@ -145,10 +147,10 @@ fun SplashScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Initializing cryptographic identity...",
+                text = stringResource(R.string.splash_initializing),
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = RonovaTextMuted,
-                    fontSize = 11.sp
+                    fontSize = 12.sp
                 )
             )
         }
@@ -175,7 +177,7 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Box(
                     modifier = Modifier
                         .size(80.dp)
@@ -192,7 +194,7 @@ fun WelcomeScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Welcome to Ronova Mesh",
+                    text = stringResource(R.string.welcome_title),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = RonovaTextPrimary
@@ -201,34 +203,34 @@ fun WelcomeScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Free, secure, internet-independent messaging and voice communication directly between Android devices.",
+                    text = stringResource(R.string.welcome_subtitle),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = RonovaTextMuted,
-                        lineHeight = 20.sp
+                        lineHeight = 22.sp
                     ),
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 WelcomeFeatureItem(
                     icon = Icons.Default.WifiOff,
-                    title = "100% Offline & Decentralized",
-                    description = "No internet, mobile data, SIM card, or cloud server required. Works anywhere."
+                    title = stringResource(R.string.feat_offline_title),
+                    description = stringResource(R.string.feat_offline_desc)
                 )
                 WelcomeFeatureItem(
                     icon = Icons.Default.Router,
-                    title = "Multi-Hop Store & Forward",
-                    description = "Intermediary devices seamlessly relay encrypted messages to extend connection reach."
+                    title = stringResource(R.string.feat_relay_title),
+                    description = stringResource(R.string.feat_relay_desc)
                 )
                 WelcomeFeatureItem(
                     icon = Icons.Default.Lock,
-                    title = "End-to-End Encrypted",
-                    description = "ECDH secp256r1 key exchange and AES-256-GCM. Relays cannot read your messages."
+                    title = stringResource(R.string.feat_crypto_title),
+                    description = stringResource(R.string.feat_crypto_desc)
                 )
                 WelcomeFeatureItem(
                     icon = Icons.Default.Mic,
-                    title = "Direct Bluetooth Voice Calls",
-                    description = "High-efficiency 16kHz voice communication using real microphone capture."
+                    title = stringResource(R.string.feat_voice_title),
+                    description = stringResource(R.string.feat_voice_desc)
                 )
             }
 
@@ -245,7 +247,7 @@ fun WelcomeScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "Get Started",
+                        text = stringResource(R.string.welcome_get_started),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -265,13 +267,13 @@ fun WelcomeFeatureItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 5.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, RonovaCardBorder)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.Top
         ) {
             Box(
@@ -315,36 +317,35 @@ fun PermissionsScreen(
     onPermissionsGranted: () -> Unit
 ) {
     val context = LocalContext.current
-    var permissionsState by remember { mutableStateOf(false) }
+    var permissionsDeniedState by remember { mutableStateOf(false) }
 
-    val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        arrayOf(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_ADVERTISE,
-            Manifest.permission.RECORD_AUDIO,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Manifest.permission.POST_NOTIFICATIONS
-            } else {
-                Manifest.permission.VIBRATE
-            }
-        )
-    } else {
-        arrayOf(
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.RECORD_AUDIO
-        )
+    // Request only Bluetooth and Notifications here (Android 11 asks for Location for BLE).
+    // Microphone is NEVER requested at first launch per prompt requirements.
+    val requiredPermissions = remember {
+        val permissions = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+            permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+        } else {
+            permissions.add(Manifest.permission.BLUETOOTH)
+            permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        permissions.toTypedArray()
     }
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
-        val allGranted = results.values.all { it }
-        permissionsState = allGranted
-        if (allGranted) {
+        val btGranted = PermissionManager.hasBluetoothPermissions(context)
+        if (btGranted) {
             onPermissionsGranted()
+        } else {
+            permissionsDeniedState = true
         }
     }
 
@@ -365,12 +366,12 @@ fun PermissionsScreen(
         ) {
             Column {
                 RonovaTopBar(
-                    title = "Privacy & Permissions",
-                    subtitle = "Transparent Android security compliance"
+                    title = stringResource(R.string.perm_screen_title),
+                    subtitle = stringResource(R.string.perm_screen_subtitle)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Why Ronova requires these permissions:",
+                    text = stringResource(R.string.perm_why_needed),
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = RonovaTextPrimary
@@ -380,27 +381,61 @@ fun PermissionsScreen(
 
                 PermissionExplanationItem(
                     icon = Icons.Default.Bluetooth,
-                    title = "Nearby Devices & Bluetooth",
-                    description = "Enables discovering, connecting, and exchanging encrypted packets with nearby compatible mesh nodes."
+                    title = stringResource(R.string.perm_bt_title),
+                    description = stringResource(R.string.perm_bt_desc)
                 )
-                PermissionExplanationItem(
-                    icon = Icons.Default.Mic,
-                    title = "Microphone Access",
-                    description = "Used exclusively for transmitting audio during active offline voice calls. Never recorded silently."
-                )
-                PermissionExplanationItem(
-                    icon = Icons.Default.Notifications,
-                    title = "Notifications & Background Service",
-                    description = "Maintains the foreground mesh service so intermediate nodes can forward messages with the screen off."
-                )
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+                    PermissionExplanationItem(
+                        icon = Icons.Default.Security,
+                        title = stringResource(R.string.perm_loc_title),
+                        description = stringResource(R.string.perm_loc_desc)
+                    )
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    PermissionExplanationItem(
+                        icon = Icons.Default.Notifications,
+                        title = stringResource(R.string.perm_notif_title),
+                        description = stringResource(R.string.perm_notif_desc)
+                    )
+                }
+
                 PermissionExplanationItem(
                     icon = Icons.Default.Security,
-                    title = "Zero Location Tracking",
-                    description = "We configure Bluetooth with 'neverForLocation'. Your physical GPS coordinates are never accessed or shared."
+                    title = stringResource(R.string.perm_zero_location_title),
+                    description = stringResource(R.string.perm_zero_location_desc)
                 )
+
+                // Educational note that Microphone will only be requested when making voice calls
+                PermissionExplanationItem(
+                    icon = Icons.Default.Mic,
+                    title = stringResource(R.string.perm_mic_title),
+                    description = stringResource(R.string.perm_mic_explanation)
+                )
+
+                if (permissionsDeniedState) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = RonovaPinkLight.copy(alpha = 0.7f)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaPinkSecondary)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = stringResource(R.string.perm_denied_warning),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = RonovaPinkDark,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        }
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button(
@@ -415,11 +450,32 @@ fun PermissionsScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "Grant Permissions",
+                        text = stringResource(R.string.perm_grant_button),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                 }
+
+                if (permissionsDeniedState) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { PermissionManager.openAppSettings(context) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .testTag("open_settings_button"),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp), tint = RonovaPinkPrimary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.perm_open_settings),
+                            color = RonovaPinkPrimary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = onPermissionsGranted,
@@ -430,7 +486,7 @@ fun PermissionsScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "Continue to Bluetooth Setup",
+                        text = stringResource(R.string.perm_continue_setup),
                         color = RonovaPinkPrimary,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -450,13 +506,13 @@ fun PermissionExplanationItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 5.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, RonovaCardBorder)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.Top
         ) {
             Box(
@@ -523,8 +579,8 @@ fun BluetoothSetupScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 RonovaTopBar(
-                    title = "Bluetooth Setup",
-                    subtitle = "Verify radio hardware readiness"
+                    title = stringResource(R.string.bt_setup_title),
+                    subtitle = stringResource(R.string.bt_setup_subtitle)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Box(
@@ -548,11 +604,11 @@ fun BluetoothSetupScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = when (status) {
-                        BluetoothStatus.READY, BluetoothStatus.CONNECTED -> "Bluetooth is Ready"
-                        BluetoothStatus.DISABLED -> "Bluetooth is Disabled"
-                        BluetoothStatus.PERMISSION_REQUIRED -> "Permissions Required"
-                        BluetoothStatus.UNSUPPORTED -> "Bluetooth Unsupported"
-                        else -> "Checking Bluetooth..."
+                        BluetoothStatus.READY, BluetoothStatus.CONNECTED -> stringResource(R.string.bt_status_ready)
+                        BluetoothStatus.DISABLED -> stringResource(R.string.bt_status_disabled)
+                        BluetoothStatus.PERMISSION_REQUIRED -> stringResource(R.string.bt_status_permission_required)
+                        BluetoothStatus.UNSUPPORTED -> stringResource(R.string.bt_status_unsupported)
+                        else -> stringResource(R.string.bt_status_checking)
                     },
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
@@ -571,7 +627,7 @@ fun BluetoothSetupScreen(
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         Text(
-                            text = "Your Cryptographic Device ID:",
+                            text = stringResource(R.string.bt_device_id_label),
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -584,10 +640,10 @@ fun BluetoothSetupScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Nearby peers will authenticate you using this stable public fingerprint.",
+                            text = stringResource(R.string.bt_device_id_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = RonovaTextMuted,
-                                fontSize = 11.sp
+                                fontSize = 11.5.sp
                             )
                         )
                     }
@@ -609,7 +665,7 @@ fun BluetoothSetupScreen(
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Text(
-                            text = "Turn On Bluetooth",
+                            text = stringResource(R.string.bt_turn_on),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
@@ -630,7 +686,7 @@ fun BluetoothSetupScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "Enter Ronova Mesh",
+                        text = stringResource(R.string.bt_enter_mesh),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
