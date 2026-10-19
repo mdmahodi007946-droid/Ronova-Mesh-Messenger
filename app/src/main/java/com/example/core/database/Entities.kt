@@ -37,7 +37,8 @@ data class MessageEntity(
     val hopCount: Int = 0,
     val routeNodesJson: String = "[]",
     val isOutgoing: Boolean = true,
-    val encryptedPayload: String = ""
+    val encryptedPayload: String = "",
+    val isArchived: Boolean = false
 )
 
 @Entity(tableName = "relay_queue")

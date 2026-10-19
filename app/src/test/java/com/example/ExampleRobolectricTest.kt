@@ -6,7 +6,9 @@ import com.example.core.crypto.CryptoManager
 import com.example.core.protocol.MeshPacket
 import com.example.core.protocol.MeshPacketType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,5 +69,86 @@ class ExampleRobolectricTest {
         assertEquals(2, hopped.currentHop)
         assertEquals(listOf("RNV-NODE-A", "RNV-NODE-B"), hopped.routePath)
         assertTrue(hopped.canHopFurther())
+    }
+
+    @Test
+    fun `storage retention policy auto-deletes messages older than 30 days`() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.core.database.AppDatabase::class.java).build()
+        val repo = com.example.data.MeshRepository(db, context)
+
+        val now = System.currentTimeMillis()
+        val fortyDaysAgo = now - (40L * 24L * 60L * 60L * 1000L)
+        val fiveDaysAgo = now - (5L * 24L * 60L * 60L * 1000L)
+
+        // Insert an old message and a recent message
+        val oldMessage = com.example.core.database.MessageEntity(
+            messageId = "old-msg-1",
+            conversationId = "peer-1",
+            senderDeviceId = "peer-1",
+            recipientDeviceId = "me",
+            content = "Old message from 40 days ago",
+            timestamp = fortyDaysAgo
+        )
+        val recentMessage = com.example.core.database.MessageEntity(
+            messageId = "recent-msg-1",
+            conversationId = "peer-1",
+            senderDeviceId = "peer-1",
+            recipientDeviceId = "me",
+            content = "Recent message from 5 days ago",
+            timestamp = fiveDaysAgo
+        )
+
+        repo.saveMessage(oldMessage)
+        repo.saveMessage(recentMessage)
+
+        assertEquals(1, repo.getMessagesOlderThan30DaysCount())
+
+        // Run auto-delete policy
+        repo.setRetentionPolicy(com.example.data.RetentionPolicy.AUTO_DELETE)
+        val deletedCount = repo.runRetentionPolicyCleanup()
+
+        assertEquals(1, deletedCount)
+        assertEquals(0, repo.getMessagesOlderThan30DaysCount())
+        assertNotNull(repo.getMessageById("recent-msg-1"))
+        org.junit.Assert.assertNull(repo.getMessageById("old-msg-1"))
+
+        db.close()
+    }
+
+    @Test
+    fun `storage retention policy auto-archives messages older than 30 days`() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.core.database.AppDatabase::class.java).build()
+        val repo = com.example.data.MeshRepository(db, context)
+
+        val now = System.currentTimeMillis()
+        val thirtyFiveDaysAgo = now - (35L * 24L * 60L * 60L * 1000L)
+
+        val oldMessage = com.example.core.database.MessageEntity(
+            messageId = "old-msg-2",
+            conversationId = "peer-2",
+            senderDeviceId = "peer-2",
+            recipientDeviceId = "me",
+            content = "Archivable message",
+            timestamp = thirtyFiveDaysAgo
+        )
+        repo.saveMessage(oldMessage)
+
+        repo.setRetentionPolicy(com.example.data.RetentionPolicy.AUTO_ARCHIVE)
+        val archivedCount = repo.runRetentionPolicyCleanup()
+
+        assertEquals(1, archivedCount)
+        val retrieved = repo.getMessageById("old-msg-2")
+        assertNotNull(retrieved)
+        assertTrue(retrieved!!.isArchived)
+
+        // Unarchive message
+        repo.unarchiveMessage("old-msg-2")
+        val restored = repo.getMessageById("old-msg-2")
+        assertNotNull(restored)
+        assertFalse(restored!!.isArchived)
+
+        db.close()
     }
 }

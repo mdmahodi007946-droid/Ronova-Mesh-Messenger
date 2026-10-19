@@ -46,10 +46,14 @@ sealed class Screen(val route: String) {
     object SecuritySettings : Screen("security_settings")
 
     // System & Settings
+    object Settings : Screen("settings")
     object StorageSettings : Screen("storage_settings")
     object BatteryGuidance : Screen("battery_guidance")
     object NotificationSettings : Screen("notification_settings")
     object PrivacyLicenses : Screen("privacy_licenses")
+    object PrivacyPolicy : Screen("privacy_policy")
+    object UserPolicy : Screen("user_policy")
+    object ArchivedMessages : Screen("archived_messages")
     object Diagnostics : Screen("diagnostics")
     object About : Screen("about")
     object ErrorRecovery : Screen("error_recovery")

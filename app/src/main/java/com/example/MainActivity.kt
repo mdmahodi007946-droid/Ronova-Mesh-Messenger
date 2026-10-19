@@ -25,6 +25,7 @@ import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.navigation.Screen
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.ActiveVoiceCallScreen
+import com.example.ui.screens.ArchivedMessagesScreen
 import com.example.ui.screens.BatteryGuidanceScreen
 import com.example.ui.screens.BlockedDevicesScreen
 import com.example.ui.screens.BluetoothSetupScreen
@@ -42,12 +43,15 @@ import com.example.ui.screens.OutgoingVoiceCallScreen
 import com.example.ui.screens.PendingMessagesScreen
 import com.example.ui.screens.PermissionsScreen
 import com.example.ui.screens.PrivacyLicensesScreen
+import com.example.ui.screens.PrivacyPolicyScreen
 import com.example.ui.screens.RelayNetworkScreen
 import com.example.ui.screens.RelaySettingsScreen
 import com.example.ui.screens.SecuritySettingsScreen
+import com.example.ui.screens.SettingsHubScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.StorageSettingsScreen
 import com.example.ui.screens.TrustedDevicesScreen
+import com.example.ui.screens.UserPolicyScreen
 import com.example.ui.screens.VerifyDeviceScreen
 import com.example.ui.screens.WelcomeScreen
 import com.example.ui.theme.RonovaTheme
@@ -173,7 +177,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                         navController.navigate(Screen.Chat.createRoute(deviceId))
                     },
                     onNavigateToRelayNetwork = { navController.navigate(Screen.RelayNetwork.route) },
-                    onNavigateToSettings = { navController.navigate(Screen.SecuritySettings.route) },
+                    onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToPending = { navController.navigate(Screen.PendingMessages.route) },
                     onNavigateToVerify = { deviceId ->
                         navController.navigate(Screen.VerifyDevice.createRoute(deviceId))
@@ -367,11 +371,55 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                 )
             }
 
+            // Master Settings Hub
+            composable(Screen.Settings.route) {
+                SettingsHubScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() },
+                    onNavigateToPrivacyPolicy = { navController.navigate(Screen.PrivacyPolicy.route) },
+                    onNavigateToUserPolicy = { navController.navigate(Screen.UserPolicy.route) },
+                    onNavigateToStorage = { navController.navigate(Screen.StorageSettings.route) },
+                    onNavigateToArchivedMessages = { navController.navigate(Screen.ArchivedMessages.route) },
+                    onNavigateToSecurity = { navController.navigate(Screen.SecuritySettings.route) },
+                    onNavigateToTrustedDevices = { navController.navigate(Screen.TrustedDevices.route) },
+                    onNavigateToBlockedDevices = { navController.navigate(Screen.BlockedDevices.route) },
+                    onNavigateToRelaySettings = { navController.navigate(Screen.RelaySettings.route) },
+                    onNavigateToCallHistory = { navController.navigate(Screen.CallHistory.route) },
+                    onNavigateToBattery = { navController.navigate(Screen.BatteryGuidance.route) },
+                    onNavigateToNotifications = { navController.navigate(Screen.NotificationSettings.route) },
+                    onNavigateToDiagnostics = { navController.navigate(Screen.Diagnostics.route) },
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) }
+                )
+            }
+
+            // Privacy Policy Screen (প্রাইভেসি পলিসি)
+            composable(Screen.PrivacyPolicy.route) {
+                PrivacyPolicyScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // User Policy & Safety Screen (ইউজার পলিসি ও ব্যবহারের নিরাপত্তা)
+            composable(Screen.UserPolicy.route) {
+                UserPolicyScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // Archived Messages Screen
+            composable(Screen.ArchivedMessages.route) {
+                ArchivedMessagesScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
             // 21. Storage & Backup Settings
             composable(Screen.StorageSettings.route) {
                 StorageSettingsScreen(
                     viewModel = viewModel,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateToArchived = { navController.navigate(Screen.ArchivedMessages.route) }
                 )
             }
 

@@ -60,8 +60,20 @@ interface ConversationDao {
 
 @Dao
 interface MessageDao {
-    @Query("SELECT * FROM messages WHERE conversationId = :conversationId ORDER BY timestamp ASC")
+    @Query("SELECT * FROM messages WHERE conversationId = :conversationId AND isArchived = 0 ORDER BY timestamp ASC")
     fun getMessagesForConversation(conversationId: String): Flow<List<MessageEntity>>
+
+    @Query("SELECT * FROM messages WHERE conversationId = :conversationId AND isArchived = 1 ORDER BY timestamp ASC")
+    fun getArchivedMessagesForConversation(conversationId: String): Flow<List<MessageEntity>>
+
+    @Query("SELECT * FROM messages WHERE isArchived = 1 ORDER BY timestamp DESC")
+    fun getAllArchivedMessages(): Flow<List<MessageEntity>>
+
+    @Query("SELECT COUNT(*) FROM messages WHERE isArchived = 1")
+    fun getArchivedMessagesCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM messages WHERE timestamp < :cutoffTimestamp AND isArchived = 0")
+    suspend fun getEligibleForRetentionCount(cutoffTimestamp: Long): Int
 
     @Query("SELECT * FROM messages WHERE messageId = :messageId LIMIT 1")
     suspend fun getMessageById(messageId: String): MessageEntity?
@@ -80,6 +92,21 @@ interface MessageDao {
 
     @Query("UPDATE messages SET deliveryState = :state, hopCount = :hopCount, routeNodesJson = :routeJson WHERE messageId = :messageId")
     suspend fun updateDeliveryState(messageId: String, state: String, hopCount: Int, routeJson: String)
+
+    @Query("DELETE FROM messages WHERE timestamp < :cutoffTimestamp")
+    suspend fun deleteMessagesOlderThan(cutoffTimestamp: Long): Int
+
+    @Query("UPDATE messages SET isArchived = 1 WHERE timestamp < :cutoffTimestamp AND isArchived = 0")
+    suspend fun archiveMessagesOlderThan(cutoffTimestamp: Long): Int
+
+    @Query("UPDATE messages SET isArchived = 0 WHERE messageId = :messageId")
+    suspend fun unarchiveMessage(messageId: String)
+
+    @Query("UPDATE messages SET isArchived = 0 WHERE isArchived = 1")
+    suspend fun unarchiveAllMessages(): Int
+
+    @Query("DELETE FROM messages WHERE isArchived = 1")
+    suspend fun deleteAllArchivedMessages(): Int
 
     @Query("DELETE FROM messages WHERE messageId = :messageId")
     suspend fun deleteMessage(messageId: String)

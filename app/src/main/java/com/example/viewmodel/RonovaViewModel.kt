@@ -16,6 +16,7 @@ import com.example.core.database.PeerEntity
 import com.example.core.database.RelayQueueEntity
 import com.example.core.protocol.MeshPacket
 import com.example.core.protocol.MeshPacketType
+import com.example.data.RetentionPolicy
 import com.example.service.BluetoothMeshService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.util.UUID
 
@@ -73,6 +75,18 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     val securityEvents = repository.securityEvents
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val archivedMessages: StateFlow<List<MessageEntity>> = repository.archivedMessages
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val archivedMessagesCount: StateFlow<Int> = repository.archivedMessagesCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    private val _retentionPolicy = MutableStateFlow(repository.getRetentionPolicy())
+    val retentionPolicy: StateFlow<RetentionPolicy> = _retentionPolicy.asStateFlow()
+
+    private val _olderThan30DaysCount = MutableStateFlow(0)
+    val olderThan30DaysCount: StateFlow<Int> = _olderThan30DaysCount.asStateFlow()
+
     private val _isRelayOptedIn = MutableStateFlow(true)
     val isRelayOptedIn: StateFlow<Boolean> = _isRelayOptedIn.asStateFlow()
 
@@ -88,6 +102,13 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
             meshManager.incomingPackets.collect { packet ->
                 handleIncomingPacket(packet)
             }
+        }
+
+        // Auto execute 30-day retention cleanup on startup and refresh count
+        viewModelScope.launch(Dispatchers.IO) {
+            refreshRetentionStats()
+            repository.runRetentionPolicyCleanup()
+            refreshRetentionStats()
         }
 
         // Start listening server
@@ -382,6 +403,80 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun getDatabaseSizeBytes(): Long = repository.getDatabaseSizeBytes()
+
+    fun refreshRetentionStats() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _olderThan30DaysCount.value = repository.getMessagesOlderThan30DaysCount()
+        }
+    }
+
+    fun setRetentionPolicy(policy: RetentionPolicy) {
+        _retentionPolicy.value = policy
+        repository.setRetentionPolicy(policy)
+        viewModelScope.launch(Dispatchers.IO) {
+            if (policy != RetentionPolicy.KEEP_ALL) {
+                repository.runRetentionPolicyCleanup()
+            }
+            refreshRetentionStats()
+        }
+    }
+
+    fun runRetentionCleanupNow(onComplete: (Int) -> Unit = {}) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val count = repository.runRetentionPolicyCleanup()
+            refreshRetentionStats()
+            withContext(Dispatchers.Main) {
+                onComplete(count)
+            }
+        }
+    }
+
+    fun deleteMessagesOlderThan30Days(onComplete: (Int) -> Unit = {}) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val count = repository.deleteMessagesOlderThan30Days()
+            refreshRetentionStats()
+            withContext(Dispatchers.Main) {
+                onComplete(count)
+            }
+        }
+    }
+
+    fun archiveMessagesOlderThan30Days(onComplete: (Int) -> Unit = {}) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val count = repository.archiveMessagesOlderThan30Days()
+            refreshRetentionStats()
+            withContext(Dispatchers.Main) {
+                onComplete(count)
+            }
+        }
+    }
+
+    fun unarchiveMessage(messageId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.unarchiveMessage(messageId)
+            refreshRetentionStats()
+        }
+    }
+
+    fun unarchiveAllMessages(onComplete: (Int) -> Unit = {}) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val count = repository.unarchiveAllMessages()
+            refreshRetentionStats()
+            withContext(Dispatchers.Main) {
+                onComplete(count)
+            }
+        }
+    }
+
+    fun deleteAllArchivedMessages(onComplete: (Int) -> Unit = {}) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val count = repository.deleteAllArchivedMessages()
+            refreshRetentionStats()
+            withContext(Dispatchers.Main) {
+                onComplete(count)
+            }
+        }
+    }
 
     fun resetCryptographicIdentity() {
         viewModelScope.launch {
