@@ -1,0 +1,6 @@
+{
+  "name": "Ronova Bluetooth Mesh Messenger",
+  "description": "Free, internet-independent messaging and voice communication over peer-to-peer Bluetooth mesh network.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
