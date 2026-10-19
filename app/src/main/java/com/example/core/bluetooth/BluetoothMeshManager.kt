@@ -595,15 +595,28 @@ class BluetoothMeshManager(
 
     private fun registerReceiver() {
         if (!isReceiverRegistered) {
-            val filter = IntentFilter().apply {
-                addAction(BluetoothDevice.ACTION_FOUND)
-                addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
-                addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
-                addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
-                addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
+            try {
+                val filter = IntentFilter().apply {
+                    addAction(BluetoothDevice.ACTION_FOUND)
+                    addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
+                    addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+                    addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+                    addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ContextCompat.registerReceiver(
+                        context,
+                        discoveryReceiver,
+                        filter,
+                        ContextCompat.RECEIVER_EXPORTED
+                    )
+                } else {
+                    context.registerReceiver(discoveryReceiver, filter)
+                }
+                isReceiverRegistered = true
+            } catch (e: Exception) {
+                // Ignore registration exceptions in emulator/restricted environments
             }
-            context.registerReceiver(discoveryReceiver, filter)
-            isReceiverRegistered = true
         }
     }
 

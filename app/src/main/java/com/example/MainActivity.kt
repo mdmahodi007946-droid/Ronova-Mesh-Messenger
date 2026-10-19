@@ -101,6 +101,11 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: RonovaViewModel by viewModels()
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val lang = LocaleHelper.getPersistedLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.getLocalizedContext(newBase, lang))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
@@ -118,15 +123,12 @@ class MainActivity : ComponentActivity() {
             val isBangla = currentLanguage == LocaleHelper.LANGUAGE_BANGLA
             val baseContext = LocalContext.current
 
-            val localizedContext = remember(currentLanguage) {
-                LocaleHelper.getLocalizedContext(baseContext, currentLanguage)
-            }
             val localizedConfiguration = remember(currentLanguage) {
                 LocaleHelper.getLocalizedConfiguration(baseContext, currentLanguage)
             }
 
             CompositionLocalProvider(
-                LocalContext provides localizedContext,
+                androidx.activity.compose.LocalActivityResultRegistryOwner provides this,
                 LocalConfiguration provides localizedConfiguration
             ) {
                 RonovaTheme(isBangla = isBangla) {

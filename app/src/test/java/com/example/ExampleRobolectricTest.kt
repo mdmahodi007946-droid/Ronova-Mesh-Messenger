@@ -20,6 +20,12 @@ import org.robolectric.annotation.Config
 class ExampleRobolectricTest {
 
     @Test
+    fun `launch MainActivity without crash`() {
+        val controller = org.robolectric.Robolectric.buildActivity(MainActivity::class.java).setup()
+        assertNotNull(controller.get())
+    }
+
+    @Test
     fun `read string from context`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val appName = context.getString(R.string.app_name)
