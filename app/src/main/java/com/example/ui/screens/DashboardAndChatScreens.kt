@@ -77,6 +77,11 @@ import com.example.ui.components.MessageBubble
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatCard
 import com.example.ui.components.StatusBadge
+import com.example.ui.theme.RonovaGoldContainer
+import com.example.ui.theme.RonovaGoldDark
+import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaGoldPrimary
+import com.example.ui.theme.RonovaGoldSecondary
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaError
 import com.example.ui.theme.RonovaPinkContainer
@@ -127,7 +132,10 @@ fun HomeScreen(
         ) {
             RonovaTopBar(
                 title = "Ronova Mesh",
-                subtitle = "Decentralized Bluetooth Network",
+                subtitle = "Decentralized P2P Network",
+                statusBadge = {
+                    StatusBadge(status = status)
+                },
                 actions = {
                     IconButton(
                         onClick = onNavigateToDiagnostics,
@@ -156,19 +164,19 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 item {
                     Spacer(modifier = Modifier.height(2.dp))
-                    // Identity Card with cryptographic fingerprint & status
+                    // Compact Identity Card with cryptographic fingerprint & status
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(22.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
+                        Column(modifier = Modifier.padding(14.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -180,27 +188,23 @@ fun HomeScreen(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(46.dp)
-                                            .clip(RoundedCornerShape(14.dp))
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.linearGradient(
-                                                    colors = listOf(RonovaPinkContainer, Color(0xFFFDE8E8))
-                                                )
-                                            ),
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(RonovaGoldLight),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Security,
                                             contentDescription = null,
-                                            tint = RonovaPinkPrimary,
-                                            modifier = Modifier.size(24.dp)
+                                            tint = RonovaPinkDark,
+                                            modifier = Modifier.size(22.dp)
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
                                             text = "Node Identity",
-                                            style = MaterialTheme.typography.titleMedium.copy(
+                                            style = MaterialTheme.typography.titleSmall.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 color = RonovaTextPrimary
                                             )
@@ -218,7 +222,7 @@ fun HomeScreen(
                                                 style = MaterialTheme.typography.bodySmall.copy(
                                                     color = RonovaPinkDark,
                                                     fontWeight = FontWeight.Bold,
-                                                    fontSize = 13.sp
+                                                    fontSize = 12.5.sp
                                                 )
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
@@ -231,7 +235,18 @@ fun HomeScreen(
                                         }
                                     }
                                 }
-                                StatusBadge(status = status)
+                                Surface(
+                                    color = if (isRelayOn) RonovaPinkLight else Color(0xFFF5F5F5),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Text(
+                                        text = if (isRelayOn) "Relay Active" else "Direct Only",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isRelayOn) RonovaSuccess else RonovaTextMuted,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -320,73 +335,6 @@ fun HomeScreen(
                     }
                 }
 
-                // Architecture & Specifications Card (Matching User Screenshot 8)
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(22.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
-                    ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "System Architecture & Specs",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = RonovaTextPrimary
-                                    )
-                                )
-                                Surface(
-                                    color = RonovaPinkLight,
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text(
-                                        text = "Ronova Mesh v1.0",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = RonovaPinkDark,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Platform
-                            com.example.ui.components.SpecFeatureItem(
-                                icon = Icons.Default.PhoneAndroid,
-                                title = "Platform",
-                                description = "Android Native • Kotlin"
-                            )
-
-                            // Communication
-                            com.example.ui.components.SpecFeatureItem(
-                                icon = Icons.Default.Bluetooth,
-                                title = "Communication",
-                                description = "Bluetooth Classic + BLE, custom multi-hop relay"
-                            )
-
-                            // Connectivity
-                            com.example.ui.components.SpecFeatureItem(
-                                icon = Icons.Default.WifiOff,
-                                title = "Connectivity",
-                                description = "No internet, SIM, mobile data, cloud server or paid API required"
-                            )
-
-                            // Business Model
-                            com.example.ui.components.SpecFeatureItem(
-                                icon = Icons.Default.AccountBalanceWallet,
-                                title = "Business model",
-                                description = "Free to use • No ads • No subscription"
-                            )
-                        }
-                    }
-                }
 
                 // Connected Mesh Peers Section
                 item {

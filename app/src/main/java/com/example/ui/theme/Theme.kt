@@ -6,15 +6,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val LightColorScheme = lightColorScheme(
-    primary = RonovaPinkPrimary,
-    onPrimary = Color.White,
-    primaryContainer = RonovaPinkContainer,
-    onPrimaryContainer = RonovaPinkDark,
-    secondary = RonovaVioletAccent,
-    onSecondary = Color.White,
-    secondaryContainer = RonovaVioletLight,
+    primary = RonovaGoldPrimary,
+    onPrimary = RonovaTextPrimary,
+    primaryContainer = RonovaGoldLight,
+    onPrimaryContainer = RonovaTextPrimary,
+    secondary = RonovaGoldSecondary,
+    onSecondary = RonovaTextPrimary,
+    secondaryContainer = RonovaGoldContainer,
     onSecondaryContainer = RonovaTextPrimary,
-    tertiary = RonovaPinkDark,
+    tertiary = RonovaGoldDark,
     onTertiary = Color.White,
     background = RonovaBackground,
     onBackground = RonovaTextPrimary,
@@ -27,7 +27,7 @@ val LightColorScheme = lightColorScheme(
     errorContainer = RonovaErrorContainer,
     onErrorContainer = RonovaError,
     outline = RonovaCardBorder,
-    outlineVariant = RonovaPinkContainer
+    outlineVariant = RonovaGoldSecondary
 )
 
 @Composable

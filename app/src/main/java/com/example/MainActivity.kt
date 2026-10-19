@@ -54,6 +54,30 @@ import com.example.ui.screens.TrustedDevicesScreen
 import com.example.ui.screens.UserPolicyScreen
 import com.example.ui.screens.VerifyDeviceScreen
 import com.example.ui.screens.WelcomeScreen
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Hub
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.ui.theme.AlataFontFamily
+import com.example.ui.theme.RonovaCardBorder
+import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaTextMuted
+import com.example.ui.theme.RonovaTextPrimary
 import com.example.ui.theme.RonovaTheme
 import com.example.viewmodel.RonovaViewModel
 
@@ -98,27 +122,76 @@ fun RonovaApp(viewModel: RonovaViewModel) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showStatusBar = currentRoute != null &&
-        currentRoute != Screen.Splash.route &&
-        currentRoute != Screen.Welcome.route &&
-        currentRoute != Screen.Permissions.route &&
-        !currentRoute.startsWith("active_call") &&
-        !currentRoute.startsWith("incoming_call") &&
-        !currentRoute.startsWith("outgoing_call")
+    val showBottomBar = currentRoute in listOf(
+        Screen.Home.route,
+        Screen.Chats.route,
+        Screen.CallHistory.route,
+        Screen.RelayNetwork.route,
+        Screen.Settings.route
+    )
+
+    val bottomNavItems = listOf(
+        Triple(Screen.Home.route, "Home", Icons.Default.Home to "bottom_nav_home"),
+        Triple(Screen.Chats.route, "Chats", Icons.Default.Chat to "bottom_nav_chats"),
+        Triple(Screen.CallHistory.route, "Calls", Icons.Default.Call to "bottom_nav_calls"),
+        Triple(Screen.RelayNetwork.route, "Network", Icons.Default.Hub to "bottom_nav_network"),
+        Triple(Screen.Settings.route, "Settings", Icons.Default.Settings to "bottom_nav_settings")
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            if (showStatusBar) {
-                ConnectionStatusBar(
-                    viewModel = viewModel,
-                    onNavigateToDiscovery = {
-                        navController.navigate(Screen.Discovery.route)
-                    },
-                    onNavigateToRelayNetwork = {
-                        navController.navigate(Screen.RelayNetwork.route)
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 2.dp,
+                    modifier = Modifier.border(
+                        BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
+                    )
+                ) {
+                    bottomNavItems.forEach { (route, label, iconAndTag) ->
+                        val (icon, testTag) = iconAndTag
+                        val selected = currentRoute == route
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                if (currentRoute != route) {
+                                    navController.navigate(route) {
+                                        popUpTo(Screen.Home.route) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = label,
+                                    tint = if (selected) RonovaTextPrimary else RonovaTextMuted
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = label,
+                                    fontFamily = AlataFontFamily,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 11.5.sp,
+                                    color = if (selected) RonovaTextPrimary else RonovaTextMuted
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = RonovaGoldLight,
+                                selectedIconColor = RonovaTextPrimary,
+                                selectedTextColor = RonovaTextPrimary,
+                                unselectedIconColor = RonovaTextMuted,
+                                unselectedTextColor = RonovaTextMuted
+                            ),
+                            modifier = Modifier.testTag(testTag)
+                        )
                     }
-                )
+                }
             }
         }
     ) { innerPadding ->
@@ -392,14 +465,14 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                 )
             }
 
-            // Privacy Policy Screen (প্রাইভেসি পলিসি)
+            // Privacy Policy Screen
             composable(Screen.PrivacyPolicy.route) {
                 PrivacyPolicyScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
 
-            // User Policy & Safety Screen (ইউজার পলিসি ও ব্যবহারের নিরাপত্তা)
+            // User Policy & Safety Screen
             composable(Screen.UserPolicy.route) {
                 UserPolicyScreen(
                     onBack = { navController.popBackStack() }

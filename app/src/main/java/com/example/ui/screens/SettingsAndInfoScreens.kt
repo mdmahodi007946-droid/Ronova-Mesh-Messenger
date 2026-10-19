@@ -564,7 +564,7 @@ fun StorageSettingsScreen(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "স্বয়ংক্রিয় মেসেজ রিটেনশন বা আর্কাইভ পলিসি নির্বাচন করুন যাতে সীমিত স্টোরেজের ডিভাইসেও অ্যাপের কার্যক্ষমতা দ্রুত থাকে।",
+                                text = "Select automatic message retention or archiving policy to optimize storage and maintain peak performance on local devices.",
                                 fontSize = 12.sp,
                                 color = RonovaTextMuted,
                                 lineHeight = 16.sp
@@ -573,8 +573,8 @@ fun StorageSettingsScreen(
 
                             // Policy Option 1: Auto-Delete
                             RetentionPolicyRow(
-                                title = "Auto-Delete (> 30 Days) / স্বয়ংক্রিয় মুছে ফেলা",
-                                subtitle = "৩০ দিনের বেশি পুরনো মেসেজ স্বয়ংক্রিয়ভাবে মুছে স্টোরেজ ফ্রি রাখুন (প্রস্তাবিত)",
+                                title = "Auto-Delete (> 30 Days)",
+                                subtitle = "Automatically delete messages older than 30 days to free storage (Recommended)",
                                 isSelected = currentPolicy == RetentionPolicy.AUTO_DELETE,
                                 onClick = {
                                     viewModel.setRetentionPolicy(RetentionPolicy.AUTO_DELETE)
@@ -586,8 +586,8 @@ fun StorageSettingsScreen(
 
                             // Policy Option 2: Auto-Archive
                             RetentionPolicyRow(
-                                title = "Auto-Archive (> 30 Days) / স্বয়ংক্রিয় আর্কাইভ",
-                                subtitle = "৩০ দিনের পুরনো মেসেজ চ্যাট থেকে আর্কাইভ বক্সে সরিয়ে নিরাপদে রাখুন",
+                                title = "Auto-Archive (> 30 Days)",
+                                subtitle = "Move messages older than 30 days from active chat into local archive",
                                 isSelected = currentPolicy == RetentionPolicy.AUTO_ARCHIVE,
                                 onClick = {
                                     viewModel.setRetentionPolicy(RetentionPolicy.AUTO_ARCHIVE)
@@ -599,8 +599,8 @@ fun StorageSettingsScreen(
 
                             // Policy Option 3: Keep All
                             RetentionPolicyRow(
-                                title = "Keep All Forever (অটো-ডিলিট নিষ্ক্রিয়)",
-                                subtitle = "কোনো মেসেজ অটো-ডিলিট বা আর্কাইভ করা হবে না (সব রেকর্ড সংরক্ষিত থাকবে)",
+                                title = "Keep All Forever (No Auto-Cleanup)",
+                                subtitle = "Do not auto-delete or archive messages (All history preserved locally)",
                                 isSelected = currentPolicy == RetentionPolicy.KEEP_ALL,
                                 onClick = {
                                     viewModel.setRetentionPolicy(RetentionPolicy.KEEP_ALL)
@@ -1278,8 +1278,8 @@ fun PrivacyPolicyScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "প্রাইভেসি পলিসি (Privacy Policy)",
-                subtitle = "অফলাইন গোপনীয়তা ও সুরক্ষার নিশ্চয়তা",
+                title = "Privacy Policy",
+                subtitle = "Offline Privacy & Cryptographic Assurance",
                 onBack = onBack
             )
 
@@ -1315,13 +1315,13 @@ fun PrivacyPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "১. জিরো-ইন্টারনেট ও ক্লাউড-মুক্ত স্থাপত্য",
+                                        text = "1. Zero-Internet & Zero-Cloud Architecture",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "Zero-Internet & Zero-Cloud Guarantee",
+                                        text = "Guaranteed complete offline communication",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
@@ -1329,7 +1329,7 @@ fun PrivacyPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "রোনোভা মেশ মেসেঞ্জার কোনো কেন্দ্রীয় ক্লাউড সার্ভার বা ইন্টারনেট সংযোগের উপর নির্ভরশীল নয়। অ্যাপটিতে কোনো INTERNET পারমিশন নেই—ফলে আপনার কোনো বার্তা, অডিও বা পরিচিতি ইন্টারনেটে যাওয়ার কোনো প্রযুক্তিগত সুযোগ নেই।",
+                                text = "Ronova Mesh Messenger operates completely independent of centralized servers, cellular data, or internet connectivity. The application does not declare or request the Android INTERNET permission, ensuring that your messages, contacts, and voice audio can never leave your device over the internet.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 18.sp
@@ -1364,13 +1364,13 @@ fun PrivacyPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "২. সম্পূর্ণ এন্ড-টু-এন্ড এনক্রিপশন (E2EE)",
+                                        text = "2. End-to-End Encryption (E2EE)",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "ECDH P-256 + AES-256-GCM Military-Grade Cryptography",
+                                        text = "ECDH P-256 + AES-256-GCM Cryptography",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
@@ -1378,7 +1378,7 @@ fun PrivacyPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "প্রতিটি ব্যক্তিগত বার্তা ডিভাইসের সুরক্ষিত Elliptic Curve Diffie-Hellman (P-256) কি এক্সচেঞ্জ এবং AES-256-GCM দ্বারা এনক্রিপ্ট করা হয়। আপনার ডিভাইসের প্রাইভেট কি ডিভাইস থেকে কখনো বাইরে যায় না। প্রেরক এবং প্রাপক ছাড়া অন্য কেউ মেসেজের মূল পাঠোদ্ধার করতে পারে না।",
+                                text = "Every private message is encrypted using standard Elliptic Curve Diffie-Hellman (secp256r1) key agreement and AES-256-GCM authenticated encryption. Your device's private keys never leave local storage. Only you and the intended recipient possess the keys necessary to decrypt message plaintext.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 18.sp
@@ -1413,7 +1413,7 @@ fun PrivacyPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "৩. মেশ রিলেতে মধ্যবর্তী নোডের গোপনীয়তা",
+                                        text = "3. Intermediate Relay Privacy",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
@@ -1427,7 +1427,7 @@ fun PrivacyPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "মাল্টি-হপ রিলেতে মধ্যবর্তী কোনো ডিভাইস যখন প্যাকেট ফরওয়ার্ড করে, সে শুধুমাত্র এনক্রিপ্ট করা সাইফারটেক্সট এবং রুট মেটাডাটা দেখতে পায়। মধ্যবর্তী কোনো ডিভাইস কখনোই বার্তার বিষয়বস্তু পড়তে বা篡গোপন তথ্য চুরি করতে পারে না।",
+                                text = "When intermediate devices forward packets across the multi-hop mesh, they only process ciphertext envelopes and routing metadata. Intermediate nodes cannot inspect private message content or tamper with message signatures without triggering immediate packet rejection.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 18.sp
@@ -1462,7 +1462,7 @@ fun PrivacyPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "৪. লোকাল ডাটা স্টোরেজ ও ৩০-দিনের অটো-পলিসি",
+                                        text = "4. Local SQLite Storage & Retention",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
@@ -1476,7 +1476,7 @@ fun PrivacyPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "আপনার মেসেজ, পরিচিতি ও কল হিস্টোরি সম্পূর্ণ অন-ডিভাইস Room SQLite ডাটাবেসে সংরক্ষিত থাকে। সীমিত মেমরির ডিভাইসে পারফরম্যান্স অক্ষুণ্ণ রাখতে ৩০ দিনের পুরনো বার্তা স্বয়ংক্রিয়ভাবে মুছে ফেলা (Auto-Delete) বা আর্কাইভ (Auto-Archive) করার সম্পূর্ণ নিয়ন্ত্রণ আপনার হাতে।",
+                                text = "Your messages, peer contacts, and call history are stored exclusively in the local on-device Room SQLite database. You retain full control over retention policies, including automatic 30-day archiving, auto-deletion, or permanent local preservation.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 18.sp
@@ -1511,7 +1511,7 @@ fun PrivacyPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "৫. ট্র্যাকিং, বিজ্ঞাপন ও টেলিম্যাট্রিমুক্ত নিশ্চয়তা",
+                                        text = "5. Zero Tracking, Zero Ads & No Profiling",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
@@ -1525,7 +1525,7 @@ fun PrivacyPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "অ্যাপে কোনো প্রকার ট্র্যাকার, গুগল অ্যানালিটিক্স, ফেসবুক এসডিকে বা বিজ্ঞাপন নেই। ব্লুটুথ স্ক্যান শুধুমাত্র পার্শ্ববর্তী পিয়ার নোড ডিসকভারির জন্য 'neverForLocation' পতাকাসহ পরিচালিত হয়। আপনার ভৌগোলিক অবস্থান কখনোই সংরক্ষণ বা ট্র্যাক করা হয় না।",
+                                text = "The application contains no analytics SDKs, trackers, or advertising frameworks. Bluetooth scanning runs with 'neverForLocation' flags purely to discover physical peer radios in range. Your geographical location is never recorded or tracked.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 18.sp
@@ -1548,8 +1548,8 @@ fun UserPolicyScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "ইউজার পলিসি ও ব্যবহারের নিরাপত্তা",
-                subtitle = "User Policy & Operational Safety Guidelines",
+                title = "User Policy & Operational Safety",
+                subtitle = "Rules of Engagement & Security Guidelines",
                 onBack = onBack
             )
 
@@ -1585,7 +1585,7 @@ fun UserPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "১. অ্যাপ্লিকেশন ব্যবহারের নিয়মাবলী (Acceptable Use)",
+                                        text = "1. Acceptable Use Guidelines",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
@@ -1599,7 +1599,7 @@ fun UserPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "• রোনোভা অফলাইন যোগাযোগ, জরুরি উদ্ধারকাজ, নেটওয়ার্ক ব্ল্যাকআউট বা ব্যক্তিগত গোপনীয় যোগাযোগের জন্য তৈরি।\n• মেশ নেটওয়ার্কে ইচ্ছাকৃতভাবে স্প্যাম, ক্ষতিকর ডাটা বা ডিনায়াল-অব-সার্ভিস আক্রমণ সৃষ্টি করা নিষিদ্ধ।\n• প্রতিটি ব্যবহারকারী তাদের প্রেরিত বার্তার দায়িত্ব নিজে বহন করবেন।",
+                                text = "• Ronova is engineered for sovereign offline communication, emergency coordination, network outages, and private peer-to-peer messaging.\n• Intentional network flooding, spamming radio airwaves, or malicious packet injection is strictly prohibited.\n• Users remain solely responsible for communication authored on their nodes.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 19.sp
@@ -1634,13 +1634,13 @@ fun UserPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "২. ডিভাইস ফিঙ্গারপ্রিন্ট ভেরিফিকেশন ও নিরাপত্তা",
+                                        text = "2. Cryptographic Device Verification",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "Cryptographic Device Verification & MitM Protection",
+                                        text = "Identity Verification & MitM Protection",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
@@ -1648,7 +1648,7 @@ fun UserPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "• নতুন কোনো পরিচিত নোডের সাথে যোগাযোগের সময় 'Verify Device' স্ক্রিনে গিয়ে তার ক্রিপ্টোগ্রাফিক ফিঙ্গারপ্রিন্ট সরাসরি যাচাই করুন।\n• যাচাইকৃত নোডকে 'Trusted' হিসেবে মার্ক করলে আপনি নিশ্চিত থাকতে পারবেন যে তৃতীয় কোনো মধ্যবর্তী পক্ষ ছদ্মবেশ ধারণ করেনি।",
+                                text = "• When establishing communication with a new peer, open the 'Verify Device' screen to compare cryptographic fingerprints in person or via secondary channel.\n• Marking a peer as 'Trusted' verifies their public key and prevents impersonation or Man-in-the-Middle attacks.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 19.sp
@@ -1683,13 +1683,13 @@ fun UserPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "৩. সন্দেহজনক নোড ব্লকিং নির্দেশিকা",
+                                        text = "3. Suspicious Node Blocking",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "Blocking Suspicious or Malicious Nodes",
+                                        text = "Isolating Malicious or Unwanted Nodes",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
@@ -1697,7 +1697,7 @@ fun UserPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "• কোনো অজ্ঞাত ডিভাইস থেকে অযাচিত বার্তা বা কল আসলে তাৎক্ষণিকভাবে তাকে 'Block' করুন।\n• ব্লক করা নোড থেকে কোনো বার্তা বা কল আপনার অ্যাপ গ্রহণ করবে না এবং তাদের প্যাকেট আপনার ডিভাইসে প্রসেস হবে না।",
+                                text = "• If an unknown node transmits unsolicited messages or voice call requests, mark the device as 'Blocked'.\n• Blocked devices cannot send messages, trigger voice call ringers, or utilize your device's relay queue.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 19.sp
@@ -1732,13 +1732,13 @@ fun UserPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "৪. সরাসরি ব্লুটুথ ভয়েস কলের নিরাপত্তা",
+                                        text = "4. Direct Voice Call Security",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "Direct RFCOMM Voice Calling Security",
+                                        text = "Direct Point-to-Point RFCOMM Audio",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
@@ -1746,7 +1746,7 @@ fun UserPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "• ভয়েস কল সরাসরি দুটি ডিভাইসের মধ্যবর্তী পয়েন্ট-টু-পয়েন্ট ব্লুটুথ সকেটে পরিচালিত হয়।\n• কলের কোনো অডিও রেকর্ডিং ডিভাইসে বা বাইরে সংরক্ষণ করা হয় না।\n• মাইক্রোফোন শুধুমাত্র কল চলাকালীন সময়ে সক্রিয় থাকে।",
+                                text = "• Two-way voice calls stream directly over point-to-point Bluetooth RFCOMM sockets between the two handsets.\n• No audio recordings are saved locally or transmitted to external servers.\n• Microphone recording is engaged exclusively during an active call and immediately terminated upon hangup.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 19.sp
@@ -1781,13 +1781,13 @@ fun UserPolicyScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "৫. ব্যাকগ্রাউন্ড সার্ভিস ও ব্যাটারি অপটিমাইজেশন",
+                                        text = "5. Background Relay Reliability",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "Background Reliability & OEM Optimization",
+                                        text = "Foreground Service & Battery Guidance",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
@@ -1795,7 +1795,7 @@ fun UserPolicyScreen(
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "স্ক্রিন বন্ধ থাকা অবস্থায়ও অফলাইন মেসেজ রিলে ও রিসিভ করতে Foreground Service চালু রাখুন এবং ফোন সেটিংসে গিয়ে Ronova অ্যাপের ব্যাটারি 'Unrestricted' নির্বাচন করুন।",
+                                text = "To ensure packets can be received and relayed while your screen is turned off, keep the Foreground Service enabled and configure battery settings to 'Unrestricted' for Ronova in Android system settings.",
                                 fontSize = 12.5.sp,
                                 color = RonovaTextSecondary,
                                 lineHeight = 19.sp
@@ -1836,8 +1836,8 @@ fun SettingsHubScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "সেটিংস ও নিরাপত্তা (Settings)",
-                subtitle = "রোনোভা মেশ মেসেঞ্জার কন্ট্রোল হাব",
+                title = "Settings & Security",
+                subtitle = "Ronova Mesh Messenger Control Hub",
                 onBack = onBack
             )
 
@@ -1850,7 +1850,7 @@ fun SettingsHubScreen(
                 // Section 1: Policies & Security
                 item {
                     Text(
-                        text = "নীতিমালা ও ব্যবহারের নিরাপত্তা (Policies & Safety)",
+                        text = "Policies & Security",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1862,8 +1862,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Shield,
-                        title = "প্রাইভেসি পলিসি (Privacy Policy)",
-                        subtitle = "অফলাইন জিরো-ক্লাউড ও ক্রিপ্টোগ্রাফিক সুরক্ষা প্রতিশ্রুতি",
+                        title = "Privacy Policy",
+                        subtitle = "Offline zero-cloud and cryptographic security guarantee",
                         onClick = onNavigateToPrivacyPolicy
                     )
                 }
@@ -1871,8 +1871,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Gavel,
-                        title = "ইউজার পলিসি ও ব্যবহারের নিরাপত্তা (User Policy)",
-                        subtitle = "ব্যবহারের নিয়মাবলী, নোড ভেরিফিকেশন ও নিরাপত্তা গাইডলাইন",
+                        title = "User Policy & Operational Safety",
+                        subtitle = "Usage rules, node verification & security guidelines",
                         onClick = onNavigateToUserPolicy
                     )
                 }
@@ -1881,7 +1881,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "স্টোরেজ ও ডাটা নীতি (Storage & Retention)",
+                        text = "Storage & Retention",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1893,8 +1893,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Storage,
-                        title = "লোকাল স্টোরেজ ও ৩০-দিনের অটো পলিসি",
-                        subtitle = "রুল: ${retentionPolicy.title}",
+                        title = "Local Storage & 30-Day Policy",
+                        subtitle = "Policy: ${retentionPolicy.title}",
                         badgeText = "30-Day Policy",
                         onClick = onNavigateToStorage
                     )
@@ -1903,8 +1903,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.FolderZip,
-                        title = "আর্কাইভ করা মেসেজ (Archived Messages)",
-                        subtitle = "$archivedCount টি মেসেজ লোকাল আর্কাইভে সংরক্ষিত",
+                        title = "Archived Messages",
+                        subtitle = "$archivedCount messages stored in local archive",
                         badgeText = if (archivedCount > 0) "$archivedCount" else null,
                         onClick = onNavigateToArchivedMessages
                     )
@@ -1914,7 +1914,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "নিরাপত্তা ও নোড ব্যবস্থাপনা (Security & Devices)",
+                        text = "Security & Devices",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1926,8 +1926,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Lock,
-                        title = "ক্রিপ্টোগ্রাফিক পরিচয় ও এনক্রিপশন",
-                        subtitle = "ডিভাইস ফিঙ্গারপ্রিন্ট ও কি-পেয়ার ব্যবস্থাপনা",
+                        title = "Cryptographic Identity & Keys",
+                        subtitle = "Device fingerprint and key-pair management",
                         onClick = onNavigateToSecurity
                     )
                 }
@@ -1935,8 +1935,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.CheckCircle,
-                        title = "বিশ্বস্ত ডিভাইসসমূহ (Trusted Peers)",
-                        subtitle = "যাচাইকৃত বিশ্বস্ত পরিচিতদের তালিকা",
+                        title = "Trusted Devices",
+                        subtitle = "Verified and authenticated peer contacts",
                         onClick = onNavigateToTrustedDevices
                     )
                 }
@@ -1944,8 +1944,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Block,
-                        title = "ব্লক করা ডিভাইসসমূহ (Blocked Peers)",
-                        subtitle = "বার্তা ও কল প্রতিহত করা ডিভাইসের তালিকা",
+                        title = "Blocked Devices",
+                        subtitle = "Prevent packets and calls from blocked nodes",
                         onClick = onNavigateToBlockedDevices
                     )
                 }
@@ -1954,7 +1954,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "মেশ নেটওয়ার্ক ও কলিং (Network & Calls)",
+                        text = "Mesh Network & Calling",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1966,8 +1966,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Hub,
-                        title = "মেশ রিলে নেটওয়ার্ক সেটিংস",
-                        subtitle = if (isRelayOn) "রিলে সক্রিয় (অংশগ্রহণ করছেন)" else "রিলে নিষ্ক্রিয়",
+                        title = "Mesh Relay Network Settings",
+                        subtitle = if (isRelayOn) "Relay active (Participating in mesh)" else "Relay disabled",
                         onClick = onNavigateToRelaySettings
                     )
                 }
@@ -1975,8 +1975,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Call,
-                        title = "ভয়েস কল হিস্টোরি (Call History)",
-                        subtitle = "সরাসরি ব্লুটুথ অডিও কলের বিস্তারিত লগ",
+                        title = "Voice Call History",
+                        subtitle = "Direct Bluetooth voice call records and logs",
                         onClick = onNavigateToCallHistory
                     )
                 }
@@ -1985,7 +1985,7 @@ fun SettingsHubScreen(
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "সিস্টেম ও অ্যাপ্লিকেশন তথ্য (System & Info)",
+                        text = "System & App Info",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1997,8 +1997,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.BatteryAlert,
-                        title = "ব্যাটারি ও ব্যাকগ্রাউন্ড গাইডেন্স",
-                        subtitle = "ওএস ব্যাকগ্রাউন্ড কিলার থেকে রিলে সার্ভিস সুরক্ষা",
+                        title = "Battery & Background Guidance",
+                        subtitle = "Protect mesh background service from OS task killers",
                         onClick = onNavigateToBattery
                     )
                 }
@@ -2006,8 +2006,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Notifications,
-                        title = "নোটিফিকেশন ও অ্যালার্ট",
-                        subtitle = "ইনকামিং কল রিংটোন ও মেসেজ ভাইব্রেশন",
+                        title = "Notifications & Alerts",
+                        subtitle = "Incoming call ringtone and message vibrations",
                         onClick = onNavigateToNotifications
                     )
                 }
@@ -2015,8 +2015,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Router,
-                        title = "সিস্টেম ডায়াগনস্টিকস (Diagnostics)",
-                        subtitle = "ব্লুটুথ অ্যাডাপ্টার হেলথ ও প্যাকেট অ্যানালাইসিস",
+                        title = "Application Diagnostics",
+                        subtitle = "Bluetooth RFCOMM telemetry and packet analysis",
                         onClick = onNavigateToDiagnostics
                     )
                 }
@@ -2024,8 +2024,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Info,
-                        title = "রোনোভা লিমিটেড সম্পর্কে (About Ronova LTD)",
-                        subtitle = "ভার্সন ১.০ • Ronova LTD যোগাযোগ ও লাইসেন্স",
+                        title = "About Ronova LTD",
+                        subtitle = "Version 1.0 • Ronova LTD contact & open source info",
                         onClick = onNavigateToAbout
                     )
                 }

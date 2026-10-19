@@ -106,7 +106,7 @@ fun RelayNetworkScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
@@ -128,45 +128,45 @@ fun RelayNetworkScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp)
-                    .background(Color.White)
+                    .height(240.dp)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val center = Offset(size.width / 2, size.height / 2)
 
-                    // Draw concentric radar circles
+                    // Draw concentric radar circles with subtle amber tone
                     drawCircle(
-                        color = Color(0xFFFCE7F3),
+                        color = RonovaCardBorder,
                         radius = 40.dp.toPx(),
                         center = center,
-                        style = Stroke(width = 1.5.dp.toPx())
+                        style = Stroke(width = 1.2.dp.toPx())
                     )
                     drawCircle(
-                        color = Color(0xFFFDF2F8),
+                        color = RonovaCardBorder.copy(alpha = 0.6f),
                         radius = 80.dp.toPx(),
                         center = center,
-                        style = Stroke(width = 1.5.dp.toPx())
+                        style = Stroke(width = 1.2.dp.toPx())
                     )
                     drawCircle(
-                        color = Color(0xFFFFF7FB),
+                        color = RonovaCardBorder.copy(alpha = 0.35f),
                         radius = 120.dp.toPx(),
                         center = center,
-                        style = Stroke(width = 1.5.dp.toPx())
+                        style = Stroke(width = 1.2.dp.toPx())
                     )
 
                     // Draw animated pulse
                     drawCircle(
-                        color = Color(0xFFEC4899).copy(alpha = (1f - (pulseRadius / 90f)).coerceIn(0f, 0.4f)),
+                        color = RonovaPinkPrimary.copy(alpha = (1f - (pulseRadius / 90f)).coerceIn(0f, 0.45f)),
                         radius = pulseRadius.dp.toPx(),
                         center = center
                     )
 
                     // Draw Center Node (Self)
                     drawCircle(
-                        color = Color(0xFFEC4899),
-                        radius = 12.dp.toPx(),
+                        color = RonovaPinkDark,
+                        radius = 11.dp.toPx(),
                         center = center
                     )
 
@@ -563,7 +563,7 @@ fun DiagnosticsScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
@@ -742,7 +742,7 @@ fun ErrorRecoveryScreen(
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(

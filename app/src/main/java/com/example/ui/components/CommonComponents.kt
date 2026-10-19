@@ -55,6 +55,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.core.bluetooth.BluetoothStatus
 import com.example.ui.theme.AlataFontFamily
+import com.example.ui.theme.RonovaGoldContainer
+import com.example.ui.theme.RonovaGoldDark
+import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaGoldPrimary
+import com.example.ui.theme.RonovaGoldSecondary
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaError
 import com.example.ui.theme.RonovaPinkContainer
@@ -75,6 +80,7 @@ fun RonovaTopBar(
     title: String,
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
+    statusBadge: (@Composable () -> Unit)? = null,
     actions: @Composable () -> Unit = {}
 ) {
     Surface(
@@ -84,23 +90,33 @@ fun RonovaTopBar(
     ) {
         TopAppBar(
             title = {
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            letterSpacing = 0.2.sp
-                        )
-                    )
-                    if (subtitle != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = RonovaTextMuted,
-                                fontSize = 11.5.sp
-                            )
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                letterSpacing = 0.2.sp
+                            ),
+                            maxLines = 1
                         )
+                        if (subtitle != null) {
+                            Text(
+                                text = subtitle,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = RonovaTextMuted,
+                                    fontSize = 11.sp
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    if (statusBadge != null) {
+                        statusBadge()
                     }
                 }
             },
@@ -133,7 +149,7 @@ fun StatusBadge(status: BluetoothStatus) {
         BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "Connected")
         BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Scanning...")
         BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Linking...")
-        BluetoothStatus.READY -> Triple(Color(0xFFFFF1F2), RonovaPinkPrimary, "Mesh Ready")
+        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "Mesh Ready")
         BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "Permission Needed")
         BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "Bluetooth Off")
         BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "No Bluetooth")
@@ -271,12 +287,14 @@ fun MessageBubble(
                 .clickable { onDetailsClick() }
                 .then(
                     if (isOutgoing) {
-                        Modifier.background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(RonovaPinkPrimary, RonovaPinkDark)
-                            ),
-                            shape = bubbleShape
-                        )
+                        Modifier
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(RonovaGoldPrimary, RonovaGoldSecondary)
+                                ),
+                                shape = bubbleShape
+                            )
+                            .border(BorderStroke(1.dp, RonovaCardBorder), bubbleShape)
                     } else {
                         Modifier.border(BorderStroke(1.dp, RonovaCardBorder), bubbleShape)
                     }
@@ -288,10 +306,11 @@ fun MessageBubble(
             Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp)) {
                 Text(
                     text = text,
-                    color = if (isOutgoing) Color.White else RonovaTextPrimary,
+                    color = RonovaTextPrimary,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         lineHeight = 21.sp,
-                        fontFamily = AlataFontFamily
+                        fontFamily = AlataFontFamily,
+                        fontWeight = if (isOutgoing) FontWeight.Medium else FontWeight.Normal
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -302,7 +321,7 @@ fun MessageBubble(
                     Text(
                         text = timeFormatted,
                         fontSize = 10.5.sp,
-                        color = if (isOutgoing) Color.White.copy(alpha = 0.85f) else RonovaTextMuted,
+                        color = if (isOutgoing) RonovaTextPrimary.copy(alpha = 0.75f) else RonovaTextMuted,
                         fontFamily = AlataFontFamily
                     )
                     if (isOutgoing) {
@@ -311,37 +330,37 @@ fun MessageBubble(
                             "DELIVERED" -> Icon(
                                 imageVector = Icons.Default.DoneAll,
                                 contentDescription = "Delivered",
-                                tint = Color.White,
+                                tint = RonovaTextPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                             "RELAYED" -> Icon(
                                 imageVector = Icons.Default.SwapHoriz,
                                 contentDescription = "Relayed",
-                                tint = Color.White.copy(alpha = 0.95f),
+                                tint = RonovaTextPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                             "SENDING" -> Icon(
                                 imageVector = Icons.Default.HourglassEmpty,
                                 contentDescription = "Sending",
-                                tint = Color.White.copy(alpha = 0.75f),
+                                tint = RonovaTextPrimary.copy(alpha = 0.75f),
                                 modifier = Modifier.size(14.dp)
                             )
                             "QUEUED" -> Icon(
                                 imageVector = Icons.Default.Schedule,
                                 contentDescription = "Queued",
-                                tint = Color.White.copy(alpha = 0.75f),
+                                tint = RonovaTextPrimary.copy(alpha = 0.75f),
                                 modifier = Modifier.size(14.dp)
                             )
                             "FAILED", "EXPIRED" -> Icon(
                                 imageVector = Icons.Default.ErrorOutline,
                                 contentDescription = "Failed",
-                                tint = Color(0xFFFFCDD2),
+                                tint = RonovaError,
                                 modifier = Modifier.size(14.dp)
                             )
                             else -> Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "Sent",
-                                tint = Color.White.copy(alpha = 0.8f),
+                                tint = RonovaTextPrimary.copy(alpha = 0.7f),
                                 modifier = Modifier.size(14.dp)
                             )
                         }
