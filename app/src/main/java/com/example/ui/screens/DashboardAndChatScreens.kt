@@ -1106,8 +1106,8 @@ fun MessageDeliveryDetailsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Message Delivery Details",
-                subtitle = "Protocol Envelope & Relay Path",
+                title = stringResource(R.string.delivery_details_title),
+                subtitle = stringResource(R.string.delivery_details_subtitle),
                 onBack = onBack
             )
 
@@ -1116,7 +1116,7 @@ fun MessageDeliveryDetailsScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Message not found", color = RonovaTextMuted)
+                    Text(stringResource(R.string.msg_not_found), color = RonovaTextMuted)
                 }
             } else {
                 val msg = message!!
@@ -1154,7 +1154,7 @@ fun MessageDeliveryDetailsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Column {
-                                    Text("Delivery State", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text(stringResource(R.string.delivery_state_label), fontSize = 11.sp, color = RonovaTextMuted)
                                     Text(
                                         text = msg.deliveryState,
                                         fontWeight = FontWeight.Bold,
@@ -1167,7 +1167,7 @@ fun MessageDeliveryDetailsScreen(
                                     )
                                 }
                                 Column {
-                                    Text("Hops Traversed", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text(stringResource(R.string.hops_traversed_label), fontSize = 11.sp, color = RonovaTextMuted)
                                     Text(
                                         text = "${msg.hopCount}",
                                         fontWeight = FontWeight.Bold,
@@ -1175,7 +1175,7 @@ fun MessageDeliveryDetailsScreen(
                                     )
                                 }
                                 Column {
-                                    Text("Direction", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text(stringResource(R.string.direction_label), fontSize = 11.sp, color = RonovaTextMuted)
                                     Text(
                                         text = if (msg.isOutgoing) "Outgoing" else "Incoming",
                                         fontWeight = FontWeight.Bold,
@@ -1201,13 +1201,13 @@ fun MessageDeliveryDetailsScreen(
                             )
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            MetadataRow(label = "Message ID", value = msg.messageId)
-                            MetadataRow(label = "Sender Node", value = msg.senderDeviceId)
-                            MetadataRow(label = "Recipient Node", value = msg.recipientDeviceId)
-                            MetadataRow(label = "Timestamp", value = timeFormatted)
+                            MetadataRow(label = stringResource(R.string.delivery_packet_id), value = msg.messageId)
+                            MetadataRow(label = stringResource(R.string.delivery_sender_label), value = msg.senderDeviceId)
+                            MetadataRow(label = stringResource(R.string.delivery_recipient_label), value = msg.recipientDeviceId)
+                            MetadataRow(label = stringResource(R.string.delivery_timestamp_label), value = timeFormatted)
                             MetadataRow(label = "Relay Nodes", value = msg.routeNodesJson)
                             MetadataRow(
-                                label = "Encrypted Ciphertext",
+                                label = stringResource(R.string.delivery_cipher_label),
                                 value = msg.encryptedPayload.take(24).plus("... (AES-256-GCM)")
                             )
                         }
@@ -1228,7 +1228,7 @@ fun MessageDeliveryDetailsScreen(
                         ) {
                             Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Retry Sending Over Mesh")
+                            Text(stringResource(R.string.retry_sending_mesh))
                         }
                     }
 
@@ -1246,7 +1246,7 @@ fun MessageDeliveryDetailsScreen(
                     ) {
                         Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Delete Local Message")
+                        Text(stringResource(R.string.delete_local_msg))
                     }
                 }
             }
@@ -1281,14 +1281,14 @@ fun PendingMessagesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Pending Store & Forward Queue",
-                subtitle = "Messages waiting for next-hop routes",
+                title = stringResource(R.string.pending_queue_title),
+                subtitle = stringResource(R.string.pending_queue_subtitle),
                 onBack = onBack,
                 actions = {
                     IconButton(onClick = { viewModel.resendPendingPackets() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Retry All",
+                            contentDescription = stringResource(R.string.pending_retry_all),
                             tint = RonovaPinkPrimary
                         )
                     }
@@ -1319,12 +1319,12 @@ fun PendingMessagesScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "No pending packets in queue",
+                            text = stringResource(R.string.pending_queue_empty),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "All mesh packets have successfully reached their direct or relay destinations.",
+                            text = stringResource(R.string.pending_queue_empty_desc),
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                     }
@@ -1338,7 +1338,7 @@ fun PendingMessagesScreen(
                 ) {
                     item {
                         Text(
-                            text = "Outgoing Messages Waiting for Peer (${pendingMessages.size})",
+                            text = stringResource(R.string.pending_outgoing_title, pendingMessages.size),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -1377,7 +1377,7 @@ fun PendingMessagesScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("Retry", fontSize = 11.sp)
+                                    Text(stringResource(R.string.action_retry), fontSize = 11.sp)
                                 }
                             }
                         }
@@ -1391,7 +1391,7 @@ fun PendingMessagesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Multi-hop Relay Queue (${pendingPackets.size})",
+                                text = stringResource(R.string.pending_relaying_title, pendingPackets.size),
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                             if (pendingPackets.isNotEmpty()) {
