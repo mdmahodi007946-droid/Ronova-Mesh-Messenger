@@ -410,4 +410,8 @@
     <string name="csb_relayed_packets">Relayed Packets</string>
     <string name="csb_be_discoverable">Be Discoverable</string>
     <string name="csb_disconnect_all">Disconnect All</string>
+    <string name="csb_badge_online">ONLINE</string>
+    <string name="csb_badge_discoverable">DISCOVERABLE</string>
+    <string name="diagnostics_title">Network Diagnostics</string>
+    <string name="diagnostics_subtitle">Real-time mesh telemetry and performance</string>
 </resources>

@@ -410,4 +410,8 @@
     <string name="csb_relayed_packets">রিলে করা প্যাকেট</string>
     <string name="csb_be_discoverable">দৃশ্যমান হন</string>
     <string name="csb_disconnect_all">সব সংযোগ বিচ্ছিন্ন করুন</string>
+    <string name="csb_badge_online">অনলাইন</string>
+    <string name="csb_badge_discoverable">দৃশ্যমান</string>
+    <string name="diagnostics_title">নেটওয়ার্ক ডায়াগনস্টিকস</string>
+    <string name="diagnostics_subtitle">রিয়েল-টাইম মেশ টেলিমেট্রি ও কর্মক্ষমতা</string>
 </resources>
