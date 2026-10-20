@@ -5,12 +5,19 @@
     <string name="company_name">Ronova LTD</string>
     <string name="tagline">Decentralized, Internet-Free Messaging &amp; Voice Mesh</string>
 
-    <!-- Navigation -->
+    <!-- Navigation & Drawer -->
     <string name="nav_home">Home</string>
-    <string name="nav_chats">Chats</string>
-    <string name="nav_calls">Calls</string>
+    <string name="nav_chats">Messages</string>
+    <string name="nav_calls">Call History</string>
     <string name="nav_network">Network</string>
     <string name="nav_settings">Settings</string>
+    <string name="drawer_connected_peers">Connected Peers</string>
+    <string name="drawer_mesh_map">Mesh Map</string>
+    <string name="drawer_store_forward">Store &amp; Forward Queue</string>
+    <string name="drawer_battery_guidance">Battery &amp; Background Guidance</string>
+    <string name="drawer_permissions">Permissions &amp; Device Access</string>
+    <string name="drawer_privacy_security">Privacy &amp; Security</string>
+    <string name="drawer_about">About Ronova Mesh</string>
 
     <!-- Splash & Welcome -->
     <string name="splash_title">Ronova Mesh</string>

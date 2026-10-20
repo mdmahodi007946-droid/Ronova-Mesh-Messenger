@@ -1,0 +1,639 @@
+CRITICAL UI/UX REDESIGN & COMPLETE IMPLEMENTATION PRD
+
+Ronova Mesh — Compact Premium Mobile UI, Navigation, Permissions & Full Bengali/English Localization
+
+Project: Ronova Mesh
+Platform: Native Android
+Minimum Android Version: Android 11 (API 30)
+Technology: Kotlin, Jetpack Compose, Material 3, Coroutines/Flow, Room
+Design Direction: Compact Premium UI · Soft Glassmorphism · Subtle 3D Controls · Mobile-First
+Primary Language: English
+Secondary Language: Bengali (বাংলা)
+
+1. MAIN OBJECTIVE
+
+Update the existing Ronova Mesh Android application to deliver a beautiful, compact, responsive, polished, and production-ready user experience.
+
+Use the supplied screenshots as references for the existing application structure and features. Redesign all screens consistently without removing, breaking, or replacing existing working functionality.
+
+This is an implementation task, not a visual mockup task. Modify the actual project source code, connect every interactive component to real application state, and verify the changes through successful builds and device testing.
+
+Non-negotiable requirements:
+
+- No demo users, fake peers, mock conversations, simulated calls, or fabricated connection statuses.
+- No decorative buttons or switches that appear functional but do nothing.
+- No oversized cards, headers, buttons, navigation bars, or unnecessary empty spaces.
+- No hardcoded user-facing strings that prevent complete language switching.
+- No unnecessary permissions or attempts to bypass Android permission controls.
+- Preserve actual Bluetooth discovery, peer connections, messaging, persistence, relay, and calling features wherever implemented.
+
+2. PREMIUM VISUAL DESIGN SYSTEM
+
+Create a unified design system for every page, dialog, sheet, menu, notification, and settings screen.
+
+Brand colors
+
+- Primary yellow: "#FFC107"
+- Secondary yellow: "#FFD54F"
+- Soft cream: "#FFF8E1"
+- Main background: "#FFFFFF"
+- Primary text: "#252525"
+- Secondary text: "#757575"
+- Success, warning, and error colors must remain visually distinguishable and accessible.
+
+Use yellow for important actions, active navigation, selected controls, and small highlights. Keep the overall interface bright, clean, and readable.
+
+Compact layout
+
+- Use a mobile-first responsive layout suitable for small Android phones, including Android 11 devices.
+- Reduce unnecessary vertical spacing and card padding.
+- Use compact cards with consistent corner radii and restrained shadows.
+- Keep section headings short and appropriately sized.
+- Prevent clipped text, overlapping elements, horizontal overflow, and excessively tall cards.
+- Respect system status bars, navigation bars, display cutouts, and window insets.
+- Use scrolling layouts when content exceeds the available screen height.
+- Keep important actions reachable with one hand.
+- Support font scaling and accessibility without breaking the layout.
+
+Premium glass and subtle 3D effects
+
+Apply tasteful, restrained effects to:
+
+- Primary and secondary buttons.
+- Switches and segmented controls.
+- Bottom navigation.
+- Sidebar and navigation drawer.
+- Floating action buttons.
+- Selected cards and interactive status components.
+
+Design requirements:
+
+- Soft glass-like translucent surfaces where appropriate.
+- Subtle background blur, translucent highlights, and layered depth.
+- Gentle elevation and realistic pressed states.
+- Small, controlled gradients and soft yellow highlights.
+- Smooth, short animations for selection, opening, closing, and state changes.
+- Clear visual distinction between enabled, disabled, selected, loading, and error states.
+
+Do not overuse blur, gradients, or 3D effects. Text and icons must remain crisp. Provide appropriate fallbacks when blur is unsupported or causes performance problems. Avoid expensive effects on frequently updated lists and low-memory devices.
+
+3. APPLICATION HEADER AND SIDEBAR
+
+Create a compact, consistent header across the primary application screens.
+
+The header must include:
+
+- A three-line hamburger menu on the left.
+- The Ronova Mesh title and a small, clear subtitle where appropriate.
+- A compact Bluetooth or mesh connection status indicator.
+- A settings shortcut when useful.
+- Proper alignment and spacing on small screens.
+
+Sidebar / Navigation Drawer
+
+The hamburger menu must open a real navigation drawer with accessible touch targets, a subtle glass-style surface, and a clear active item.
+
+Include these destinations where applicable:
+
+1. Home
+2. Messages
+3. Call History
+4. Connected Peers
+5. Mesh Map
+6. Store & Forward Queue
+7. Battery & Background Guidance
+8. Permissions & Device Access
+9. Privacy & Security
+10. Settings
+11. About Ronova Mesh
+
+Every destination must open its actual screen. If an existing feature is not implemented, do not pretend it works. Either implement it or clearly label it as unavailable until implemented.
+
+The drawer must close correctly after navigation and when the user presses Back or taps outside it, following Android navigation conventions.
+
+4. FIXED BOTTOM NAVIGATION
+
+Add a persistent bottom navigation bar to the main application experience.
+
+The four required destinations are:
+
+1. Home
+2. Settings
+3. Messages
+4. Call History
+
+Requirements:
+
+- Use compact vector icons and short labels.
+- Highlight the selected destination with the brand yellow.
+- Use a refined, softly elevated or translucent background with a restrained glass effect.
+- Provide smooth selection animations and clear pressed states.
+- Keep labels readable and prevent clipping on small displays.
+- Respect system navigation-bar insets and gesture navigation.
+- Maintain independent navigation state and preserve relevant screen state when switching tabs.
+- Display real unread-message badges or call-history indicators only when supported by actual stored data.
+- Do not show fabricated counts.
+- Prevent repeated taps from creating duplicate navigation destinations.
+- Ensure Back navigation behaves correctly from each tab and nested screen.
+
+On screens where a full bottom bar would interfere with an active call, focused conversation, or keyboard, adapt the layout appropriately without compromising essential controls.
+
+5. HOME SCREEN REDESIGN
+
+Create a compact home dashboard inspired by the supplied screenshots.
+
+A. Node Identity
+
+Display:
+
+- The actual local node identifier.
+- A copy action.
+- The real permission and connectivity state.
+
+Show accurate states such as:
+
+- Ready
+- Scanning
+- Connecting
+- Connected
+- Permission Required
+- Bluetooth Disabled
+- Error
+
+Never display “Connected” unless the underlying connection state confirms it.
+
+B. Compact Statistics
+
+Use three compact summary items:
+
+- Peers
+- Store & Forward
+- Chats
+
+Each item must display values from the real repository/database. Update the UI through observable state rather than hardcoded values.
+
+C. Primary Actions
+
+Provide:
+
+- Scan Peers
+- Mesh Map
+
+The Scan Peers action must trigger real Bluetooth discovery and show loading, permission, Bluetooth-disabled, timeout, empty, and error states as appropriate.
+
+The Mesh Map action must display actual known mesh nodes and connections only when supported by available data. Never fabricate network paths or peer locations.
+
+D. System Architecture & Specifications
+
+Present the app's architecture in a compact information section:
+
+- Android Native / Kotlin.
+- Bluetooth Classic and BLE capabilities actually implemented.
+- Offline-first communication.
+- Store-and-forward capability when implemented.
+- Free-to-use business model, if applicable.
+
+Do not present experimental, planned, or unverified features as production-ready.
+
+E. Connected Peers
+
+Show discovered and connected peers separately. Clearly distinguish discovery from a successfully established connection.
+
+Each peer item should show appropriate real information, such as display identity, connection status, last-seen time when available, and available actions.
+
+F. Recent Conversations
+
+Show recent locally stored conversations, actual unread counts, and the last real message when available.
+
+The empty state must be compact, helpful, and translated into the selected language.
+
+6. MESSAGES AND CHAT EXPERIENCE
+
+Implement a clean, compact messaging interface with:
+
+- Conversation list.
+- Peer identity.
+- Real message previews.
+- Timestamps and delivery status when genuinely available.
+- Message input and send button.
+- Sending, queued, delivered, and failed states, based on actual protocol acknowledgements.
+- Retry functionality for failed messages.
+- Clear offline and relay-queue indicators.
+- Appropriate empty, loading, and error states.
+
+Persist conversations and messages using the existing Room database architecture.
+
+Maintain message ordering, duplicate protection, appropriate delivery acknowledgements, and correct UI updates.
+
+If store-and-forward relay is implemented, clearly distinguish queued messages from delivered messages. A queued message must never be falsely marked delivered.
+
+Do not expose private message content to intermediate relay nodes unnecessarily. Preserve the existing end-to-end encryption design, or implement and verify it if it is missing.
+
+7. CALL HISTORY AND VOICE CALL INTERFACE
+
+Redesign call history using compact list items that show actual call information, such as:
+
+- Peer identity.
+- Incoming, outgoing, or missed call.
+- Call timestamp.
+- Duration, when available.
+- Real call result or termination state.
+
+Call history must come from persisted call records.
+
+For actual direct voice calls, ensure:
+
+- Initiating a call reaches the real remote device.
+- Incoming calls provide working Accept and Reject actions.
+- Both devices can exchange actual microphone audio.
+- Mute and unmute work.
+- Audio routing works where supported.
+- Call duration is measured accurately.
+- Ending a call stops audio resources and foreground call operations appropriately.
+- Permissions are requested before microphone use.
+- Interrupted, rejected, failed, and ended calls are handled safely.
+
+Do not simulate successful voice calls. Multi-hop live voice must remain explicitly experimental unless genuine end-to-end multi-device tests prove it works.
+
+8. BEAUTIFUL, FUNCTIONAL SWITCHES AND BUTTONS
+
+Audit every button, toggle, switch, checkbox, selector, and interactive row in the entire app.
+
+Switch design
+
+Use a consistent, compact, premium switch style:
+
+- Smooth thumb movement.
+- Clear ON and OFF states.
+- Yellow accent for enabled states.
+- Neutral background for disabled states.
+- Accessible touch targets.
+- Clear disabled and loading appearances.
+- Correct contrast in both light and dark system conditions, if dark mode is supported.
+
+Functional requirements
+
+Every switch must reflect actual persisted or runtime state.
+
+Examples:
+
+- Mesh Foreground Service: controls the relevant foreground-service behavior where supported.
+- Language: changes the application language.
+- Sound or vibration: changes the relevant notification behavior if implemented.
+- Privacy options: update real security preferences.
+- Battery guidance: opens instructions or supported Android settings; it must not falsely claim to change a system restriction.
+
+Switch behavior must:
+
+1. Read its initial value from the actual source of truth.
+2. Persist user preferences where appropriate.
+3. Update the UI after the real operation succeeds.
+4. Revert or show an error if the operation fails.
+5. Avoid duplicate operations from rapid taps.
+6. Respect permissions and Android restrictions.
+7. Explain any required system-level action to the user.
+
+Do not add switches for features that do not exist.
+
+Button behavior
+
+- Add subtle pressed-state feedback and short animations.
+- Prevent accidental duplicate submissions.
+- Show progress during genuine asynchronous operations.
+- Disable actions only when necessary.
+- Provide useful error messages and retry options.
+- Ensure every clickable component performs the action indicated by its label.
+
+9. COMPLETE ENGLISH AND BENGALI LANGUAGE SUPPORT
+
+Implement complete application localization, not just a language selector or a translated home screen.
+
+English
+
+- Default language for a fresh installation.
+- Use Alata as the preferred font for English text.
+- Use a reliable fallback font if Alata is unavailable.
+
+Bengali
+
+- Language label: বাংলা
+- Use Charukola as the preferred Bengali typeface, provided a legitimate font file is available and its license permits distribution.
+- If the exact Charukola font cannot be obtained or legally bundled, use an appropriate Bengali-capable fallback and document the limitation. Never pretend the required font is installed when it is not.
+- Ensure correct Bengali glyph rendering, conjunct letters, punctuation, line wrapping, and text sizing.
+
+Settings language selector
+
+Add a clearly visible language setting:
+
+- English
+- বাংলা
+
+When the user selects a language:
+
+1. Apply the selected language throughout the app.
+2. Persist the preference.
+3. Refresh the current screen without requiring an unnecessary app restart.
+4. Preserve navigation state and unsent message drafts where feasible.
+5. Apply the preference on the next launch.
+6. Keep the language selector understandable in both languages.
+
+Translate every user-facing string
+
+Audit and localize:
+
+- App titles and subtitles.
+- Header and sidebar labels.
+- Bottom navigation.
+- Buttons, switches, and tooltips.
+- Home screen and dashboard statistics.
+- Bluetooth discovery and connection statuses.
+- Peer lists and mesh maps.
+- Messages, chat actions, and delivery states.
+- Call history and call controls.
+- Permissions screens and explanations.
+- Battery and background guidance.
+- Privacy and security screens.
+- Settings and confirmation dialogs.
+- Empty, loading, success, warning, and error states.
+- Form validation.
+- Snackbars, toasts, and accessibility descriptions.
+- Notifications and foreground-service notifications.
+- Onboarding and setup screens.
+- About and troubleshooting pages.
+
+Use proper Android string resources, including:
+
+- "app/src/main/res/values/strings.xml"
+- "app/src/main/res/values-bn/strings.xml"
+
+Use resource-based plurals and formatted strings when needed. Do not concatenate translated sentence fragments.
+
+Remove hardcoded user-facing strings from Compose screens, ViewModels, dialogs, and notifications. Use localized resources consistently.
+
+For newer Android versions, use appropriate application-language APIs or app-locale support where compatible with the project's configuration. Maintain correct language behavior on Android 11 and later.
+
+10. APPLICATION ICON UPDATE
+
+Use the following image as the source for the new Ronova Mesh launcher icon:
+
+Source URL:
+https://i.postimg.cc/gc3tth50/Untitled5-20261019174353.png
+
+Implementation requirements:
+
+- Retrieve the supplied image and verify that it loads successfully.
+- Inspect its dimensions, transparency, and visual content.
+- Prepare appropriately sized launcher assets from the supplied image.
+- Update the actual Android launcher icon resources and manifest references.
+- Support adaptive icons with appropriate foreground and background assets.
+- Ensure the icon is centered, clear, and recognizable at small sizes.
+- Avoid stretching, distortion, unexpected cropping, or low-resolution enlargement.
+- Preserve the original artwork's appearance as much as possible.
+- Test the launcher icon on an Android device or emulator.
+
+Do not simply display the URL inside the app. The icon must be bundled as local application resources. If the URL fails, report the problem and request the image asset instead of silently substituting unrelated artwork.
+
+11. ANDROID 11+ PERMISSION AUDIT
+
+Inspect the actual manifest, target SDK, Bluetooth implementation, foreground services, audio-call implementation, notification system, and background behavior before modifying permissions.
+
+Request every permission that is genuinely required by implemented features, but do not request unrelated or unnecessary permissions.
+
+A. Bluetooth permissions
+
+For Android 11 / API 30 and earlier-compatible behavior, use the appropriate legacy Bluetooth permissions, including "BLUETOOTH" and "BLUETOOTH_ADMIN" with suitable SDK limits where required.
+
+Request location permission when the specific Bluetooth discovery implementation requires it. For BLE scanning on Android 11, review the applicable location requirements and runtime behavior.
+
+For Android 12 / API 31 and later, declare and request the applicable Nearby Devices permissions:
+
+- "BLUETOOTH_SCAN"
+- "BLUETOOTH_CONNECT"
+- "BLUETOOTH_ADVERTISE"
+
+Only request advertising permission if the app actually advertises itself. Only request permissions for Bluetooth operations the app performs.
+
+Use "neverForLocation" on Bluetooth scan permission only if the app genuinely does not derive physical location from scan results and the flag does not break required discovery behavior.
+
+B. Microphone
+
+- Request "RECORD_AUDIO" before using the microphone for real voice calls.
+- Explain why access is required.
+- Handle denial without crashing.
+- Do not access the microphone unexpectedly or continuously outside the intended feature.
+
+C. Notifications
+
+- Request "POST_NOTIFICATIONS" on Android 13 / API 33 and later if the app uses notifications requiring it.
+- Maintain appropriate foreground-service notification behavior.
+- Explain the consequences of denied notification access where relevant.
+
+D. Foreground services
+
+Declare "FOREGROUND_SERVICE" and the applicable service-type permissions required by the target Android version and the actual service implementation.
+
+For applicable Android 14 / API 34+ targets, evaluate:
+
+- "FOREGROUND_SERVICE_CONNECTED_DEVICE"
+- "FOREGROUND_SERVICE_MICROPHONE"
+
+Use the correct service types for the real operations being performed, satisfy their prerequisites, and comply with foreground-service start restrictions.
+
+Do not declare service types that do not match the service's actual purpose.
+
+E. Other permissions
+
+Evaluate these individually and include them only when required:
+
+- "WAKE_LOCK"
+- "RECEIVE_BOOT_COMPLETED"
+- Additional location permissions
+- Any other narrowly justified permission required by a real feature.
+
+Do not add contacts, SMS, phone-state, broad storage, camera, or internet permissions merely to make the permission list look complete. An offline-first application should not request internet access unless a documented feature genuinely requires it.
+
+Use Android's Storage Access Framework for user-selected files if file access is needed rather than requesting broad storage access without justification.
+
+F. Permission UX
+
+Build a dedicated Permissions & Device Access screen that displays:
+
+- Required permissions.
+- Granted or denied status.
+- Why each permission is needed.
+- A contextual Request Permission action.
+- A link to the appropriate system settings when the user must enable access manually.
+- Clear recovery guidance when access is permanently denied or restricted.
+
+Requirements:
+
+- Check permission state before every protected operation.
+- Request permissions at the point of use.
+- Explain the reason before asking when appropriate.
+- Handle denial, permanent denial, revocation, and returning from system settings.
+- Re-check access in lifecycle callbacks.
+- Never crash when a permission is missing.
+- Never falsely display all permissions as granted.
+- Never repeatedly show permission prompts without user action.
+- Never attempt to bypass Android permission dialogs or restrictions.
+
+The goal is to request all necessary permissions, not every permission Android offers.
+
+12. BATTERY AND BACKGROUND GUIDANCE
+
+Redesign the Battery & Background Guidance page as a compact, readable settings screen.
+
+Include:
+
+- Mesh Foreground Service status based on actual runtime state.
+- Battery optimization guidance.
+- Device-specific instructions when reliably known.
+- An explanation of possible background restrictions.
+- A button to open the relevant Android system settings when supported.
+
+Do not assume every manufacturer uses the same settings path. Avoid presenting unverified battery timeout claims as universal facts.
+
+Where possible, use supported Android APIs and settings intents. Explain that force-stop, Bluetooth being disabled, permission revocation, manufacturer restrictions, and system resource management may interrupt background operation.
+
+Do not automatically request unrestricted battery access unless a legitimate use case requires it and the platform rules permit the request.
+
+13. ACCESSIBILITY AND RESPONSIVENESS
+
+Verify the redesigned application on:
+
+- Small Android 11 phones.
+- Typical Android phone displays.
+- Larger phones and tablets where supported.
+- English and Bengali.
+- System font scaling.
+- Gesture and three-button navigation.
+- Keyboard-visible and keyboard-hidden layouts.
+- Permission-denied and Bluetooth-disabled conditions.
+
+Provide:
+
+- Adequate contrast.
+- Accessible labels for icons.
+- Meaningful switch descriptions.
+- Screen-reader-friendly navigation.
+- Appropriate touch targets.
+- Correct focus handling.
+- Support for system Back behavior.
+
+Keep the interface visually compact without making controls difficult to use.
+
+14. ARCHITECTURE AND CODE QUALITY
+
+Respect the existing project structure and reuse the current implementation where possible.
+
+Use:
+
+- Kotlin.
+- Jetpack Compose.
+- Material 3 components where appropriate.
+- ViewModels and lifecycle-aware state collection.
+- Coroutines and Flow.
+- Room for local persistence.
+- Centralized navigation.
+- Centralized theme and typography.
+- Android string resources for localization.
+- A single reliable source of truth for application state.
+
+Separate UI state from Bluetooth operations, database access, call management, and permission handling.
+
+Avoid unnecessary architectural rewrites. Inspect existing files before changing them and preserve compatible functionality.
+
+Do not create duplicate repositories, duplicate services, competing navigation systems, or redundant permission handlers.
+
+15. REQUIRED FILES AND RESOURCE AUDIT
+
+Inspect the existing project and update the relevant files, including where applicable:
+
+- "app/src/main/AndroidManifest.xml"
+- "app/build.gradle.kts"
+- "app/src/main/res/values/strings.xml"
+- "app/src/main/res/values-bn/strings.xml"
+- Launcher icon and adaptive icon resources.
+- Theme, color, typography, and dimension definitions.
+- MainActivity and navigation implementation.
+- Home, Settings, Messages, and Call History screens.
+- Sidebar and bottom navigation components.
+- Common button, switch, card, and status components.
+- ViewModels and repositories.
+- Bluetooth permission and connection handling.
+- Foreground-service lifecycle.
+- Audio-call permission and resource management.
+- Room entities, DAOs, and persistence logic where necessary.
+
+The list is not exhaustive. Discover the real source tree and modify the actual files that exist. Do not invent successful changes to files that were never inspected.
+
+16. TESTING AND ACCEPTANCE CRITERIA
+
+The task is complete only when all applicable checks pass.
+
+UI tests
+
+- All main screens use the new compact design.
+- Header and sidebar navigation work.
+- All four bottom navigation destinations work.
+- Switches reflect and update actual state.
+- Buttons trigger real actions.
+- No obvious overflow, clipping, or broken layout remains.
+- Glass and 3D effects remain subtle and performant.
+
+Localization tests
+
+- English is the initial default.
+- Bengali can be selected in Settings.
+- Language preference persists after relaunch.
+- Every user-facing string is translated.
+- Bengali glyphs render correctly.
+- Alata and Charukola are used when available and properly bundled.
+- Fallback fonts are handled gracefully.
+
+Permission tests
+
+- Android 11 and newer permission paths are checked.
+- Denied permissions do not cause crashes.
+- Bluetooth scanning behaves correctly after permission grants.
+- Microphone access is requested before voice calls.
+- Notifications and foreground services behave according to the target SDK.
+- Revoked permissions are detected.
+- No unnecessary permissions are requested.
+
+Functional tests
+
+- Real Bluetooth discovery is verified on physical devices.
+- Peer connection state is genuine.
+- Messages persist after app restart.
+- Message delivery status is not fabricated.
+- Store-and-forward behavior is tested if implemented.
+- Direct voice calls are tested on two physical devices if supported.
+- No fake peers, messages, calls, or statistics appear.
+
+Build and delivery
+
+- Run the project's Gradle build and resolve relevant compilation errors.
+- Verify manifest merging and resource references.
+- Run available unit and UI tests.
+- Report which tests actually passed, failed, or could not be performed.
+- Provide the modified source files and a debug APK only if the build genuinely succeeds.
+- Do not claim physical-device testing if it was not performed.
+
+17. FINAL IMPLEMENTATION INSTRUCTIONS
+
+First inspect the existing project, identify incomplete or broken implementations, and then make the changes directly in the source code.
+
+Prioritize the work in this order:
+
+1. Fix the existing build and inspect current functionality.
+2. Implement the compact responsive design system.
+3. Add the header sidebar and four-item bottom navigation.
+4. Fix all buttons, switches, and navigation behavior.
+5. Implement complete English/Bengali localization.
+6. Update the launcher icon using the supplied source image.
+7. Audit and correctly implement Android 11+ permissions.
+8. Verify Bluetooth, messaging, background behavior, and calls.
+9. Run builds and tests and document the results.
+
+Final requirement: Deliver a coherent, production-oriented Ronova Mesh application—not just redesigned screenshots. Preserve real features, clearly disclose anything that remains incomplete, and never replace missing functionality with fake data or simulated success.

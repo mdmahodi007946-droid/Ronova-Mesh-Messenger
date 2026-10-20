@@ -5,12 +5,19 @@
     <string name="company_name">রোনোভা লিমিটেড</string>
     <string name="tagline">বিকেন্দ্রীভূত, ইন্টারনেট-বিহীন মেসেজিং ও ভয়েস মেশ</string>
 
-    <!-- Navigation -->
+    <!-- Navigation & Drawer -->
     <string name="nav_home">হোম</string>
-    <string name="nav_chats">চ্যাট</string>
-    <string name="nav_calls">কল</string>
+    <string name="nav_chats">বার্তা</string>
+    <string name="nav_calls">কলের ইতিহাস</string>
     <string name="nav_network">নেটওয়ার্ক</string>
     <string name="nav_settings">সেটিংস</string>
+    <string name="drawer_connected_peers">সংযুক্ত নোডসমূহ</string>
+    <string name="drawer_mesh_map">মেশ মানচিত্র</string>
+    <string name="drawer_store_forward">স্টোর ও ফরোয়ার্ড কিউ</string>
+    <string name="drawer_battery_guidance">ব্যাটারি ও ব্যাকগ্রাউন্ড সহায়তা</string>
+    <string name="drawer_permissions">অনুমতি ও ডিভাইস অ্যাক্সেস</string>
+    <string name="drawer_privacy_security">প্রাইভেসি ও সিকিউরিটি</string>
+    <string name="drawer_about">রোনোভা মেশ পরিচিতি</string>
 
     <!-- Splash & Welcome -->
     <string name="splash_title">রোনোভা মেশ</string>
