@@ -478,17 +478,21 @@ class BluetoothMeshManager(
     }
 
     suspend fun relayPacket(packet: MeshPacket) {
-        // Check if destination is directly connected
+        // Check if destination is directly connected by deviceId or Bluetooth MAC
         val targetPeer = activeSockets[packet.destinationDeviceId]
+            ?: activeSockets.values.firstOrNull {
+                it.peerDeviceId == packet.destinationDeviceId ||
+                it.device.address.equals(packet.destinationDeviceId, ignoreCase = true)
+            }
         if (targetPeer != null) {
             sendPacketDirect(targetPeer, packet)
             return
         }
 
-        // Otherwise flood to all other connected peers except those in route path
+        // Otherwise flood to all unique connected peers except those already in route path
         var forwarded = false
-        activeSockets.values.forEach { peer ->
-            if (!packet.routePath.contains(peer.peerDeviceId)) {
+        activeSockets.values.toSet().forEach { peer ->
+            if (!packet.routePath.contains(peer.peerDeviceId) && !packet.routePath.contains(peer.device.address)) {
                 sendPacketDirect(peer, packet)
                 forwarded = true
             }
@@ -513,16 +517,20 @@ class BluetoothMeshManager(
     }
 
     suspend fun sendPacket(packet: MeshPacket): Boolean {
-        // Attempt direct send first if peer is connected
+        // Attempt direct send first if peer is connected (by deviceId or bluetoothAddress)
         val directPeer = activeSockets[packet.destinationDeviceId]
+            ?: activeSockets.values.firstOrNull {
+                it.peerDeviceId == packet.destinationDeviceId ||
+                it.device.address.equals(packet.destinationDeviceId, ignoreCase = true)
+            }
         if (directPeer != null) {
             val sent = sendPacketDirect(directPeer, packet)
             if (sent) return true
         }
 
-        // Multicast / multi-hop relay to connected peers
+        // Multicast / multi-hop relay to unique connected peers
         var sentAny = false
-        activeSockets.values.forEach { peer ->
+        activeSockets.values.toSet().forEach { peer ->
             val ok = sendPacketDirect(peer, packet)
             if (ok) sentAny = true
         }
