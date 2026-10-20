@@ -77,10 +77,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.core.bluetooth.BluetoothStatus
-import com.example.ui.theme.AlataFontFamily
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaError
 import com.example.ui.theme.RonovaPinkContainer
@@ -129,44 +130,44 @@ fun ConnectionStatusBar(
     // Determine state configuration
     val (statusTitle, statusSubtitle, statusColor, statusIcon) = when {
         isBtDisabled -> Quadruple(
-            "Mesh Offline",
-            "Bluetooth turned off",
+            stringResource(R.string.csb_mesh_offline),
+            stringResource(R.string.csb_bt_off),
             RonovaError,
             Icons.Default.BluetoothDisabled
         )
         isPermissionRequired -> Quadruple(
-            "Permissions Needed",
-            "Nearby devices permission required",
+            stringResource(R.string.csb_perms_needed),
+            stringResource(R.string.csb_perms_desc),
             RonovaWarning,
             Icons.Default.Warning
         )
         hasActiveConnections && isDiscoverable -> Quadruple(
-            "Mesh Connected • Discoverable",
-            "${connectedPeers.size.coerceAtLeast(diagnostics.activeConnections)} peers active",
+            stringResource(R.string.csb_mesh_connected_disc),
+            stringResource(R.string.csb_peers_active, connectedPeers.size.coerceAtLeast(diagnostics.activeConnections)),
             RonovaSuccess,
             Icons.Default.Hub
         )
         hasActiveConnections -> Quadruple(
-            "Mesh Connected",
-            "${connectedPeers.size.coerceAtLeast(diagnostics.activeConnections)} peers linked",
+            stringResource(R.string.csb_mesh_connected),
+            stringResource(R.string.csb_peers_linked, connectedPeers.size.coerceAtLeast(diagnostics.activeConnections)),
             RonovaSuccess,
             Icons.Default.BluetoothConnected
         )
         isScanning -> Quadruple(
-            "Scanning Mesh Airwaves",
-            "Searching for nearby nodes...",
+            stringResource(R.string.csb_scanning),
+            stringResource(R.string.csb_scanning_desc),
             RonovaPinkPrimary,
             Icons.Default.BluetoothSearching
         )
         isDiscoverable -> Quadruple(
-            "Discoverable to Mesh",
-            "Listening for nearby nodes",
+            stringResource(R.string.csb_discoverable),
+            stringResource(R.string.csb_discoverable_desc),
             RonovaVioletAccent,
             Icons.Default.Sensors
         )
         else -> Quadruple(
-            "Mesh Standby",
-            "Ready to connect",
+            stringResource(R.string.csb_mesh_standby),
+            stringResource(R.string.csb_ready_connect),
             RonovaTextSecondary,
             Icons.Default.Bluetooth
         )
@@ -255,7 +256,6 @@ fun ConnectionStatusBar(
 
                     Text(
                         text = statusTitle,
-                        fontFamily = AlataFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.5.sp,
                         color = RonovaTextPrimary,
@@ -266,7 +266,6 @@ fun ConnectionStatusBar(
 
                     Text(
                         text = "• $statusSubtitle",
-                        fontFamily = AlataFontFamily,
                         fontSize = 11.5.sp,
                         color = RonovaTextSecondary,
                         maxLines = 1
@@ -287,8 +286,7 @@ fun ConnectionStatusBar(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "ONLINE",
-                                    fontFamily = AlataFontFamily,
+                                    text = stringResource(R.string.csb_badge_online),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = RonovaSuccess
@@ -302,8 +300,7 @@ fun ConnectionStatusBar(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = "DISCOVERABLE",
-                                fontFamily = AlataFontFamily,
+                                text = stringResource(R.string.csb_badge_discoverable),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaVioletAccent,
@@ -350,7 +347,6 @@ fun ConnectionStatusBar(
                         Column {
                             Text(
                                 text = "LOCAL MESH NODE",
-                                fontFamily = AlataFontFamily,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextMuted,
@@ -370,15 +366,13 @@ fun ConnectionStatusBar(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
-                                    text = if (isDiscoverable) "Discoverable ON" else "Discoverable OFF",
-                                    fontFamily = AlataFontFamily,
+                                    text = if (isDiscoverable) stringResource(R.string.csb_discoverable_on) else stringResource(R.string.csb_discoverable_off),
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isDiscoverable) RonovaVioletAccent else RonovaTextMuted
                                 )
                                 Text(
-                                    text = if (isDiscoverable) "Visible to nearby peers" else "Invisible in scans",
-                                    fontFamily = AlataFontFamily,
+                                    text = if (isDiscoverable) stringResource(R.string.discoverable_visible) else stringResource(R.string.discoverable_invisible),
                                     fontSize = 10.sp,
                                     color = RonovaTextSecondary
                                 )
@@ -427,8 +421,7 @@ fun ConnectionStatusBar(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text(
-                                    text = "Connected Peers",
-                                    fontFamily = AlataFontFamily,
+                                    text = stringResource(R.string.drawer_connected_peers),
                                     fontSize = 11.sp,
                                     color = RonovaTextSecondary
                                 )
@@ -443,7 +436,6 @@ fun ConnectionStatusBar(
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
                                         text = "${connectedPeers.size}",
-                                        fontFamily = AlataFontFamily,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp,
                                         color = RonovaTextPrimary
@@ -461,8 +453,7 @@ fun ConnectionStatusBar(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text(
-                                    text = "Broadcast Beacon",
-                                    fontFamily = AlataFontFamily,
+                                    text = stringResource(R.string.csb_beacon),
                                     fontSize = 11.sp,
                                     color = RonovaTextSecondary
                                 )
@@ -476,8 +467,7 @@ fun ConnectionStatusBar(
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
-                                        text = if (isDiscoverable) "Active" else "Hidden",
-                                        fontFamily = AlataFontFamily,
+                                        text = if (isDiscoverable) stringResource(R.string.csb_active) else stringResource(R.string.csb_hidden),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
                                         color = if (isDiscoverable) RonovaVioletAccent else RonovaTextMuted
@@ -495,15 +485,13 @@ fun ConnectionStatusBar(
                         ) {
                             Column(modifier = Modifier.padding(10.dp)) {
                                 Text(
-                                    text = "Relayed Packets",
-                                    fontFamily = AlataFontFamily,
+                                    text = stringResource(R.string.csb_relayed_packets),
                                     fontSize = 11.sp,
                                     color = RonovaTextSecondary
                                 )
                                 Spacer(modifier = Modifier.height(3.dp))
                                 Text(
                                     text = "${diagnostics.packetsRelayed}",
-                                    fontFamily = AlataFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp,
                                     color = RonovaPinkPrimary
@@ -538,8 +526,7 @@ fun ConnectionStatusBar(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Scan Peers",
-                                fontFamily = AlataFontFamily,
+                                text = stringResource(R.string.home_scan_peers),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -572,8 +559,7 @@ fun ConnectionStatusBar(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Be Discoverable",
-                                fontFamily = AlataFontFamily,
+                                text = stringResource(R.string.csb_be_discoverable),
                                 fontSize = 12.sp,
                                 color = RonovaVioletAccent,
                                 fontWeight = FontWeight.Bold
@@ -591,7 +577,7 @@ fun ConnectionStatusBar(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Disconnect",
+                                    contentDescription = stringResource(R.string.csb_disconnect_all),
                                     tint = RonovaError,
                                     modifier = Modifier.size(14.dp)
                                 )

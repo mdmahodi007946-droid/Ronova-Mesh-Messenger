@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -132,7 +133,7 @@ fun RonovaTopBar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
+                            contentDescription = stringResource(R.string.content_desc_menu),
                             tint = RonovaGoldDark
                         )
                     }
@@ -143,7 +144,7 @@ fun RonovaTopBar(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.content_desc_back),
                             tint = RonovaGoldDark
                         )
                     }
@@ -206,8 +207,7 @@ fun StatusBadge(status: BluetoothStatus) {
                 text = label,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Medium,
-                color = textColor,
-                fontFamily = AlataFontFamily
+                color = textColor
             )
         }
     }
@@ -324,7 +324,6 @@ fun MessageBubble(
                     color = RonovaTextPrimary,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         lineHeight = 21.sp,
-                        fontFamily = AlataFontFamily,
                         fontWeight = if (isOutgoing) FontWeight.Medium else FontWeight.Normal
                     )
                 )
@@ -336,8 +335,7 @@ fun MessageBubble(
                     Text(
                         text = timeFormatted,
                         fontSize = 10.5.sp,
-                        color = if (isOutgoing) RonovaTextPrimary.copy(alpha = 0.75f) else RonovaTextMuted,
-                        fontFamily = AlataFontFamily
+                        color = if (isOutgoing) RonovaTextPrimary.copy(alpha = 0.75f) else RonovaTextMuted
                     )
                     if (isOutgoing) {
                         Spacer(modifier = Modifier.width(5.dp))
@@ -388,7 +386,6 @@ fun MessageBubble(
                 text = "⚡ Relayed through $hopCount hops",
                 fontSize = 10.sp,
                 color = RonovaVioletAccent,
-                fontFamily = AlataFontFamily,
                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
             )
         }
@@ -396,7 +393,7 @@ fun MessageBubble(
 }
 
 /**
- * Reusable feature item with clean iconic badge and Alata typography
+ * Reusable feature item with clean iconic badge and adaptive typography
  * matching the user reference design (Screenshot 8)
  */
 @Composable
@@ -435,7 +432,6 @@ fun SpecFeatureItem(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = RonovaTextPrimary,
-                    fontFamily = AlataFontFamily,
                     fontSize = 17.sp
                 )
             )
@@ -445,7 +441,6 @@ fun SpecFeatureItem(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = RonovaTextSecondary,
                     lineHeight = 22.sp,
-                    fontFamily = AlataFontFamily,
                     fontSize = 13.5.sp
                 )
             )
@@ -489,6 +484,129 @@ fun AudioWaveformVisualizer(
                     .background(barColor)
             )
         }
+    }
+}
+
+@Composable
+fun Ronova3DButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    isLoading: Boolean = false,
+    testTag: String = ""
+) {
+    Surface(
+        modifier = modifier
+            .height(48.dp)
+            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
+            .clickable(enabled = enabled && !isLoading) { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        color = Color.Transparent,
+        shadowElevation = 2.dp
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = if (enabled) Brush.verticalGradient(
+                        colors = listOf(RonovaGoldSecondary, RonovaGoldPrimary)
+                    ) else Brush.verticalGradient(
+                        colors = listOf(Color(0xFFEEEEEE), Color(0xFFDDDDDD))
+                    ),
+                    shape = RoundedCornerShape(14.dp)
+                )
+                .border(
+                    BorderStroke(
+                        1.dp,
+                        if (enabled) RonovaGoldDark.copy(alpha = 0.5f) else Color(0xFFCCCCCC)
+                    ),
+                    RoundedCornerShape(14.dp)
+                )
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isLoading) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    color = RonovaTextPrimary,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = if (enabled) RonovaTextPrimary else RonovaTextMuted,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (enabled) RonovaTextPrimary else RonovaTextMuted,
+                            letterSpacing = 0.2.sp
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RonovaSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    testTag: String = ""
+) {
+    androidx.compose.material3.Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        enabled = enabled,
+        modifier = modifier.then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+        colors = androidx.compose.material3.SwitchDefaults.colors(
+            checkedThumbColor = Color.White,
+            checkedTrackColor = RonovaGoldPrimary,
+            checkedBorderColor = RonovaGoldDark,
+            uncheckedThumbColor = Color.White,
+            uncheckedTrackColor = Color(0xFFE0E0E0),
+            uncheckedBorderColor = Color(0xFFBDBDBD)
+        )
+    )
+}
+
+@Composable
+fun RonovaGlassCard(
+    modifier: Modifier = Modifier,
+    shape: RoundedCornerShape = RoundedCornerShape(16.dp),
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    borderColor: Color = RonovaCardBorder.copy(alpha = 0.6f),
+    elevation: androidx.compose.ui.unit.Dp = 1.dp,
+    onClick: (() -> Unit)? = null,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            content = content
+        )
     }
 }
 

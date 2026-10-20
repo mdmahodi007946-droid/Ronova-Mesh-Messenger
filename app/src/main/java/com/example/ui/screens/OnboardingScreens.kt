@@ -69,10 +69,16 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.core.bluetooth.BluetoothStatus
 import com.example.core.permission.PermissionManager
+import com.example.ui.components.Ronova3DButton
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatusBadge
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaError
+import com.example.ui.theme.RonovaGoldContainer
+import com.example.ui.theme.RonovaGoldDark
+import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaGoldPrimary
+import com.example.ui.theme.RonovaGoldSecondary
 import com.example.ui.theme.RonovaPinkContainer
 import com.example.ui.theme.RonovaPinkDark
 import com.example.ui.theme.RonovaPinkLight
@@ -320,8 +326,22 @@ fun PermissionsScreen(
     val context = LocalContext.current
     var permissionsDeniedState by remember { mutableStateOf(false) }
 
-    // Request only Bluetooth and Notifications here (Android 11 asks for Location for BLE).
-    // Microphone is NEVER requested at first launch per prompt requirements.
+    var hasBt by remember { mutableStateOf(PermissionManager.hasBluetoothPermissions(context)) }
+    var hasLoc by remember { mutableStateOf(PermissionManager.hasLocationPermission(context)) }
+    var hasNotif by remember { mutableStateOf(PermissionManager.hasNotificationPermission(context)) }
+    var hasMic by remember { mutableStateOf(PermissionManager.hasMicrophonePermission(context)) }
+
+    fun refreshPermissions() {
+        hasBt = PermissionManager.hasBluetoothPermissions(context)
+        hasLoc = PermissionManager.hasLocationPermission(context)
+        hasNotif = PermissionManager.hasNotificationPermission(context)
+        hasMic = PermissionManager.hasMicrophonePermission(context)
+    }
+
+    LaunchedEffect(Unit) {
+        refreshPermissions()
+    }
+
     val requiredPermissions = remember {
         val permissions = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -342,12 +362,19 @@ fun PermissionsScreen(
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
+        refreshPermissions()
         val btGranted = PermissionManager.hasBluetoothPermissions(context)
         if (btGranted) {
             onPermissionsGranted()
         } else {
             permissionsDeniedState = true
         }
+    }
+
+    val singleLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        refreshPermissions()
     }
 
     Box(
@@ -360,7 +387,7 @@ fun PermissionsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .widthIn(max = 560.dp)
-                .padding(24.dp)
+                .padding(20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
@@ -371,7 +398,7 @@ fun PermissionsScreen(
                     subtitle = stringResource(R.string.perm_screen_subtitle),
                     onBack = onBack
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 Text(
                     text = stringResource(R.string.perm_why_needed),
                     style = MaterialTheme.typography.titleSmall.copy(
@@ -379,29 +406,51 @@ fun PermissionsScreen(
                         color = RonovaTextPrimary
                     )
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                PermissionExplanationItem(
+                PermissionRowItem(
                     icon = Icons.Default.Bluetooth,
                     title = stringResource(R.string.perm_bt_title),
-                    description = stringResource(R.string.perm_bt_desc)
+                    description = stringResource(R.string.perm_bt_desc),
+                    isGranted = hasBt,
+                    onRequest = {
+                        launcher.launch(requiredPermissions)
+                    }
                 )
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
-                    PermissionExplanationItem(
+                    PermissionRowItem(
                         icon = Icons.Default.Security,
                         title = stringResource(R.string.perm_loc_title),
-                        description = stringResource(R.string.perm_loc_desc)
+                        description = stringResource(R.string.perm_loc_desc),
+                        isGranted = hasLoc,
+                        onRequest = {
+                            singleLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
                     )
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    PermissionExplanationItem(
+                    PermissionRowItem(
                         icon = Icons.Default.Notifications,
                         title = stringResource(R.string.perm_notif_title),
-                        description = stringResource(R.string.perm_notif_desc)
+                        description = stringResource(R.string.perm_notif_desc),
+                        isGranted = hasNotif,
+                        onRequest = {
+                            singleLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
                     )
                 }
+
+                PermissionRowItem(
+                    icon = Icons.Default.Mic,
+                    title = stringResource(R.string.perm_mic_title),
+                    description = stringResource(R.string.perm_mic_explanation),
+                    isGranted = hasMic,
+                    onRequest = {
+                        singleLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    }
+                )
 
                 PermissionExplanationItem(
                     icon = Icons.Default.Security,
@@ -409,26 +458,19 @@ fun PermissionsScreen(
                     description = stringResource(R.string.perm_zero_location_desc)
                 )
 
-                // Educational note that Microphone will only be requested when making voice calls
-                PermissionExplanationItem(
-                    icon = Icons.Default.Mic,
-                    title = stringResource(R.string.perm_mic_title),
-                    description = stringResource(R.string.perm_mic_explanation)
-                )
-
                 if (permissionsDeniedState) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = RonovaPinkLight.copy(alpha = 0.7f)),
+                        colors = CardDefaults.cardColors(containerColor = RonovaGoldLight),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, RonovaPinkSecondary)
+                        border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
                                 text = stringResource(R.string.perm_denied_warning),
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = RonovaPinkDark,
+                                    color = RonovaGoldDark,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             )
@@ -437,45 +479,34 @@ fun PermissionsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(
-                    onClick = {
-                        launcher.launch(requiredPermissions)
-                    },
+                Ronova3DButton(
+                    text = stringResource(R.string.perm_grant_button),
+                    onClick = { launcher.launch(requiredPermissions) },
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "request_permissions_button"
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { PermissionManager.openAppSettings(context) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp)
-                        .testTag("request_permissions_button"),
-                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                    shape = RoundedCornerShape(14.dp)
+                        .height(48.dp)
+                        .testTag("open_settings_button"),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, RonovaGoldPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaGoldDark)
                 ) {
+                    Icon(imageVector = Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp), tint = RonovaGoldDark)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.perm_grant_button),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        text = stringResource(R.string.perm_open_settings),
+                        color = RonovaGoldDark,
+                        fontWeight = FontWeight.SemiBold
                     )
-                }
-
-                if (permissionsDeniedState) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedButton(
-                        onClick = { PermissionManager.openAppSettings(context) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .testTag("open_settings_button"),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp), tint = RonovaPinkPrimary)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.perm_open_settings),
-                            color = RonovaPinkPrimary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -485,15 +516,116 @@ fun PermissionsScreen(
                         .fillMaxWidth()
                         .height(48.dp)
                         .testTag("skip_permissions_button"),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, RonovaCardBorder)
                 ) {
                     Text(
                         text = stringResource(R.string.perm_continue_setup),
-                        color = RonovaPinkPrimary,
+                        color = RonovaTextPrimary,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun PermissionRowItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    isGranted: Boolean,
+    onRequest: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, RonovaCardBorder)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(if (isGranted) Color(0xFFE8F5E9) else RonovaGoldLight),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isGranted) RonovaSuccess else RonovaGoldDark,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = RonovaTextPrimary,
+                        fontSize = 13.5.sp
+                    )
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = RonovaTextMuted,
+                        lineHeight = 16.sp,
+                        fontSize = 11.sp
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            if (isGranted) {
+                Surface(
+                    color = Color(0xFFE8F5E9),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, RonovaSuccess.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = RonovaSuccess,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.perm_status_granted),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaSuccess
+                        )
+                    }
+                }
+            } else {
+                OutlinedButton(
+                    onClick = onRequest,
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, RonovaGoldPrimary),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                    modifier = Modifier.height(30.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.perm_request_action),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = RonovaGoldDark
+                    )
+                }
             }
         }
     }
@@ -591,7 +723,7 @@ fun BluetoothSetupScreen(
                         .clip(CircleShape)
                         .background(
                             if (status == BluetoothStatus.READY || status == BluetoothStatus.CONNECTED)
-                                Color(0xFFDCFCE7) else RonovaPinkLight
+                                Color(0xFFDCFCE7) else RonovaGoldLight
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -599,7 +731,7 @@ fun BluetoothSetupScreen(
                         imageVector = Icons.Default.Bluetooth,
                         contentDescription = null,
                         tint = if (status == BluetoothStatus.READY || status == BluetoothStatus.CONNECTED)
-                            RonovaSuccess else RonovaPinkPrimary,
+                            RonovaSuccess else RonovaGoldDark,
                         modifier = Modifier.size(44.dp)
                     )
                 }
@@ -637,7 +769,7 @@ fun BluetoothSetupScreen(
                             text = viewModel.myDeviceId,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = RonovaPinkDark
+                                color = RonovaGoldDark
                             )
                         )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -654,45 +786,26 @@ fun BluetoothSetupScreen(
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (status == BluetoothStatus.DISABLED) {
-                    Button(
+                    Ronova3DButton(
+                        text = stringResource(R.string.bt_turn_on),
                         onClick = {
                             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                             enableBtLauncher.launch(intent)
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                            .testTag("enable_bluetooth_button"),
-                        colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.bt_turn_on),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    }
+                        modifier = Modifier.fillMaxWidth(),
+                        testTag = "enable_bluetooth_button"
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                Button(
+                val canEnter = status == BluetoothStatus.READY || status == BluetoothStatus.CONNECTED
+                Ronova3DButton(
+                    text = stringResource(R.string.bt_enter_mesh),
                     onClick = onSetupComplete,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .testTag("finish_setup_button"),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (status == BluetoothStatus.READY || status == BluetoothStatus.CONNECTED)
-                            RonovaPinkPrimary else Color.Gray
-                    ),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.bt_enter_mesh),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
+                    enabled = canEnter,
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "finish_setup_button"
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }

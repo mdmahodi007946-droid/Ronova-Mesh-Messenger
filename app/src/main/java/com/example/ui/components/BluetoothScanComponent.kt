@@ -255,7 +255,6 @@ fun BluetoothScanComponent(
                     placeholder = {
                         Text(
                             "Search device name or MAC address...",
-                            fontFamily = AlataFontFamily,
                             fontSize = 13.5.sp,
                             color = RonovaTextMuted
                         )
@@ -378,7 +377,6 @@ fun BluetoothScanComponent(
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
                                     text = "Paired Devices",
-                                    fontFamily = AlataFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
                                     color = RonovaTextPrimary
@@ -390,7 +388,6 @@ fun BluetoothScanComponent(
                                 ) {
                                     Text(
                                         text = "${filteredPaired.size}",
-                                        fontFamily = AlataFontFamily,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = RonovaVioletAccent,
@@ -400,7 +397,6 @@ fun BluetoothScanComponent(
                             }
                             Text(
                                 text = if (isPairedExpanded) "Hide" else "Show",
-                                fontFamily = AlataFontFamily,
                                 fontSize = 12.sp,
                                 color = RonovaPinkPrimary,
                                 fontWeight = FontWeight.SemiBold
@@ -466,7 +462,6 @@ fun BluetoothScanComponent(
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
                                     text = "Available Nearby Devices",
-                                    fontFamily = AlataFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
                                     color = RonovaTextPrimary
@@ -478,7 +473,6 @@ fun BluetoothScanComponent(
                                 ) {
                                     Text(
                                         text = "${filteredDiscovered.size}",
-                                        fontFamily = AlataFontFamily,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = RonovaPinkPrimary,
@@ -533,7 +527,6 @@ private fun BluetoothFilterChip(
         label = {
             Text(
                 text = label,
-                fontFamily = AlataFontFamily,
                 fontSize = 12.sp,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
             )
@@ -665,7 +658,6 @@ private fun BluetoothScanHeaderCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = if (isScanning) "Scanning Airwaves..." else "Bluetooth Mesh Radio",
-                        fontFamily = AlataFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
                         color = RonovaTextPrimary
@@ -676,7 +668,6 @@ private fun BluetoothScanHeaderCard(
                             "Broadcasting Ronova UUID & listening for peer nodes"
                         else
                             "$deviceCount nodes discovered in wireless range",
-                        fontFamily = AlataFontFamily,
                         fontSize = 12.5.sp,
                         color = RonovaTextSecondary,
                         lineHeight = 17.sp
@@ -703,7 +694,6 @@ private fun BluetoothScanHeaderCard(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Stop",
-                            fontFamily = AlataFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
@@ -725,7 +715,6 @@ private fun BluetoothScanHeaderCard(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Scan",
-                            fontFamily = AlataFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
@@ -789,7 +778,6 @@ private fun BluetoothNoticeCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontFamily = AlataFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = RonovaTextPrimary
@@ -797,7 +785,6 @@ private fun BluetoothNoticeCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = description,
-                    fontFamily = AlataFontFamily,
                     fontSize = 12.sp,
                     color = RonovaTextSecondary,
                     lineHeight = 16.sp
@@ -811,7 +798,6 @@ private fun BluetoothNoticeCard(
                 ) {
                     Text(
                         text = buttonText,
-                        fontFamily = AlataFontFamily,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -896,7 +882,6 @@ fun BluetoothDeviceItemCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = deviceName,
-                            fontFamily = AlataFontFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = RonovaTextPrimary,
@@ -910,7 +895,6 @@ fun BluetoothDeviceItemCard(
                             ) {
                                 Text(
                                     text = "PAIRED",
-                                    fontFamily = AlataFontFamily,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = RonovaVioletAccent,
@@ -932,7 +916,6 @@ fun BluetoothDeviceItemCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "• $deviceCategoryLabel",
-                            fontFamily = AlataFontFamily,
                             fontSize = 11.sp,
                             color = RonovaTextSecondary
                         )
@@ -975,7 +958,6 @@ fun BluetoothDeviceItemCard(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Mesh Linked",
-                                fontFamily = AlataFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp,
                                 color = RonovaSuccess
@@ -1000,7 +982,6 @@ fun BluetoothDeviceItemCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Chat",
-                                fontFamily = AlataFontFamily,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -1025,7 +1006,6 @@ fun BluetoothDeviceItemCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Verify",
-                                fontFamily = AlataFontFamily,
                                 fontSize = 12.sp,
                                 color = RonovaPinkPrimary,
                                 fontWeight = FontWeight.Bold
@@ -1050,7 +1030,6 @@ fun BluetoothDeviceItemCard(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (isBonded) "Link Mesh Peer" else "Connect to Mesh",
-                            fontFamily = AlataFontFamily,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -1113,7 +1092,6 @@ fun RssiSignalStrengthIndicator(
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = if (rssi != null && rssi != 0) "$rssi dBm" else "Nearby",
-            fontFamily = AlataFontFamily,
             fontSize = 10.sp,
             color = if (rssi != null && rssi != 0) barColor else RonovaTextMuted,
             fontWeight = FontWeight.SemiBold
@@ -1200,7 +1178,6 @@ private fun BluetoothEmptyScanState(
 
             Text(
                 text = if (isScanning) "Listening for mesh broadcasts..." else "No Bluetooth devices found",
-                fontFamily = AlataFontFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = RonovaTextPrimary
@@ -1213,7 +1190,6 @@ private fun BluetoothEmptyScanState(
                     "Scanning RFCOMM and BLE radio channels for nearby Ronova nodes. Hold devices within 10-30 meters."
                 else
                     "Tap scan to search the 2.4 GHz airwaves for nearby peer devices to form a mesh link.",
-                fontFamily = AlataFontFamily,
                 fontSize = 13.sp,
                 color = RonovaTextSecondary,
                 lineHeight = 18.sp,
@@ -1239,7 +1215,6 @@ private fun BluetoothEmptyScanState(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Start Scanning Now",
-                        fontFamily = AlataFontFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.5.sp
                     )

@@ -61,8 +61,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatCard
 import com.example.ui.theme.RonovaCardBorder
@@ -110,14 +112,14 @@ fun RelayNetworkScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Relay Network Topology",
-                subtitle = "Live Bluetooth Mesh Visualizer",
+                title = stringResource(R.string.relay_topology_title),
+                subtitle = stringResource(R.string.relay_topology_subtitle),
                 onBack = onBack,
                 actions = {
                     IconButton(onClick = onNavigateToRelaySettings) {
                         Icon(
                             imageVector = Icons.Default.Router,
-                            contentDescription = "Relay Settings",
+                            contentDescription = stringResource(R.string.relay_settings_title),
                             tint = RonovaPinkPrimary
                         )
                     }
@@ -321,8 +323,8 @@ fun RelaySettingsScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = "Relay Participation Settings",
-                subtitle = "Store-and-forward mesh behavior",
+                title = stringResource(R.string.relay_settings_title),
+                subtitle = stringResource(R.string.relay_settings_subtitle),
                 onBack = onBack
             )
 
@@ -348,12 +350,12 @@ fun RelaySettingsScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "Participate in Mesh Relay",
+                                        text = stringResource(R.string.relay_participate_toggle_title),
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "Allow your device to forward encrypted packets for nearby peers.",
+                                        text = stringResource(R.string.relay_participate_toggle_desc),
                                         style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                                     )
                                 }
@@ -543,7 +545,7 @@ fun RelaySettingsScreen(
                         shape = RoundedCornerShape(16.dp),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                     ) {
-                        Text("Save Relay Preferences", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text(stringResource(R.string.relay_save_preferences), fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -567,14 +569,14 @@ fun DiagnosticsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Application Diagnostics",
-                subtitle = "RFCOMM telemetry & Security Audit",
+                title = stringResource(R.string.diagnostics_title),
+                subtitle = stringResource(R.string.diagnostics_subtitle),
                 onBack = onBack,
                 actions = {
                     IconButton(onClick = onNavigateToErrorRecovery) {
                         Icon(
                             imageVector = Icons.Default.Build,
-                            contentDescription = "Error Recovery",
+                            contentDescription = stringResource(R.string.recovery_title),
                             tint = RonovaWarning
                         )
                     }
@@ -589,7 +591,7 @@ fun DiagnosticsScreen(
             ) {
                 item {
                     Text(
-                        text = "Radio & Protocol Telemetry",
+                        text = stringResource(R.string.diag_radio_status),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -600,13 +602,13 @@ fun DiagnosticsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         StatCard(
-                            title = "Packets Sent",
+                            title = stringResource(R.string.diag_packets_sent),
                             value = "${diag.packetsSent}",
                             icon = Icons.Default.Router,
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
-                            title = "Packets Rcvd",
+                            title = stringResource(R.string.diag_packets_rcvd),
                             value = "${diag.packetsReceived}",
                             icon = Icons.Default.Router,
                             accentColor = RonovaSuccess,
@@ -621,14 +623,14 @@ fun DiagnosticsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         StatCard(
-                            title = "Relayed",
+                            title = stringResource(R.string.diag_relayed),
                             value = "${diag.packetsRelayed}",
                             icon = Icons.Default.Router,
                             accentColor = RonovaWarning,
                             modifier = Modifier.weight(1f)
                         )
                         StatCard(
-                            title = "Dropped / Exp",
+                            title = stringResource(R.string.diag_dropped),
                             value = "${diag.packetsDropped}",
                             icon = Icons.Default.Router,
                             accentColor = RonovaError,
@@ -746,8 +748,8 @@ fun ErrorRecoveryScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Error & Mesh Recovery",
-                subtitle = "Self-healing radio and queue tools",
+                title = stringResource(R.string.recovery_title),
+                subtitle = stringResource(R.string.recovery_subtitle),
                 onBack = onBack
             )
 
@@ -773,13 +775,13 @@ fun ErrorRecoveryScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "Mesh Network Recovery Console",
+                                text = stringResource(R.string.recovery_title),
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "If connections drop or packets fail to relay due to Bluetooth hardware glitches, use these recovery actions.",
+                            text = stringResource(R.string.recovery_reset_radio_desc),
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                     }
@@ -798,7 +800,7 @@ fun ErrorRecoveryScreen(
                 ) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Restart Bluetooth Server Sockets", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.recovery_restart_sockets), fontWeight = FontWeight.Bold)
                 }
 
                 Button(
@@ -813,7 +815,7 @@ fun ErrorRecoveryScreen(
                 ) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Flush Corrupted Relay Queue", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.recovery_flush_queue_btn), fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
@@ -828,7 +830,7 @@ fun ErrorRecoveryScreen(
                 ) {
                     Icon(imageVector = Icons.Default.Security, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Regenerate EC Identity Keypair", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.recovery_regen_keys), fontWeight = FontWeight.Bold)
                 }
             }
         }

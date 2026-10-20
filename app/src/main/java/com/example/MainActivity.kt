@@ -29,9 +29,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.BatteryChargingFull
-import androidx.compose.material.icons.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Hub
@@ -93,6 +93,7 @@ import com.example.core.locale.LocaleHelper
 import com.example.core.permission.PermissionManager
 import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.navigation.Screen
+import com.example.ui.theme.*
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.ActiveVoiceCallScreen
 import com.example.ui.screens.ArchivedMessagesScreen
@@ -264,6 +265,9 @@ fun RonovaApp(viewModel: RonovaViewModel) {
     val conversations by viewModel.conversations.collectAsState()
     val unreadMessageCount = remember(conversations) { conversations.sumOf { it.unreadCount } }
 
+    val callHistory by viewModel.callHistory.collectAsState()
+    val missedCallCount = remember(callHistory) { callHistory.count { it.callType == "MISSED" } }
+
     val bottomNavItems = listOf(
         Triple(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home to "bottom_nav_home"),
         Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "bottom_nav_settings"),
@@ -329,7 +333,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                         Triple(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home to "drawer_home"),
                         Triple(Screen.Chats.route, stringResource(R.string.nav_chats), Icons.AutoMirrored.Filled.Chat to "drawer_chats"),
                         Triple(Screen.CallHistory.route, stringResource(R.string.nav_calls), Icons.Default.Call to "drawer_calls"),
-                        Triple(Screen.Discovery.route, stringResource(R.string.drawer_connected_peers), Icons.Default.BluetoothSearching to "drawer_peers"),
+                        Triple(Screen.Discovery.route, stringResource(R.string.drawer_connected_peers), Icons.AutoMirrored.Filled.BluetoothSearching to "drawer_peers"),
                         Triple(Screen.RelayNetwork.route, stringResource(R.string.drawer_mesh_map), Icons.Default.Hub to "drawer_mesh_map"),
                         Triple(Screen.PendingMessages.route, stringResource(R.string.drawer_store_forward), Icons.Default.Schedule to "drawer_store_fwd"),
                         Triple(Screen.BatteryGuidance.route, stringResource(R.string.drawer_battery_guidance), Icons.Default.BatteryChargingFull to "drawer_battery"),
@@ -416,14 +420,20 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                                     }
                                 },
                                 icon = {
-                                    if (route == Screen.Chats.route && unreadMessageCount > 0) {
+                                    val badgeCount = when (route) {
+                                        Screen.Chats.route -> unreadMessageCount
+                                        Screen.CallHistory.route -> missedCallCount
+                                        else -> 0
+                                    }
+
+                                    if (badgeCount > 0) {
                                         BadgedBox(
                                             badge = {
                                                 Badge(
-                                                    containerColor = RonovaGoldPrimary,
-                                                    contentColor = RonovaTextPrimary
+                                                    containerColor = if (route == Screen.CallHistory.route) RonovaError else RonovaGoldPrimary,
+                                                    contentColor = if (route == Screen.CallHistory.route) androidx.compose.ui.graphics.Color.White else RonovaTextPrimary
                                                 ) {
-                                                    Text("$unreadMessageCount")
+                                                    Text("$badgeCount")
                                                 }
                                             }
                                         ) {

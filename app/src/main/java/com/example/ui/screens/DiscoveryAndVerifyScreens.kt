@@ -65,8 +65,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.core.bluetooth.BluetoothStatus
 import com.example.ui.components.BluetoothScanComponent
 import com.example.ui.components.RonovaTopBar
@@ -103,8 +105,8 @@ fun DiscoveryScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = "Nearby Device Discovery",
-                subtitle = "Discover & link mesh peer nodes",
+                title = stringResource(R.string.disc_title),
+                subtitle = stringResource(R.string.disc_subtitle),
                 onBack = onBack,
                 actions = {
                     if (status == BluetoothStatus.DISCOVERING) {
@@ -217,7 +219,7 @@ fun DiscoveredDeviceRow(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.testTag("connect_device_${device.address}")
                 ) {
-                    Text("Connect", fontSize = 12.sp)
+                    Text(stringResource(R.string.action_connect), fontSize = 12.sp)
                 }
             }
         }
@@ -242,8 +244,8 @@ fun VerifyDeviceScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Device Identity Verification",
-                subtitle = "Cryptographic authenticity check",
+                title = stringResource(R.string.verify_title),
+                subtitle = stringResource(R.string.verify_subtitle),
                 onBack = onBack
             )
 
@@ -447,7 +449,7 @@ fun VerifyDeviceScreen(
                 ) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.Chat, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Open End-to-End Encrypted Chat", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.action_open_encrypted_chat), fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
