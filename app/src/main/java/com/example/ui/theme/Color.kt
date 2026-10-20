@@ -20,16 +20,16 @@ val RonovaPinkContainer = RonovaGoldContainer
 val RonovaVioletAccent = Color(0xFFFFB300) // Vibrant Gold/Amber for Mesh routes
 val RonovaVioletLight = Color(0xFFFFF8E1)
 
-val RonovaBackground = Color(0xFFFFFDF8) // Soft Warm Cream Background
+val RonovaBackground = Color(0xFFFFFFFF) // Pure White Background (#FFFFFF)
 val RonovaSurface = Color(0xFFFFFFFF) // Crisp White Surface
-val RonovaSurfaceVariant = Color(0xFFFFF8E1) // Warm Cream Container
+val RonovaSurfaceVariant = Color(0xFFFFF8E1) // Soft Cream Container (#FFF8E1)
 val RonovaCardBorder = Color(0xFFFFE082) // Subtle Amber Border
 val RonovaCardHover = Color(0xFFFFF9C4)
 
-// High contrast readable text on light backgrounds
-val RonovaTextPrimary = Color(0xFF1E1E1E) // High contrast dark charcoal
-val RonovaTextSecondary = Color(0xFF4E342E) // Warm slate brown
-val RonovaTextMuted = Color(0xFF757575) // Muted medium grey
+// High contrast readable text per specification
+val RonovaTextPrimary = Color(0xFF252525) // Primary text (#252525)
+val RonovaTextSecondary = Color(0xFF757575) // Secondary text (#757575)
+val RonovaTextMuted = Color(0xFF757575) // Muted text (#757575)
 
 val RonovaSuccess = Color(0xFF2E7D32)
 val RonovaSuccessContainer = Color(0xFFE8F5E9)

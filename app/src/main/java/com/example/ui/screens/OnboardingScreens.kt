@@ -314,7 +314,8 @@ fun WelcomeFeatureItem(
 
 @Composable
 fun PermissionsScreen(
-    onPermissionsGranted: () -> Unit
+    onPermissionsGranted: () -> Unit,
+    onBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     var permissionsDeniedState by remember { mutableStateOf(false) }
@@ -367,7 +368,8 @@ fun PermissionsScreen(
             Column {
                 RonovaTopBar(
                     title = stringResource(R.string.perm_screen_title),
-                    subtitle = stringResource(R.string.perm_screen_subtitle)
+                    subtitle = stringResource(R.string.perm_screen_subtitle),
+                    onBack = onBack
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(

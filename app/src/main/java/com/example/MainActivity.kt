@@ -9,27 +9,57 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Hub
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -37,16 +67,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -90,10 +125,13 @@ import com.example.ui.screens.UserPolicyScreen
 import com.example.ui.screens.VerifyDeviceScreen
 import com.example.ui.screens.WelcomeScreen
 import com.example.ui.theme.RonovaCardBorder
+import com.example.ui.theme.RonovaGoldDark
 import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaGoldPrimary
 import com.example.ui.theme.RonovaPinkPrimary
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
+import com.example.ui.theme.RonovaTextSecondary
 import com.example.ui.theme.RonovaTheme
 import com.example.viewmodel.RonovaViewModel
 
@@ -206,42 +244,122 @@ fun RonovaApp(viewModel: RonovaViewModel) {
         }
     }
 
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
+        Screen.Settings.route,
         Screen.Chats.route,
-        Screen.CallHistory.route,
-        Screen.RelayNetwork.route,
-        Screen.Settings.route
+        Screen.CallHistory.route
     )
+
+    val conversations by viewModel.conversations.collectAsState()
+    val unreadMessageCount = remember(conversations) { conversations.sumOf { it.unreadCount } }
 
     val bottomNavItems = listOf(
         Triple(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home to "bottom_nav_home"),
+        Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "bottom_nav_settings"),
         Triple(Screen.Chats.route, stringResource(R.string.nav_chats), Icons.AutoMirrored.Filled.Chat to "bottom_nav_chats"),
-        Triple(Screen.CallHistory.route, stringResource(R.string.nav_calls), Icons.Default.Call to "bottom_nav_calls"),
-        Triple(Screen.RelayNetwork.route, stringResource(R.string.nav_network), Icons.Default.Hub to "bottom_nav_network"),
-        Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "bottom_nav_settings")
+        Triple(Screen.CallHistory.route, stringResource(R.string.nav_calls), Icons.Default.Call to "bottom_nav_calls")
     )
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            if (showBottomBar) {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp,
-                    modifier = Modifier.border(
-                        BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
-                    )
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
+                modifier = Modifier.widthIn(max = 310.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 12.dp)
                 ) {
-                    bottomNavItems.forEach { (route, label, iconAndTag) ->
-                        val (icon, testTag) = iconAndTag
+                    // Drawer Header with Icon, Name, and Status
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_launcher_image),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(46.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(BorderStroke(1.dp, RonovaCardBorder), RoundedCornerShape(12.dp))
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.drawer_header_title),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = RonovaTextPrimary
+                                )
+                            )
+                            Text(
+                                text = stringResource(R.string.drawer_header_subtitle),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = RonovaTextMuted,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                        color = RonovaCardBorder.copy(alpha = 0.5f)
+                    )
+
+                    // All 11 destinations from PRD Section 3
+                    val drawerDestinations = listOf(
+                        Triple(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home to "drawer_home"),
+                        Triple(Screen.Chats.route, stringResource(R.string.nav_chats), Icons.AutoMirrored.Filled.Chat to "drawer_chats"),
+                        Triple(Screen.CallHistory.route, stringResource(R.string.nav_calls), Icons.Default.Call to "drawer_calls"),
+                        Triple(Screen.Discovery.route, stringResource(R.string.drawer_connected_peers), Icons.Default.BluetoothSearching to "drawer_peers"),
+                        Triple(Screen.RelayNetwork.route, stringResource(R.string.drawer_mesh_map), Icons.Default.Hub to "drawer_mesh_map"),
+                        Triple(Screen.PendingMessages.route, stringResource(R.string.drawer_store_forward), Icons.Default.Schedule to "drawer_store_fwd"),
+                        Triple(Screen.BatteryGuidance.route, stringResource(R.string.drawer_battery_guidance), Icons.Default.BatteryChargingFull to "drawer_battery"),
+                        Triple(Screen.Permissions.route, stringResource(R.string.drawer_permissions), Icons.Default.VerifiedUser to "drawer_permissions"),
+                        Triple(Screen.SecuritySettings.route, stringResource(R.string.drawer_privacy_security), Icons.Default.Lock to "drawer_security"),
+                        Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "drawer_settings"),
+                        Triple(Screen.About.route, stringResource(R.string.drawer_about), Icons.Default.Info to "drawer_about")
+                    )
+
+                    drawerDestinations.forEach { (route, label, iconAndTag) ->
+                        val (icon, tag) = iconAndTag
                         val selected = currentRoute == route
-                        NavigationBarItem(
+                        NavigationDrawerItem(
+                            label = {
+                                Text(
+                                    text = label,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 13.5.sp
+                                )
+                            },
                             selected = selected,
+                            icon = {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = label,
+                                    tint = if (selected) RonovaGoldDark else RonovaTextSecondary
+                                )
+                            },
                             onClick = {
+                                scope.launch { drawerState.close() }
                                 if (currentRoute != route) {
                                     navController.navigate(route) {
                                         popUpTo(Screen.Home.route) {
@@ -252,98 +370,164 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                                     }
                                 }
                             },
-                            icon = {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = label,
-                                    tint = if (selected) RonovaTextPrimary else RonovaTextMuted
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = label,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                                    fontSize = 11.5.sp,
-                                    color = if (selected) RonovaTextPrimary else RonovaTextMuted
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = RonovaGoldLight,
-                                selectedIconColor = RonovaTextPrimary,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = NavigationDrawerItemDefaults.colors(
+                                selectedContainerColor = RonovaGoldLight,
                                 selectedTextColor = RonovaTextPrimary,
-                                unselectedIconColor = RonovaTextMuted,
-                                unselectedTextColor = RonovaTextMuted
+                                selectedIconColor = RonovaGoldDark,
+                                unselectedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                unselectedTextColor = RonovaTextPrimary,
+                                unselectedIconColor = RonovaTextSecondary
                             ),
-                            modifier = Modifier.testTag(testTag)
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp, vertical = 2.dp)
+                                .testTag(tag)
                         )
                     }
                 }
             }
         }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Splash.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            // 1. Splash
-            composable(Screen.Splash.route) {
-                SplashScreen(
-                    viewModel = viewModel,
-                    onNavigateNext = {
-                        navController.navigate(Screen.Welcome.route) {
-                            popUpTo(Screen.Splash.route) { inclusive = true }
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                if (showBottomBar) {
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 2.dp,
+                        modifier = Modifier.border(
+                            BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
+                        )
+                    ) {
+                        bottomNavItems.forEach { (route, label, iconAndTag) ->
+                            val (icon, testTag) = iconAndTag
+                            val selected = currentRoute == route
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    if (currentRoute != route) {
+                                        navController.navigate(route) {
+                                            popUpTo(Screen.Home.route) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                },
+                                icon = {
+                                    if (route == Screen.Chats.route && unreadMessageCount > 0) {
+                                        BadgedBox(
+                                            badge = {
+                                                Badge(
+                                                    containerColor = RonovaGoldPrimary,
+                                                    contentColor = RonovaTextPrimary
+                                                ) {
+                                                    Text("$unreadMessageCount")
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = label,
+                                                tint = if (selected) RonovaTextPrimary else RonovaTextMuted
+                                            )
+                                        }
+                                    } else {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = label,
+                                            tint = if (selected) RonovaTextPrimary else RonovaTextMuted
+                                        )
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = label,
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                        fontSize = 11.5.sp,
+                                        color = if (selected) RonovaTextPrimary else RonovaTextMuted
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    indicatorColor = RonovaGoldLight,
+                                    selectedIconColor = RonovaTextPrimary,
+                                    selectedTextColor = RonovaTextPrimary,
+                                    unselectedIconColor = RonovaTextMuted,
+                                    unselectedTextColor = RonovaTextMuted
+                                ),
+                                modifier = Modifier.testTag(testTag)
+                            )
                         }
                     }
-                )
+                }
             }
-
-            // 2. Welcome
-            composable(Screen.Welcome.route) {
-                WelcomeScreen(
-                    onContinue = { navController.navigate(Screen.Permissions.route) }
-                )
-            }
-
-            // 3. Permissions
-            composable(Screen.Permissions.route) {
-                PermissionsScreen(
-                    onPermissionsGranted = {
-                        navController.navigate(Screen.BluetoothSetup.route)
-                    }
-                )
-            }
-
-            // 4. Bluetooth Setup
-            composable(Screen.BluetoothSetup.route) {
-                BluetoothSetupScreen(
-                    viewModel = viewModel,
-                    onSetupComplete = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Welcome.route) { inclusive = true }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Splash.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                // 1. Splash
+                composable(Screen.Splash.route) {
+                    SplashScreen(
+                        viewModel = viewModel,
+                        onNavigateNext = {
+                            navController.navigate(Screen.Welcome.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
                         }
-                    }
-                )
-            }
+                    )
+                }
 
-            // 7. Home Dashboard
-            composable(Screen.Home.route) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    onNavigateToDiscovery = { navController.navigate(Screen.Discovery.route) },
-                    onNavigateToChats = { navController.navigate(Screen.Chats.route) },
-                    onNavigateToChat = { deviceId ->
-                        navController.navigate(Screen.Chat.createRoute(deviceId))
-                    },
-                    onNavigateToRelayNetwork = { navController.navigate(Screen.RelayNetwork.route) },
-                    onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                    onNavigateToPending = { navController.navigate(Screen.PendingMessages.route) },
-                    onNavigateToVerify = { deviceId ->
-                        navController.navigate(Screen.VerifyDevice.createRoute(deviceId))
-                    },
-                    onNavigateToDiagnostics = { navController.navigate(Screen.Diagnostics.route) }
-                )
-            }
+                // 2. Welcome
+                composable(Screen.Welcome.route) {
+                    WelcomeScreen(
+                        onContinue = { navController.navigate(Screen.Permissions.route) }
+                    )
+                }
+
+                // 3. Permissions
+                composable(Screen.Permissions.route) {
+                    PermissionsScreen(
+                        onPermissionsGranted = {
+                            navController.navigate(Screen.BluetoothSetup.route)
+                        },
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                // 4. Bluetooth Setup
+                composable(Screen.BluetoothSetup.route) {
+                    BluetoothSetupScreen(
+                        viewModel = viewModel,
+                        onSetupComplete = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Welcome.route) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+
+                // 7. Home Dashboard
+                composable(Screen.Home.route) {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        onNavigateToDiscovery = { navController.navigate(Screen.Discovery.route) },
+                        onNavigateToChats = { navController.navigate(Screen.Chats.route) },
+                        onNavigateToChat = { deviceId ->
+                            navController.navigate(Screen.Chat.createRoute(deviceId))
+                        },
+                        onNavigateToRelayNetwork = { navController.navigate(Screen.RelayNetwork.route) },
+                        onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                        onNavigateToPending = { navController.navigate(Screen.PendingMessages.route) },
+                        onNavigateToVerify = { deviceId ->
+                            navController.navigate(Screen.VerifyDevice.createRoute(deviceId))
+                        },
+                        onNavigateToDiagnostics = { navController.navigate(Screen.Diagnostics.route) },
+                        onMenuClick = { scope.launch { drawerState.open() } }
+                    )
+                }
 
             // 5. Discovery
             composable(Screen.Discovery.route) {
@@ -386,7 +570,8 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     onNavigateToChat = { deviceId ->
                         navController.navigate(Screen.Chat.createRoute(deviceId))
                     },
-                    onStartNewChat = { navController.navigate(Screen.Discovery.route) }
+                    onStartNewChat = { navController.navigate(Screen.Discovery.route) },
+                    onMenuClick = { scope.launch { drawerState.open() } }
                 )
             }
 
@@ -496,7 +681,8 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     onBack = { navController.popBackStack() },
                     onRedial = { peerId ->
                         onSafeVoiceCall(peerId)
-                    }
+                    },
+                    onMenuClick = { scope.launch { drawerState.open() } }
                 )
             }
 
@@ -544,7 +730,8 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     onNavigateToBattery = { navController.navigate(Screen.BatteryGuidance.route) },
                     onNavigateToNotifications = { navController.navigate(Screen.NotificationSettings.route) },
                     onNavigateToDiagnostics = { navController.navigate(Screen.Diagnostics.route) },
-                    onNavigateToAbout = { navController.navigate(Screen.About.route) }
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                    onMenuClick = { scope.launch { drawerState.open() } }
                 )
             }
 
@@ -626,4 +813,5 @@ fun RonovaApp(viewModel: RonovaViewModel) {
             }
         }
     }
+}
 }

@@ -195,4 +195,48 @@
     <string name="dialog_close">Close</string>
     <string name="dialog_confirm">Confirm</string>
     <string name="dialog_settings">Settings</string>
+
+    <!-- Home Dashboard Additions -->
+    <string name="home_node_identity">Node Identity</string>
+    <string name="home_peers_stat">Peers</string>
+    <string name="home_store_fwd_stat">Store &amp; Fwd</string>
+    <string name="home_chats_stat">Chats</string>
+    <string name="home_scan_peers">Scan Peers</string>
+    <string name="home_mesh_map">Mesh Map</string>
+    <string name="home_specs_title">System Architecture &amp; Specs</string>
+    <string name="home_specs_version">Ronova Mesh v1.0</string>
+    <string name="home_spec_platform_title">Platform</string>
+    <string name="home_spec_platform_desc">Android Native • Kotlin</string>
+    <string name="home_spec_comm_title">Communication</string>
+    <string name="home_spec_comm_desc">Bluetooth Classic + BLE, custom multi-hop relay</string>
+    <string name="home_spec_conn_title">Connectivity</string>
+    <string name="home_spec_conn_desc">No internet, SIM, mobile data, cloud server or paid API required</string>
+    <string name="home_spec_biz_title">Business model</string>
+    <string name="home_spec_biz_desc">Free to use • No ads • No subscription</string>
+    <string name="home_connected_peers_title">Connected Mesh Peers</string>
+    <string name="home_view_all">View All</string>
+    <string name="home_recent_convs">Recent Conversations</string>
+    <string name="home_open_chats">Open Chats</string>
+    <string name="home_no_peers_msg">No direct peers connected right now.</string>
+    <string name="home_no_peers_sub">Discovered nodes will automatically connect and form a mesh path.</string>
+    <string name="home_no_convs_msg">No conversations yet.</string>
+    <string name="home_find_nearby_nodes">Find Nearby Nodes</string>
+    <string name="home_copied_id">Node ID copied to clipboard</string>
+    <string name="font_charukola_limitation">Bengali typography uses high-legibility Noto Sans Bengali as Charukola is not an open-source distributable font.</string>
+
+    <!-- Battery & Background Guidance -->
+    <string name="battery_guidance_title">Battery &amp; Background Guidance</string>
+    <string name="battery_guidance_sub">Ensuring reliable mesh relaying</string>
+    <string name="battery_fg_service_title">Mesh Foreground Service</string>
+    <string name="battery_fg_service_desc">Keeps Bluetooth RFCOMM server alive when phone is locked.</string>
+    <string name="battery_oem_title">OEM Battery Optimization Advice</string>
+    <string name="battery_oem_samsung">• Samsung: Settings → Apps → Ronova Mesh → Battery → Select \'Unrestricted\'.</string>
+    <string name="battery_oem_xiaomi">• Xiaomi/MIUI: Enable \'Autostart\' and set Battery Saver to \'No restrictions\'.</string>
+    <string name="battery_oem_pixel">• Google Pixel: Settings → Apps → Ronova Mesh → App battery usage → Unrestricted.</string>
+    <string name="battery_warning_note">Without unrestricted battery access, Android may pause Bluetooth background sockets after 10 minutes of screen-off.</string>
+    <string name="open_battery_settings">Open Battery Settings</string>
+
+    <!-- Drawer Header -->
+    <string name="drawer_header_title">Ronova Mesh</string>
+    <string name="drawer_header_subtitle">Decentralized P2P Mesh Communication</string>
 </resources>

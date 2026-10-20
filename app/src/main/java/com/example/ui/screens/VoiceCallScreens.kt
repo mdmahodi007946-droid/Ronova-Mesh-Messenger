@@ -577,7 +577,8 @@ fun ActiveVoiceCallScreen(
 fun CallHistoryScreen(
     viewModel: RonovaViewModel,
     onBack: () -> Unit,
-    onRedial: (String) -> Unit
+    onRedial: (String) -> Unit,
+    onMenuClick: (() -> Unit)? = null
 ) {
     val callHistory by viewModel.callHistory.collectAsState()
 
@@ -595,7 +596,8 @@ fun CallHistoryScreen(
             RonovaTopBar(
                 title = stringResource(R.string.call_history_title),
                 subtitle = stringResource(R.string.call_history_subtitle),
-                onBack = onBack,
+                onBack = if (onMenuClick == null) onBack else null,
+                onMenuClick = onMenuClick,
                 actions = {
                     if (callHistory.isNotEmpty()) {
                         Text(

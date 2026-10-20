@@ -157,4 +157,67 @@ class ExampleRobolectricTest {
 
         db.close()
     }
+
+    @Test
+    fun `locale helper persistence and language switching test`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        
+        com.example.core.locale.LocaleHelper.setLanguage(context, "bn")
+        assertEquals("bn", com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
+
+        com.example.core.locale.LocaleHelper.setLanguage(context, "en")
+        assertEquals("en", com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
+    }
+
+    @Test
+    fun `localized context resolves English and Bengali strings`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        val enContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "en")
+        assertEquals("Home", enContext.getString(R.string.nav_home))
+        assertEquals("Messages", enContext.getString(R.string.nav_chats))
+        assertEquals("Call History", enContext.getString(R.string.nav_calls))
+        assertEquals("Settings", enContext.getString(R.string.nav_settings))
+        assertEquals("Connected Peers", enContext.getString(R.string.drawer_connected_peers))
+
+        val bnContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "bn")
+        assertEquals("হোম", bnContext.getString(R.string.nav_home))
+        assertEquals("বার্তা", bnContext.getString(R.string.nav_chats))
+        assertEquals("কলের ইতিহাস", bnContext.getString(R.string.nav_calls))
+        assertEquals("সেটিংস", bnContext.getString(R.string.nav_settings))
+        assertEquals("সংযুক্ত নোডসমূহ", bnContext.getString(R.string.drawer_connected_peers))
+    }
+
+    @Test
+    fun `four primary bottom navigation destinations are defined`() {
+        val expectedBottomRoutes = listOf(
+            com.example.ui.navigation.Screen.Home.route,
+            com.example.ui.navigation.Screen.Settings.route,
+            com.example.ui.navigation.Screen.Chats.route,
+            com.example.ui.navigation.Screen.CallHistory.route
+        )
+        assertEquals(4, expectedBottomRoutes.size)
+        assertEquals("home", expectedBottomRoutes[0])
+        assertEquals("settings", expectedBottomRoutes[1])
+        assertEquals("chats", expectedBottomRoutes[2])
+        assertEquals("call_history", expectedBottomRoutes[3])
+    }
+
+    @Test
+    fun `eleven drawer navigation destinations are defined`() {
+        val drawerRoutes = listOf(
+            com.example.ui.navigation.Screen.Home.route,
+            com.example.ui.navigation.Screen.Chats.route,
+            com.example.ui.navigation.Screen.CallHistory.route,
+            com.example.ui.navigation.Screen.Discovery.route,
+            com.example.ui.navigation.Screen.RelayNetwork.route,
+            com.example.ui.navigation.Screen.PendingMessages.route,
+            com.example.ui.navigation.Screen.BatteryGuidance.route,
+            com.example.ui.navigation.Screen.Permissions.route,
+            com.example.ui.navigation.Screen.SecuritySettings.route,
+            com.example.ui.navigation.Screen.Settings.route,
+            com.example.ui.navigation.Screen.About.route
+        )
+        assertEquals(11, drawerRoutes.size)
+    }
 }

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Card
@@ -50,9 +51,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.core.bluetooth.BluetoothStatus
 import com.example.ui.theme.AlataFontFamily
 import com.example.ui.theme.RonovaGoldContainer
@@ -80,13 +83,14 @@ fun RonovaTopBar(
     title: String,
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
+    onMenuClick: (() -> Unit)? = null,
     statusBadge: (@Composable () -> Unit)? = null,
     actions: @Composable () -> Unit = {}
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.6f)),
-        shadowElevation = 0.5.dp
+        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f)),
+        shadowElevation = 1.dp
     ) {
         TopAppBar(
             title = {
@@ -121,7 +125,18 @@ fun RonovaTopBar(
                 }
             },
             navigationIcon = {
-                if (onBack != null) {
+                if (onMenuClick != null) {
+                    IconButton(
+                        onClick = onMenuClick,
+                        modifier = Modifier.testTag("top_bar_menu_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = RonovaGoldDark
+                        )
+                    }
+                } else if (onBack != null) {
                     IconButton(
                         onClick = onBack,
                         modifier = Modifier.testTag("top_bar_back_button")
@@ -129,7 +144,7 @@ fun RonovaTopBar(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = RonovaPinkPrimary
+                            tint = RonovaGoldDark
                         )
                     }
                 }
@@ -146,14 +161,14 @@ fun RonovaTopBar(
 @Composable
 fun StatusBadge(status: BluetoothStatus) {
     val (bgColor, textColor, label) = when (status) {
-        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "Connected")
-        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Scanning...")
-        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Linking...")
-        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "Mesh Ready")
-        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "Permission Needed")
-        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "Bluetooth Off")
-        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "No Bluetooth")
-        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "Mesh Error")
+        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, stringResource(R.string.bt_status_connected))
+        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, stringResource(R.string.disc_scanning))
+        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, stringResource(R.string.bt_status_checking))
+        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, stringResource(R.string.bt_status_ready))
+        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, stringResource(R.string.bt_status_permission_required))
+        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, stringResource(R.string.bt_status_disabled))
+        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, stringResource(R.string.bt_status_unsupported))
+        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, stringResource(R.string.bt_status_permission_required))
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")

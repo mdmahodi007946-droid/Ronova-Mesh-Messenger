@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
@@ -71,10 +72,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Hub
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.core.database.ConversationEntity
 import com.example.core.database.MessageEntity
+import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.components.MessageBubble
 import com.example.ui.components.RonovaTopBar
+import com.example.ui.components.SpecFeatureItem
 import com.example.ui.components.StatCard
 import com.example.ui.components.StatusBadge
 import com.example.ui.theme.RonovaGoldContainer
@@ -108,7 +114,8 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToPending: () -> Unit,
     onNavigateToVerify: (String) -> Unit,
-    onNavigateToDiagnostics: () -> Unit
+    onNavigateToDiagnostics: () -> Unit,
+    onMenuClick: (() -> Unit)? = null
 ) {
     val status by viewModel.bluetoothStatus.collectAsState()
     val connectedPeers by viewModel.connectedPeers.collectAsState()
@@ -130,21 +137,30 @@ fun HomeScreen(
                 .fillMaxSize()
                 .widthIn(max = 680.dp)
         ) {
+            // Top Persistent Connection Status Bar (Warns of permission needs / BT off per screenshots)
+            ConnectionStatusBar(
+                viewModel = viewModel,
+                onNavigateToDiscovery = onNavigateToDiscovery,
+                onNavigateToRelayNetwork = onNavigateToRelayNetwork
+            )
+
+            // Header with Hamburger Menu, Title, Status and Shortcuts
             RonovaTopBar(
-                title = "Ronova Mesh",
-                subtitle = "Decentralized P2P Network",
+                title = stringResource(R.string.app_name),
+                subtitle = stringResource(R.string.drawer_header_subtitle),
+                onMenuClick = onMenuClick,
                 statusBadge = {
                     StatusBadge(status = status)
                 },
                 actions = {
                     IconButton(
-                        onClick = onNavigateToDiagnostics,
-                        modifier = Modifier.testTag("home_diagnostics_button")
+                        onClick = onNavigateToRelayNetwork,
+                        modifier = Modifier.testTag("home_mesh_topology_icon_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Router,
-                            contentDescription = "Diagnostics",
-                            tint = RonovaPinkPrimary
+                            imageVector = Icons.Default.Hub,
+                            contentDescription = stringResource(R.string.home_mesh_map),
+                            tint = RonovaGoldDark
                         )
                     }
                     IconButton(
@@ -153,8 +169,8 @@ fun HomeScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = RonovaPinkPrimary
+                            contentDescription = stringResource(R.string.nav_settings),
+                            tint = RonovaGoldDark
                         )
                     }
                 }
@@ -164,7 +180,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -172,9 +188,9 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(18.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Row(
@@ -196,14 +212,14 @@ fun HomeScreen(
                                         Icon(
                                             imageVector = Icons.Default.Security,
                                             contentDescription = null,
-                                            tint = RonovaPinkDark,
+                                            tint = RonovaGoldDark,
                                             modifier = Modifier.size(22.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = "Node Identity",
+                                            text = stringResource(R.string.home_node_identity),
                                             style = MaterialTheme.typography.titleSmall.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 color = RonovaTextPrimary
@@ -214,13 +230,13 @@ fun HomeScreen(
                                             modifier = Modifier.clickable {
                                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Node ID", viewModel.myDeviceId))
-                                                android.widget.Toast.makeText(context, "Node ID copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                                                android.widget.Toast.makeText(context, context.getString(R.string.home_copied_id), android.widget.Toast.LENGTH_SHORT).show()
                                             }
                                         ) {
                                             Text(
                                                 text = viewModel.myDeviceId,
                                                 style = MaterialTheme.typography.bodySmall.copy(
-                                                    color = RonovaPinkDark,
+                                                    color = RonovaGoldDark,
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 12.5.sp
                                                 )
@@ -228,23 +244,34 @@ fun HomeScreen(
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Icon(
                                                 imageVector = Icons.Default.ContentCopy,
-                                                contentDescription = "Copy Node ID",
-                                                tint = RonovaPinkPrimary,
+                                                contentDescription = stringResource(R.string.settings_copied),
+                                                tint = RonovaGoldPrimary,
                                                 modifier = Modifier.size(13.dp)
                                             )
                                         }
                                     }
                                 }
+
+                                // Status indicator tag on right
+                                val (statusTagColor, statusTagText) = when (status) {
+                                    com.example.core.bluetooth.BluetoothStatus.CONNECTED -> RonovaSuccess to stringResource(R.string.bt_status_connected)
+                                    com.example.core.bluetooth.BluetoothStatus.DISCOVERING -> RonovaWarning to stringResource(R.string.disc_scanning)
+                                    com.example.core.bluetooth.BluetoothStatus.PERMISSION_REQUIRED -> RonovaError to stringResource(R.string.bt_status_permission_required)
+                                    com.example.core.bluetooth.BluetoothStatus.DISABLED -> Color.Gray to stringResource(R.string.bt_status_disabled)
+                                    else -> RonovaGoldDark to stringResource(R.string.bt_status_ready)
+                                }
+
                                 Surface(
-                                    color = if (isRelayOn) RonovaPinkLight else Color(0xFFF5F5F5),
-                                    shape = RoundedCornerShape(10.dp)
+                                    color = statusTagColor.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = BorderStroke(1.dp, statusTagColor.copy(alpha = 0.3f))
                                 ) {
                                     Text(
-                                        text = if (isRelayOn) "Relay Active" else "Direct Only",
+                                        text = statusTagText,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isRelayOn) RonovaSuccess else RonovaTextMuted,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                        color = statusTagColor,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
                                 }
                             }
@@ -252,22 +279,22 @@ fun HomeScreen(
                     }
                 }
 
-                // Stats Row with Alata typography and soft gradients
+                // Stats Row
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         StatCard(
-                            title = "Peers",
+                            title = stringResource(R.string.home_peers_stat),
                             value = "${connectedPeers.count { it.isConnected }}",
-                            icon = Icons.Default.Router,
-                            accentColor = RonovaPinkPrimary,
+                            icon = Icons.Default.Hub,
+                            accentColor = RonovaGoldPrimary,
                             modifier = Modifier.weight(1f),
                             onClick = onNavigateToDiscovery
                         )
                         StatCard(
-                            title = "Store & Fwd",
+                            title = stringResource(R.string.home_store_fwd_stat),
                             value = "${pendingPackets.size}",
                             icon = Icons.Default.SwapHoriz,
                             accentColor = RonovaWarning,
@@ -275,17 +302,17 @@ fun HomeScreen(
                             onClick = onNavigateToPending
                         )
                         StatCard(
-                            title = "Chats",
+                            title = stringResource(R.string.home_chats_stat),
                             value = "${conversations.size}",
-                            icon = Icons.Default.Chat,
-                            accentColor = RonovaPinkDark,
+                            icon = Icons.AutoMirrored.Filled.Chat,
+                            accentColor = RonovaGoldDark,
                             modifier = Modifier.weight(1f),
                             onClick = onNavigateToChats
                         )
                     }
                 }
 
-                // Primary Quick Actions Bar
+                // Primary Quick Actions Bar (Scan Peers & Mesh Map)
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -295,46 +322,118 @@ fun HomeScreen(
                             onClick = onNavigateToDiscovery,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(50.dp)
+                                .height(48.dp)
                                 .testTag("home_scan_peers_button"),
-                            colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                            shape = RoundedCornerShape(16.dp),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = RonovaGoldPrimary,
+                                contentColor = RonovaTextPrimary
+                            ),
+                            shape = RoundedCornerShape(14.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.5.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(18.dp),
+                                tint = RonovaTextPrimary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Scan Peers", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(
+                                text = stringResource(R.string.home_scan_peers),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = RonovaTextPrimary
+                            )
                         }
 
                         OutlinedButton(
                             onClick = onNavigateToRelayNetwork,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(50.dp)
+                                .height(48.dp)
                                 .testTag("home_mesh_topology_button"),
-                            shape = RoundedCornerShape(16.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, RonovaPinkPrimary),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaPinkPrimary)
+                            shape = RoundedCornerShape(14.dp),
+                            border = BorderStroke(1.5.dp, RonovaGoldPrimary),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaGoldDark)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Router,
+                                imageVector = Icons.Default.Hub,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(18.dp),
+                                tint = RonovaGoldDark
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "Mesh Map",
+                                text = stringResource(R.string.home_mesh_map),
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                color = RonovaGoldDark
                             )
                         }
                     }
                 }
 
+                // System Architecture & Specs Card (Screenshots 2 & 3)
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.home_specs_title),
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = RonovaTextPrimary
+                                    )
+                                )
+                                Text(
+                                    text = stringResource(R.string.home_specs_version),
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = RonovaGoldDark,
+                                        fontSize = 11.5.sp
+                                    )
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            SpecFeatureItem(
+                                icon = Icons.Default.PhoneAndroid,
+                                title = stringResource(R.string.home_spec_platform_title),
+                                description = stringResource(R.string.home_spec_platform_desc),
+                                accentColor = RonovaGoldPrimary
+                            )
+                            SpecFeatureItem(
+                                icon = Icons.Default.Bluetooth,
+                                title = stringResource(R.string.home_spec_comm_title),
+                                description = stringResource(R.string.home_spec_comm_desc),
+                                accentColor = RonovaGoldPrimary
+                            )
+                            SpecFeatureItem(
+                                icon = Icons.Default.WifiOff,
+                                title = stringResource(R.string.home_spec_conn_title),
+                                description = stringResource(R.string.home_spec_conn_desc),
+                                accentColor = RonovaGoldPrimary
+                            )
+                            SpecFeatureItem(
+                                icon = Icons.Default.AccountBalanceWallet,
+                                title = stringResource(R.string.home_spec_biz_title),
+                                description = stringResource(R.string.home_spec_biz_desc),
+                                accentColor = RonovaGoldPrimary
+                            )
+                        }
+                    }
+                }
 
                 // Connected Mesh Peers Section
                 item {
@@ -344,15 +443,15 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Connected Mesh Peers",
+                            text = stringResource(R.string.home_connected_peers_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextPrimary
                             )
                         )
                         Text(
-                            text = "View All",
-                            color = RonovaPinkPrimary,
+                            text = stringResource(R.string.home_view_all),
+                            color = RonovaGoldDark,
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.clickable { onNavigateToDiscovery() }
                         )
@@ -365,32 +464,32 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            shape = RoundedCornerShape(18.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, RonovaCardBorder)
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(22.dp),
+                                    .padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(48.dp)
+                                        .size(44.dp)
                                         .clip(CircleShape)
-                                        .background(RonovaPinkLight),
+                                        .background(RonovaGoldLight),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Bluetooth,
                                         contentDescription = null,
-                                        tint = RonovaPinkPrimary,
+                                        tint = RonovaGoldPrimary,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    text = "No direct peers connected right now.",
+                                    text = stringResource(R.string.home_no_peers_msg),
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         color = RonovaTextPrimary,
                                         fontWeight = FontWeight.Bold
@@ -398,7 +497,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Discovered nodes will automatically connect and form a mesh path.",
+                                    text = stringResource(R.string.home_no_peers_sub),
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = RonovaTextMuted,
                                         fontSize = 12.sp,
@@ -434,15 +533,15 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Recent Conversations",
+                            text = stringResource(R.string.home_recent_convs),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextPrimary
                             )
                         )
                         Text(
-                            text = "Open Chats",
-                            color = RonovaPinkPrimary,
+                            text = stringResource(R.string.home_open_chats),
+                            color = RonovaGoldDark,
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.clickable { onNavigateToChats() }
                         )
@@ -454,32 +553,32 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            shape = RoundedCornerShape(18.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, RonovaCardBorder)
                         ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(22.dp),
+                                    .padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(48.dp)
+                                        .size(44.dp)
                                         .clip(CircleShape)
-                                        .background(RonovaPinkLight),
+                                        .background(RonovaGoldLight),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Chat,
+                                        imageVector = Icons.AutoMirrored.Filled.Chat,
                                         contentDescription = null,
-                                        tint = RonovaPinkPrimary,
-                                        modifier = Modifier.size(24.dp)
+                                        tint = RonovaGoldPrimary,
+                                        modifier = Modifier.size(22.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    text = "No conversations yet.",
+                                    text = stringResource(R.string.home_no_convs_msg),
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         color = RonovaTextPrimary,
                                         fontWeight = FontWeight.Bold
@@ -489,9 +588,13 @@ fun HomeScreen(
                                 OutlinedButton(
                                     onClick = onNavigateToDiscovery,
                                     shape = RoundedCornerShape(12.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, RonovaPinkPrimary)
+                                    border = BorderStroke(1.dp, RonovaGoldPrimary)
                                 ) {
-                                    Text("Find Nearby Nodes", color = RonovaPinkPrimary, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = stringResource(R.string.home_find_nearby_nodes),
+                                        color = RonovaGoldDark,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                             }
                         }
@@ -697,7 +800,8 @@ fun ConversationListScreen(
     viewModel: RonovaViewModel,
     onBack: () -> Unit,
     onNavigateToChat: (String) -> Unit,
-    onStartNewChat: () -> Unit
+    onStartNewChat: () -> Unit,
+    onMenuClick: (() -> Unit)? = null
 ) {
     val conversations by viewModel.conversations.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -720,9 +824,10 @@ fun ConversationListScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = "Conversations",
-                subtitle = "Encrypted Mesh Chats",
-                onBack = onBack
+                title = stringResource(R.string.chat_list_title),
+                subtitle = stringResource(R.string.chat_encrypted_badge),
+                onBack = if (onMenuClick == null) onBack else null,
+                onMenuClick = onMenuClick
             )
 
             // Search Bar
@@ -732,7 +837,7 @@ fun ConversationListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 10.dp),
-                placeholder = { Text("Search encrypted chats...") },
+                placeholder = { Text(stringResource(R.string.chat_type_hint)) },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = RonovaTextMuted)
                 },
@@ -771,12 +876,12 @@ fun ConversationListScreen(
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = if (searchQuery.isNotEmpty()) "No matching conversations" else "No messages yet",
+                            text = stringResource(R.string.chat_no_conversations),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Connect with nearby nodes or scan peers to begin chatting.",
+                            text = stringResource(R.string.chat_start_first),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = RonovaTextMuted,
                                 fontSize = 12.sp
@@ -857,7 +962,7 @@ fun OneToOneChatScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
                 title = device?.displayName ?: deviceId,
-                subtitle = "E2E Encrypted • ${device?.trustStatus ?: "UNVERIFIED"}",
+                subtitle = stringResource(R.string.chat_encrypted_badge),
                 onBack = onBack,
                 actions = {
                     IconButton(
@@ -866,7 +971,7 @@ fun OneToOneChatScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Call,
-                            contentDescription = "Voice Call",
+                            contentDescription = stringResource(R.string.chat_call),
                             tint = RonovaPinkPrimary
                         )
                     }
@@ -876,7 +981,7 @@ fun OneToOneChatScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "Device Info",
+                            contentDescription = stringResource(R.string.chat_verify),
                             tint = RonovaTextMuted
                         )
                     }
@@ -906,7 +1011,7 @@ fun OneToOneChatScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "End-to-End Encrypted over Bluetooth Mesh",
+                            text = stringResource(R.string.chat_encrypted_badge),
                             fontSize = 10.sp,
                             color = RonovaPinkDark,
                             fontWeight = FontWeight.Medium
@@ -951,7 +1056,7 @@ fun OneToOneChatScreen(
                         modifier = Modifier
                             .weight(1f)
                             .testTag("chat_message_input"),
-                        placeholder = { Text("Message via mesh...") },
+                        placeholder = { Text(stringResource(R.string.chat_type_hint)) },
                         maxLines = 4,
                         shape = RoundedCornerShape(20.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -975,7 +1080,7 @@ fun OneToOneChatScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Send Message",
+                            contentDescription = stringResource(R.string.chat_send),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )

@@ -58,9 +58,14 @@ import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.WifiOff
 import com.example.core.database.MessageEntity
+import com.example.core.permission.PermissionManager
 import com.example.data.RetentionPolicy
+import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.components.SpecFeatureItem
 import com.example.ui.theme.RonovaCardBorder
+import com.example.ui.theme.RonovaGoldDark
+import com.example.ui.theme.RonovaGoldLight
+import com.example.ui.theme.RonovaGoldPrimary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -995,15 +1000,21 @@ fun BatteryGuidanceScreen(
     onBack: () -> Unit
 ) {
     val isRunning by viewModel.isForegroundServiceRunning.collectAsState()
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFFAFAFA)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Top Status Bar (Warning of permissions / state matching Screenshot 1)
+            ConnectionStatusBar(
+                viewModel = viewModel
+            )
+
             RonovaTopBar(
-                title = "Battery & Background Guidance",
-                subtitle = "Ensuring reliable mesh relaying",
+                title = stringResource(R.string.battery_guidance_title),
+                subtitle = stringResource(R.string.battery_guidance_sub),
                 onBack = onBack
             )
 
@@ -1018,7 +1029,8 @@ fun BatteryGuidanceScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(
@@ -1028,19 +1040,25 @@ fun BatteryGuidanceScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "Mesh Foreground Service",
+                                        text = stringResource(R.string.battery_fg_service_title),
                                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                                     )
+                                    Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "Keeps Bluetooth RFCOMM server alive when phone is locked.",
-                                        fontSize = 11.sp,
+                                        text = stringResource(R.string.battery_fg_service_desc),
+                                        fontSize = 11.5.sp,
                                         color = RonovaTextMuted
                                     )
                                 }
                                 Switch(
                                     checked = isRunning,
                                     onCheckedChange = { viewModel.toggleForegroundService(it) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = RonovaGoldPrimary,
+                                        uncheckedThumbColor = Color(0xFFBDBDBD),
+                                        uncheckedTrackColor = Color(0xFFE0E0E0)
+                                    )
                                 )
                             }
                         }
@@ -1052,38 +1070,69 @@ fun BatteryGuidanceScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "OEM Battery Optimization Advice",
+                                text = stringResource(R.string.battery_oem_title),
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "• Samsung: Settings → Apps → Ronova Mesh → Battery → Select 'Unrestricted'.",
-                                fontSize = 12.sp,
+                                text = stringResource(R.string.battery_oem_samsung),
+                                fontSize = 12.5.sp,
                                 color = RonovaTextPrimary
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "• Xiaomi/MIUI: Enable 'Autostart' and set Battery Saver to 'No restrictions'.",
-                                fontSize = 12.sp,
+                                text = stringResource(R.string.battery_oem_xiaomi),
+                                fontSize = 12.5.sp,
                                 color = RonovaTextPrimary
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "• Google Pixel: Settings → Apps → Ronova Mesh → App battery usage → Unrestricted.",
-                                fontSize = 12.sp,
+                                text = stringResource(R.string.battery_oem_pixel),
+                                fontSize = 12.5.sp,
                                 color = RonovaTextPrimary
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "Without unrestricted battery access, Android may pause Bluetooth background sockets after 10 minutes of screen-off.",
-                                fontSize = 11.sp,
-                                color = RonovaWarning
+                                text = stringResource(R.string.battery_warning_note),
+                                fontSize = 11.5.sp,
+                                color = RonovaGoldDark,
+                                lineHeight = 16.sp
                             )
                         }
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = { PermissionManager.openBatteryOptimizationSettings(context) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .testTag("open_battery_settings_button"),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = RonovaGoldPrimary,
+                            contentColor = RonovaTextPrimary
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = RonovaTextPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.open_battery_settings),
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaTextPrimary,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
@@ -1827,7 +1876,8 @@ fun SettingsHubScreen(
     onNavigateToBattery: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToDiagnostics: () -> Unit,
-    onNavigateToAbout: () -> Unit
+    onNavigateToAbout: () -> Unit,
+    onMenuClick: (() -> Unit)? = null
 ) {
     val currentLang by viewModel.currentLanguage.collectAsState()
     val retentionPolicy by viewModel.retentionPolicy.collectAsState()
@@ -1842,7 +1892,8 @@ fun SettingsHubScreen(
             RonovaTopBar(
                 title = stringResource(R.string.settings_title),
                 subtitle = stringResource(R.string.settings_subtitle),
-                onBack = onBack
+                onBack = if (onMenuClick == null) onBack else null,
+                onMenuClick = onMenuClick
             )
 
             LazyColumn(
