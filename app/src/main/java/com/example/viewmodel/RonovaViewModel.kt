@@ -93,34 +93,37 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     private val _maxHops = MutableStateFlow(5)
     val maxHops: StateFlow<Int> = _maxHops.asStateFlow()
 
-    private val _isForegroundServiceRunning = MutableStateFlow(false)
+    private val _isForegroundServiceRunning = MutableStateFlow(com.example.service.BluetoothMeshService.isRunning)
     val isForegroundServiceRunning: StateFlow<Boolean> = _isForegroundServiceRunning.asStateFlow()
 
-    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.LANGUAGE_BANGLA)
+    private val prefs = app.getSharedPreferences("ronova_preferences", android.content.Context.MODE_PRIVATE)
+
+    private val _callAlertsEnabled = MutableStateFlow(prefs.getBoolean("pref_call_alerts", true))
+    val callAlertsEnabled: StateFlow<Boolean> = _callAlertsEnabled.asStateFlow()
+
+    private val _vibrationEnabled = MutableStateFlow(prefs.getBoolean("pref_vibration", true))
+    val vibrationEnabled: StateFlow<Boolean> = _vibrationEnabled.asStateFlow()
+
+    private val _messageSoundEnabled = MutableStateFlow(prefs.getBoolean("pref_message_sound", true))
+    val messageSoundEnabled: StateFlow<Boolean> = _messageSoundEnabled.asStateFlow()
+
+    fun setCallAlertsEnabled(enabled: Boolean) {
+        _callAlertsEnabled.value = enabled
+        prefs.edit().putBoolean("pref_call_alerts", enabled).apply()
+    }
+
+    fun setVibrationEnabled(enabled: Boolean) {
+        _vibrationEnabled.value = enabled
+        prefs.edit().putBoolean("pref_vibration", enabled).apply()
+    }
+
+    fun setMessageSoundEnabled(enabled: Boolean) {
+        _messageSoundEnabled.value = enabled
+        prefs.edit().putBoolean("pref_message_sound", enabled).apply()
+    }
+
+    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.getPersistedLanguage(app))
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
-
-    private val _isSetupCompleted = MutableStateFlow(repository.isSetupCompleted())
-    val isSetupCompleted: StateFlow<Boolean> = _isSetupCompleted.asStateFlow()
-
-    private val _setupStep = MutableStateFlow(repository.getSetupStep())
-    val setupStep: StateFlow<String> = _setupStep.asStateFlow()
-
-    fun completeSetup() {
-        repository.setSetupCompleted(true)
-        _isSetupCompleted.value = true
-        _setupStep.value = "COMPLETED"
-    }
-
-    fun updateSetupStep(step: String) {
-        repository.setSetupStep(step)
-        _setupStep.value = step
-    }
-
-    fun resetSetup() {
-        repository.resetSetup()
-        _isSetupCompleted.value = false
-        _setupStep.value = "WELCOME"
-    }
 
     fun setLanguage(languageCode: String) {
         com.example.core.locale.LocaleHelper.setLanguage(app, languageCode)

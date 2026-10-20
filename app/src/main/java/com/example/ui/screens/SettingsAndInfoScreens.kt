@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -58,14 +59,9 @@ import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.WifiOff
 import com.example.core.database.MessageEntity
-import com.example.core.permission.PermissionManager
 import com.example.data.RetentionPolicy
-import com.example.ui.components.ConnectionStatusBar
 import com.example.ui.components.SpecFeatureItem
 import com.example.ui.theme.RonovaCardBorder
-import com.example.ui.theme.RonovaGoldDark
-import com.example.ui.theme.RonovaGoldLight
-import com.example.ui.theme.RonovaGoldPrimary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -123,8 +119,8 @@ fun TrustedDevicesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.trusted_devices_title),
-                subtitle = stringResource(R.string.trusted_devices_subtitle),
+                title = "Trusted Devices",
+                subtitle = "Cryptographically Verified Peers",
                 onBack = onBack
             )
 
@@ -152,12 +148,12 @@ fun TrustedDevicesScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = stringResource(R.string.trusted_devices_empty),
+                            text = "No trusted peers yet",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.trusted_devices_empty_desc),
+                            text = "Verify device cryptographic fingerprints to pin them as trusted contacts.",
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                     }
@@ -215,7 +211,7 @@ fun TrustedDevicesScreen(
                                     onClick = { viewModel.setDeviceTrust(dev.deviceId, "UNTRUSTED") },
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text(stringResource(R.string.action_revoke), fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text("Revoke", fontSize = 11.sp, color = RonovaTextMuted)
                                 }
                             }
                         }
@@ -239,8 +235,8 @@ fun BlockedDevicesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.blocked_devices_title),
-                subtitle = stringResource(R.string.blocked_devices_subtitle),
+                title = "Blocked Devices",
+                subtitle = "Prevent packets and calls from these nodes",
                 onBack = onBack
             )
 
@@ -268,12 +264,12 @@ fun BlockedDevicesScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = stringResource(R.string.blocked_devices_empty),
+                            text = "No blocked devices",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.blocked_devices_empty_desc),
+                            text = "Blocked nodes cannot send you messages or trigger incoming voice calls.",
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                     }
@@ -313,7 +309,7 @@ fun BlockedDevicesScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text(stringResource(R.string.action_unblock), fontSize = 11.sp)
+                                    Text("Unblock", fontSize = 11.sp)
                                 }
                             }
                         }
@@ -343,8 +339,8 @@ fun SecuritySettingsScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = stringResource(R.string.security_encryption_title),
-                subtitle = stringResource(R.string.security_encryption_subtitle),
+                title = "Security & Encryption",
+                subtitle = "Cryptographic identity verification",
                 onBack = onBack
             )
 
@@ -364,7 +360,7 @@ fun SecuritySettingsScreen(
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
                             Text(
-                                text = stringResource(R.string.bt_device_id_label),
+                                text = "Your Device Cryptographic Fingerprint",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -390,7 +386,7 @@ fun SecuritySettingsScreen(
                                     onClick = {
                                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                         clipboard.setPrimaryClip(ClipData.newPlainText("Device ID", viewModel.myDeviceId))
-                                        Toast.makeText(context, context.getString(R.string.settings_copied), Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Copied ID to clipboard", Toast.LENGTH_SHORT).show()
                                     },
                                     modifier = Modifier
                                         .size(42.dp)
@@ -399,7 +395,7 @@ fun SecuritySettingsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.ContentCopy,
-                                        contentDescription = stringResource(R.string.settings_copied),
+                                        contentDescription = "Copy",
                                         tint = RonovaPinkPrimary,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -407,7 +403,7 @@ fun SecuritySettingsScreen(
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = stringResource(R.string.bt_device_id_desc),
+                                text = "Stable EC public key SHA-256 fingerprint. No centralized identity server required.",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = RonovaTextMuted,
                                     fontSize = 12.sp,
@@ -428,7 +424,7 @@ fun SecuritySettingsScreen(
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
                             Text(
-                                text = stringResource(R.string.security_keypair_title),
+                                text = "Cryptographic Architecture",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -447,7 +443,7 @@ fun SecuritySettingsScreen(
                     OutlinedButton(
                         onClick = {
                             viewModel.resetCryptographicIdentity()
-                            Toast.makeText(context, context.getString(R.string.settings_regenerate_keys), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "New cryptographic identity generated", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaError),
                         modifier = Modifier
@@ -458,7 +454,7 @@ fun SecuritySettingsScreen(
                     ) {
                         Icon(imageVector = Icons.Default.Security, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.action_regenerate_keys), fontWeight = FontWeight.Bold)
+                        Text("Regenerate Identity Keypair", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -485,8 +481,8 @@ fun StorageSettingsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.storage_retention_title),
-                subtitle = stringResource(R.string.storage_retention_subtitle),
+                title = "Storage & Auto-Retention",
+                subtitle = "Local Room SQLite & 30-Day Policy",
                 onBack = onBack
             )
 
@@ -581,8 +577,8 @@ fun StorageSettingsScreen(
 
                             // Policy Option 1: Auto-Delete
                             RetentionPolicyRow(
-                                title = stringResource(R.string.storage_auto_delete_title),
-                                subtitle = stringResource(R.string.storage_auto_delete_desc),
+                                title = "Auto-Delete (> 30 Days)",
+                                subtitle = "Automatically delete messages older than 30 days to free storage (Recommended)",
                                 isSelected = currentPolicy == RetentionPolicy.AUTO_DELETE,
                                 onClick = {
                                     viewModel.setRetentionPolicy(RetentionPolicy.AUTO_DELETE)
@@ -594,8 +590,8 @@ fun StorageSettingsScreen(
 
                             // Policy Option 2: Auto-Archive
                             RetentionPolicyRow(
-                                title = stringResource(R.string.storage_auto_archive_title),
-                                subtitle = stringResource(R.string.storage_auto_archive_desc),
+                                title = "Auto-Archive (> 30 Days)",
+                                subtitle = "Move messages older than 30 days from active chat into local archive",
                                 isSelected = currentPolicy == RetentionPolicy.AUTO_ARCHIVE,
                                 onClick = {
                                     viewModel.setRetentionPolicy(RetentionPolicy.AUTO_ARCHIVE)
@@ -607,8 +603,8 @@ fun StorageSettingsScreen(
 
                             // Policy Option 3: Keep All
                             RetentionPolicyRow(
-                                title = stringResource(R.string.storage_keep_all_title),
-                                subtitle = stringResource(R.string.storage_keep_all_desc),
+                                title = "Keep All Forever (No Auto-Cleanup)",
+                                subtitle = "Do not auto-delete or archive messages (All history preserved locally)",
                                 isSelected = currentPolicy == RetentionPolicy.KEEP_ALL,
                                 onClick = {
                                     viewModel.setRetentionPolicy(RetentionPolicy.KEEP_ALL)
@@ -702,7 +698,7 @@ fun StorageSettingsScreen(
                                 ) {
                                     Icon(imageVector = Icons.Default.CleanHands, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text(stringResource(R.string.action_run_cleanup), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text("Run Cleanup", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
 
                                 OutlinedButton(
@@ -721,7 +717,7 @@ fun StorageSettingsScreen(
                                 ) {
                                     Icon(imageVector = Icons.Default.Archive, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text(stringResource(R.string.action_archive_old), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text("Archive > 30d", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -735,7 +731,7 @@ fun StorageSettingsScreen(
                             ) {
                                 Icon(imageVector = Icons.Default.FolderZip, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.action_view_archived, archivedCount), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("View Archived Messages ($archivedCount)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -853,8 +849,8 @@ fun ArchivedMessagesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.archived_messages_title),
-                subtitle = stringResource(R.string.archived_messages_subtitle, archivedMessages.size),
+                title = "Archived Messages",
+                subtitle = "${archivedMessages.size} Messages Stored Offline",
                 onBack = onBack,
                 actions = {
                     if (archivedMessages.isNotEmpty()) {
@@ -893,12 +889,12 @@ fun ArchivedMessagesScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = stringResource(R.string.archived_empty),
+                            text = "No Archived Messages",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.archived_empty_desc),
+                            text = "Messages older than 30 days will appear here when Auto-Archive policy is active.",
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
@@ -1000,21 +996,15 @@ fun BatteryGuidanceScreen(
     onBack: () -> Unit
 ) {
     val isRunning by viewModel.isForegroundServiceRunning.collectAsState()
-    val context = LocalContext.current
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFFAFAFA)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top Status Bar (Warning of permissions / state matching Screenshot 1)
-            ConnectionStatusBar(
-                viewModel = viewModel
-            )
-
             RonovaTopBar(
-                title = stringResource(R.string.battery_guidance_title),
-                subtitle = stringResource(R.string.battery_guidance_sub),
+                title = "Battery & Background Guidance",
+                subtitle = "Ensuring reliable mesh relaying",
                 onBack = onBack
             )
 
@@ -1029,8 +1019,7 @@ fun BatteryGuidanceScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(
@@ -1040,25 +1029,19 @@ fun BatteryGuidanceScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = stringResource(R.string.battery_fg_service_title),
+                                        text = "Mesh Foreground Service",
                                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                                     )
-                                    Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = stringResource(R.string.battery_fg_service_desc),
-                                        fontSize = 11.5.sp,
+                                        text = "Keeps Bluetooth RFCOMM server alive when phone is locked.",
+                                        fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
                                 }
                                 Switch(
                                     checked = isRunning,
                                     onCheckedChange = { viewModel.toggleForegroundService(it) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = RonovaGoldPrimary,
-                                        uncheckedThumbColor = Color(0xFFBDBDBD),
-                                        uncheckedTrackColor = Color(0xFFE0E0E0)
-                                    )
+                                    colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
                                 )
                             }
                         }
@@ -1070,65 +1053,73 @@ fun BatteryGuidanceScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = stringResource(R.string.battery_oem_title),
+                                text = "OEM Battery Optimization Advice",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = stringResource(R.string.battery_oem_samsung),
-                                fontSize = 12.5.sp,
+                                text = "• Samsung: Settings → Apps → Ronova Mesh → Battery → Select 'Unrestricted'.",
+                                fontSize = 12.sp,
                                 color = RonovaTextPrimary
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = stringResource(R.string.battery_oem_xiaomi),
-                                fontSize = 12.5.sp,
+                                text = "• Xiaomi/MIUI: Enable 'Autostart' and set Battery Saver to 'No restrictions'.",
+                                fontSize = 12.sp,
                                 color = RonovaTextPrimary
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = stringResource(R.string.battery_oem_pixel),
-                                fontSize = 12.5.sp,
+                                text = "• Google Pixel: Settings → Apps → Ronova Mesh → App battery usage → Unrestricted.",
+                                fontSize = 12.sp,
                                 color = RonovaTextPrimary
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = stringResource(R.string.battery_warning_note),
-                                fontSize = 11.5.sp,
-                                color = RonovaGoldDark,
-                                lineHeight = 16.sp
+                                text = "Without unrestricted battery access, Android may pause Bluetooth background sockets after 10 minutes of screen-off.",
+                                fontSize = 11.sp,
+                                color = RonovaWarning
                             )
                         }
                     }
                 }
 
                 item {
+                    val context = LocalContext.current
                     Button(
-                        onClick = { PermissionManager.openBatteryOptimizationSettings(context) },
+                        onClick = {
+                            try {
+                                val intent = Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                try {
+                                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = android.net.Uri.fromParts("package", context.packageName, null)
+                                    }
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {}
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
-                            .testTag("open_battery_settings_button"),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = RonovaGoldPrimary,
-                            contentColor = RonovaTextPrimary
-                        ),
+                            .height(50.dp)
+                            .testTag("battery_settings_button"),
+                        colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
+                            imageVector = Icons.Default.BatteryAlert,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = RonovaTextPrimary
+                            tint = RonovaTextPrimary,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = stringResource(R.string.open_battery_settings),
+                            text = "Open System Battery Settings",
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary,
                             fontSize = 14.sp
@@ -1142,11 +1133,12 @@ fun BatteryGuidanceScreen(
 
 @Composable
 fun NotificationSettingsScreen(
+    viewModel: RonovaViewModel,
     onBack: () -> Unit
 ) {
-    var callRingtone by remember { mutableStateOf(true) }
-    var vibration by remember { mutableStateOf(true) }
-    var messageSound by remember { mutableStateOf(true) }
+    val callAlerts by viewModel.callAlertsEnabled.collectAsState()
+    val vibration by viewModel.vibrationEnabled.collectAsState()
+    val messageSound by viewModel.messageSoundEnabled.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -1154,8 +1146,8 @@ fun NotificationSettingsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.notification_settings_title),
-                subtitle = stringResource(R.string.notification_settings_subtitle),
+                title = "Notification Settings",
+                subtitle = "Call alerts and message ringtones",
                 onBack = onBack
             )
 
@@ -1169,19 +1161,18 @@ fun NotificationSettingsScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
+                        shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(stringResource(R.string.alert_incoming_call), fontWeight = FontWeight.Bold, color = RonovaTextPrimary)
-                            com.example.ui.components.RonovaSwitch(
-                                checked = callRingtone,
-                                onCheckedChange = { callRingtone = it },
-                                testTag = "notification_ringtone_switch"
+                            Text("Incoming Voice Call Alerts", fontWeight = FontWeight.Bold)
+                            Switch(
+                                checked = callAlerts,
+                                onCheckedChange = { viewModel.setCallAlertsEnabled(it) },
+                                colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
                             )
                         }
                     }
@@ -1191,19 +1182,18 @@ fun NotificationSettingsScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
+                        shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(stringResource(R.string.alert_vibrate), fontWeight = FontWeight.Bold, color = RonovaTextPrimary)
-                            com.example.ui.components.RonovaSwitch(
+                            Text("Vibrate on Messages & Calls", fontWeight = FontWeight.Bold)
+                            Switch(
                                 checked = vibration,
-                                onCheckedChange = { vibration = it },
-                                testTag = "notification_vibrate_switch"
+                                onCheckedChange = { viewModel.setVibrationEnabled(it) },
+                                colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
                             )
                         }
                     }
@@ -1213,19 +1203,18 @@ fun NotificationSettingsScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
+                        shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(stringResource(R.string.alert_chime), fontWeight = FontWeight.Bold, color = RonovaTextPrimary)
-                            com.example.ui.components.RonovaSwitch(
+                            Text("Message Chime", fontWeight = FontWeight.Bold)
+                            Switch(
                                 checked = messageSound,
-                                onCheckedChange = { messageSound = it },
-                                testTag = "notification_chime_switch"
+                                onCheckedChange = { viewModel.setMessageSoundEnabled(it) },
+                                colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
                             )
                         }
                     }
@@ -1245,8 +1234,8 @@ fun PrivacyLicensesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.privacy_licenses_title),
-                subtitle = stringResource(R.string.privacy_licenses_subtitle),
+                title = "Privacy Policy & Licenses",
+                subtitle = "Strict Offline Privacy Commitment",
                 onBack = onBack
             )
 
@@ -1333,8 +1322,8 @@ fun PrivacyPolicyScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.privacy_policy_title),
-                subtitle = stringResource(R.string.privacy_policy_subtitle),
+                title = "Privacy Policy",
+                subtitle = "Offline Privacy & Cryptographic Assurance",
                 onBack = onBack
             )
 
@@ -1603,8 +1592,8 @@ fun UserPolicyScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = stringResource(R.string.user_policy_title),
-                subtitle = stringResource(R.string.user_policy_subtitle),
+                title = "User Policy & Operational Safety",
+                subtitle = "Rules of Engagement & Security Guidelines",
                 onBack = onBack
             )
 
@@ -1879,52 +1868,12 @@ fun SettingsHubScreen(
     onNavigateToBattery: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToDiagnostics: () -> Unit,
-    onNavigateToAbout: () -> Unit,
-    onMenuClick: (() -> Unit)? = null,
-    onResetSetup: (() -> Unit)? = null
+    onNavigateToAbout: () -> Unit
 ) {
+    val currentLang by viewModel.currentLanguage.collectAsState()
     val retentionPolicy by viewModel.retentionPolicy.collectAsState()
     val archivedCount by viewModel.archivedMessagesCount.collectAsState()
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
-    var showResetSetupDialog by remember { mutableStateOf(false) }
-
-    if (showResetSetupDialog) {
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = { showResetSetupDialog = false },
-            title = {
-                Text(
-                    text = stringResource(R.string.setup_restart_dialog_title),
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(text = stringResource(R.string.setup_restart_dialog_desc))
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showResetSetupDialog = false
-                        viewModel.resetSetup()
-                        onResetSetup?.invoke()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldDark)
-                ) {
-                    Text(
-                        text = stringResource(R.string.setup_restart_confirm),
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            dismissButton = {
-                OutlinedButton(
-                    onClick = { showResetSetupDialog = false }
-                ) {
-                    Text(text = stringResource(R.string.setup_restart_cancel))
-                }
-            }
-        )
-    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -1934,8 +1883,7 @@ fun SettingsHubScreen(
             RonovaTopBar(
                 title = stringResource(R.string.settings_title),
                 subtitle = stringResource(R.string.settings_subtitle),
-                onBack = if (onMenuClick == null) onBack else null,
-                onMenuClick = onMenuClick
+                onBack = onBack
             )
 
             LazyColumn(
@@ -1944,13 +1892,13 @@ fun SettingsHubScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Section 0: Persistent Setup Management
+                // Section 0: Language Selection
                 item {
                     Text(
-                        text = "সেটআপ ও কনফিগারেশন",
+                        text = stringResource(R.string.settings_language_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = RonovaGoldDark
+                            color = RonovaPinkDark
                         ),
                         modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                     )
@@ -1965,43 +1913,80 @@ fun SettingsHubScreen(
                         border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = stringResource(R.string.settings_language_title),
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_language_subtitle),
+                                fontSize = 11.5.sp,
+                                color = RonovaTextMuted
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(R.string.setup_restart_title),
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.setup_restart_subtitle),
-                                        fontSize = 11.5.sp,
-                                        color = RonovaTextMuted
-                                    )
-                                }
+                                val isEn = currentLang == "en"
                                 Surface(
-                                    color = Color(0xFFE8F5E9),
-                                    shape = RoundedCornerShape(8.dp),
-                                    border = BorderStroke(1.dp, RonovaSuccess.copy(alpha = 0.3f))
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { viewModel.setLanguage("en") }
+                                        .testTag("lang_english_button"),
+                                    color = if (isEn) RonovaPinkLight else Color(0xFFF9F9F9),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = if (isEn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
                                 ) {
-                                    Text(
-                                        text = stringResource(R.string.setup_status_completed),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = RonovaSuccess,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isEn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                            contentDescription = null,
+                                            tint = if (isEn) RonovaPinkPrimary else RonovaTextMuted,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.lang_english),
+                                            fontWeight = if (isEn) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isEn) RonovaPinkDark else RonovaTextPrimary,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                }
+
+                                val isBn = currentLang == "bn"
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { viewModel.setLanguage("bn") }
+                                        .testTag("lang_bangla_button"),
+                                    color = if (isBn) RonovaPinkLight else Color(0xFFF9F9F9),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = if (isBn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isBn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+                                            contentDescription = null,
+                                            tint = if (isBn) RonovaPinkPrimary else RonovaTextMuted,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.lang_bangla),
+                                            fontWeight = if (isBn) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isBn) RonovaPinkDark else RonovaTextPrimary,
+                                            fontSize = 13.sp
+                                        )
+                                    }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            com.example.ui.components.Ronova3DButton(
-                                text = stringResource(R.string.setup_restart_title),
-                                onClick = { showResetSetupDialog = true },
-                                modifier = Modifier.fillMaxWidth(),
-                                testTag = "reset_setup_button"
-                            )
                         }
                     }
                 }
@@ -2053,11 +2038,7 @@ fun SettingsHubScreen(
                     SettingsTileCard(
                         icon = Icons.Default.Storage,
                         title = stringResource(R.string.settings_storage),
-                        subtitle = when (retentionPolicy) {
-                            RetentionPolicy.AUTO_DELETE -> stringResource(R.string.storage_auto_delete_title)
-                            RetentionPolicy.AUTO_ARCHIVE -> stringResource(R.string.storage_auto_archive_title)
-                            RetentionPolicy.KEEP_ALL -> stringResource(R.string.storage_keep_all_title)
-                        },
+                        subtitle = "Policy: ${retentionPolicy.title}",
                         badgeText = "30-Day Policy",
                         onClick = onNavigateToStorage
                     )
@@ -2067,7 +2048,7 @@ fun SettingsHubScreen(
                     SettingsTileCard(
                         icon = Icons.Default.FolderZip,
                         title = stringResource(R.string.settings_archived),
-                        subtitle = stringResource(R.string.archived_messages_subtitle, archivedCount),
+                        subtitle = "$archivedCount messages stored in local archive",
                         badgeText = if (archivedCount > 0) "$archivedCount" else null,
                         onClick = onNavigateToArchivedMessages
                     )
@@ -2160,8 +2141,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.BatteryAlert,
-                        title = stringResource(R.string.settings_battery),
-                        subtitle = stringResource(R.string.settings_battery_sub),
+                        title = "Battery & Background Guidance",
+                        subtitle = "Protect mesh background service from OS task killers",
                         onClick = onNavigateToBattery
                     )
                 }
@@ -2169,8 +2150,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Notifications,
-                        title = stringResource(R.string.settings_notifications),
-                        subtitle = stringResource(R.string.settings_notifications_sub),
+                        title = "Notifications & Alerts",
+                        subtitle = "Incoming call ringtone and message vibrations",
                         onClick = onNavigateToNotifications
                     )
                 }
@@ -2178,8 +2159,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Router,
-                        title = stringResource(R.string.settings_diagnostics),
-                        subtitle = stringResource(R.string.settings_diagnostics_sub),
+                        title = "Application Diagnostics",
+                        subtitle = "Bluetooth RFCOMM telemetry and packet analysis",
                         onClick = onNavigateToDiagnostics
                     )
                 }
@@ -2187,8 +2168,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Info,
-                        title = stringResource(R.string.settings_about),
-                        subtitle = stringResource(R.string.settings_about_sub),
+                        title = "About Ronova LTD",
+                        subtitle = "Version 1.0 • Ronova LTD contact & open source info",
                         onClick = onNavigateToAbout
                     )
                 }
@@ -2294,8 +2275,8 @@ fun AboutScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = stringResource(R.string.about_ronova_title),
-                subtitle = stringResource(R.string.about_ronova_subtitle),
+                title = "About Ronova LTD",
+                subtitle = "Decentralized Communication Innovation",
                 onBack = onBack
             )
 
@@ -2323,7 +2304,7 @@ fun AboutScreen(
                     }
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = stringResource(R.string.full_app_name),
+                        text = "Ronova Bluetooth Mesh Messenger",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary
@@ -2356,7 +2337,7 @@ fun AboutScreen(
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
                             Text(
-                                text = stringResource(R.string.home_specs_title),
+                                text = "Technical Specifications",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = RonovaTextPrimary
@@ -2366,26 +2347,26 @@ fun AboutScreen(
 
                             SpecFeatureItem(
                                 icon = Icons.Default.PhoneAndroid,
-                                title = stringResource(R.string.about_platform_label),
-                                description = stringResource(R.string.home_spec_platform_desc)
+                                title = "Platform",
+                                description = "Android Native • Kotlin"
                             )
 
                             SpecFeatureItem(
                                 icon = Icons.Default.Bluetooth,
-                                title = stringResource(R.string.about_communication_label),
-                                description = stringResource(R.string.home_spec_comm_desc)
+                                title = "Communication",
+                                description = "Bluetooth Classic + BLE, custom multi-hop relay"
                             )
 
                             SpecFeatureItem(
                                 icon = Icons.Default.WifiOff,
-                                title = stringResource(R.string.about_connectivity_label),
-                                description = stringResource(R.string.home_spec_conn_desc)
+                                title = "Connectivity",
+                                description = "No internet, SIM, mobile data, cloud server or paid API required"
                             )
 
                             SpecFeatureItem(
                                 icon = Icons.Default.AccountBalanceWallet,
-                                title = stringResource(R.string.about_business_model_label),
-                                description = stringResource(R.string.home_spec_biz_desc)
+                                title = "Business model",
+                                description = "Free to use • No ads • No subscription"
                             )
                         }
                     }

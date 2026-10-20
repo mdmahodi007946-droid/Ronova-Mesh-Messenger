@@ -27,16 +27,24 @@ class BluetoothMeshService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         createNotificationChannels()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isRunning = false
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         if (action == ACTION_STOP) {
+            isRunning = false
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
         }
+        isRunning = true
 
         val isCallActive = intent?.getBooleanExtra(EXTRA_IS_CALL_ACTIVE, false) == true
         val notification = buildMeshNotification(
@@ -122,6 +130,7 @@ class BluetoothMeshService : Service() {
     }
 
     companion object {
+        var isRunning: Boolean = false
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_MESH = "ronova_mesh_channel"
         const val CHANNEL_CALLS = "ronova_calls_channel"
