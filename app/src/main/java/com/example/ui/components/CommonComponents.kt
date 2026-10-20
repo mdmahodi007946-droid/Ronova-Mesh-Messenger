@@ -92,8 +92,8 @@ fun Ronova3DHeaderButton(
     modifier: Modifier = Modifier,
     testTag: String = ""
 ) {
-    val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-    val isPressed by androidx.compose.foundation.interaction.collectIsPressedAsState(interactionSource)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
     val scale by androidx.compose.animation.core.animateFloatAsState(
         targetValue = if (isPressed) 0.92f else 1.0f,
         animationSpec = androidx.compose.animation.core.tween(durationMillis = 100),
@@ -108,7 +108,7 @@ fun Ronova3DHeaderButton(
     Surface(
         modifier = modifier
             .size(38.dp)
-            .androidx.compose.ui.graphics.graphicsLayer {
+            .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
@@ -569,8 +569,8 @@ fun Ronova3DButton(
     selected: Boolean = false,
     testTag: String = ""
 ) {
-    val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-    val isPressed by androidx.compose.foundation.interaction.collectIsPressedAsState(interactionSource)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by androidx.compose.animation.core.animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.97f else 1.0f,
@@ -586,7 +586,7 @@ fun Ronova3DButton(
     Surface(
         modifier = modifier
             .height(46.dp)
-            .androidx.compose.ui.graphics.graphicsLayer {
+            .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
