@@ -243,21 +243,12 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Column(modifier = Modifier.fillMaxWidth()) {
-                Button(
+                Ronova3DButton(
+                    text = stringResource(R.string.welcome_get_started),
                     onClick = onContinue,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .testTag("welcome_continue_button"),
-                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.welcome_get_started),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "welcome_continue_button"
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }

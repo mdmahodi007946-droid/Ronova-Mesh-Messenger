@@ -34,6 +34,45 @@ class MeshRepository(
     companion object {
         const val THIRTY_DAYS_MS = 30L * 24L * 60L * 60L * 1000L
         private const val KEY_RETENTION_POLICY = "key_retention_policy"
+        private const val KEY_SETUP_COMPLETED = "key_setup_completed"
+        private const val KEY_SETUP_STEP = "key_setup_step"
+        private const val KEY_MESH_DISPLAY_NAME = "key_mesh_display_name"
+        private const val KEY_MESH_CHANNEL = "key_mesh_channel"
+        private const val KEY_RELAY_ENABLED = "key_relay_enabled"
+    }
+
+    fun isSetupCompleted(): Boolean {
+        return prefs.getBoolean(KEY_SETUP_COMPLETED, false)
+    }
+
+    fun setSetupCompleted(completed: Boolean) {
+        prefs.edit()
+            .putBoolean(KEY_SETUP_COMPLETED, completed)
+            .putString(KEY_SETUP_STEP, if (completed) "COMPLETED" else "WELCOME")
+            .apply()
+    }
+
+    fun getSetupStep(): String {
+        return prefs.getString(KEY_SETUP_STEP, "WELCOME") ?: "WELCOME"
+    }
+
+    fun setSetupStep(step: String) {
+        prefs.edit().putString(KEY_SETUP_STEP, step).apply()
+    }
+
+    fun getMeshDisplayName(): String {
+        return prefs.getString(KEY_MESH_DISPLAY_NAME, "রোনোভা নোড") ?: "রোনোভা নোড"
+    }
+
+    fun setMeshDisplayName(name: String) {
+        prefs.edit().putString(KEY_MESH_DISPLAY_NAME, name).apply()
+    }
+
+    fun resetSetup() {
+        prefs.edit()
+            .putBoolean(KEY_SETUP_COMPLETED, false)
+            .putString(KEY_SETUP_STEP, "WELCOME")
+            .apply()
     }
 
     val conversations: Flow<List<ConversationEntity>> = database.conversationDao().getAllConversations()

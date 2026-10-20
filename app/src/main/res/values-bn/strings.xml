@@ -7,17 +7,26 @@
 
     <!-- Navigation & Drawer -->
     <string name="nav_home">হোম</string>
-    <string name="nav_chats">বার্তা</string>
-    <string name="nav_calls">কলের ইতিহাস</string>
-    <string name="nav_network">নেটওয়ার্ক</string>
+    <string name="nav_chats">মেসেজ</string>
+    <string name="nav_calls">কল হিস্ট্রি</string>
+    <string name="nav_network">মেশ নেটওয়ার্ক</string>
     <string name="nav_settings">সেটিংস</string>
-    <string name="drawer_connected_peers">সংযুক্ত নোডসমূহ</string>
-    <string name="drawer_mesh_map">মেশ মানচিত্র</string>
-    <string name="drawer_store_forward">স্টোর ও ফরোয়ার্ড কিউ</string>
-    <string name="drawer_battery_guidance">ব্যাটারি ও ব্যাকগ্রাউন্ড সহায়তা</string>
-    <string name="drawer_permissions">অনুমতি ও ডিভাইস অ্যাক্সেস</string>
-    <string name="drawer_privacy_security">প্রাইভেসি ও সিকিউরিটি</string>
-    <string name="drawer_about">রোনোভা মেশ পরিচিতি</string>
+    <string name="drawer_connected_peers">সংযুক্ত ডিভাইস</string>
+    <string name="drawer_mesh_map">মেশ নেটওয়ার্ক</string>
+    <string name="drawer_store_forward">স্টোর ও ফরওয়ার্ড</string>
+    <string name="drawer_battery_guidance">ব্যাটারি নির্দেশনা</string>
+    <string name="drawer_permissions">অনুমতি</string>
+    <string name="drawer_privacy_security">নিরাপত্তা</string>
+    <string name="drawer_about">রোনোভা পরিচিতি</string>
+    <string name="setup_restart_title">প্রাথমিক সেটআপ পুনরায় শুরু করুন</string>
+    <string name="setup_restart_subtitle">সেটআপ উইজার্ড ও অনুমতি যাচাই পুনরায় শুরু করুন</string>
+    <string name="setup_restart_dialog_title">সেটআপ পুনরায় শুরু করবেন?</string>
+    <string name="setup_restart_dialog_desc">আপনি কি নিশ্চিত যে প্রাথমিক সেটআপ উইজার্ড পুনরায় শুরু করতে চান? আপনার সংরক্ষিত বার্তা বা ডিভাইসের ডেটা মুছে যাবে না।</string>
+    <string name="setup_restart_confirm">পুনরায় শুরু করুন</string>
+    <string name="setup_restart_cancel">বাতিল</string>
+    <string name="setup_status_completed">সেটআপ সম্পন্ন</string>
+    <string name="perm_revoked_home_warning">প্রয়োজনীয় ব্লুটুথ অনুমতি বন্ধ রয়েছে — মেশ নেটওয়ার্ক সচল রাখতে পুনরায় অনুমতি দিন</string>
+    <string name="perm_revoked_fix_button">অনুমতি দিন</string>
 
     <!-- Splash & Welcome -->
     <string name="splash_title">রোনোভা মেশ</string>

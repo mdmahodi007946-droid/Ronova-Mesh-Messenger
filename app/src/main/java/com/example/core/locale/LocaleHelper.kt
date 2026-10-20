@@ -12,17 +12,16 @@ object LocaleHelper {
 
     private const val PREFS_NAME = "ronova_locale_prefs"
     private const val KEY_LANGUAGE = "selected_language"
-    const val LANGUAGE_ENGLISH = "en"
+    const val LANGUAGE_ENGLISH = "bn" // Forced Bengali
     const val LANGUAGE_BANGLA = "bn"
 
     fun getPersistedLanguage(context: Context): String {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_LANGUAGE, LANGUAGE_ENGLISH) ?: LANGUAGE_ENGLISH
+        return LANGUAGE_BANGLA
     }
 
     fun setLanguage(context: Context, languageCode: String) {
         val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_LANGUAGE, languageCode).apply()
+        prefs.edit().putString(KEY_LANGUAGE, LANGUAGE_BANGLA).apply()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             try {

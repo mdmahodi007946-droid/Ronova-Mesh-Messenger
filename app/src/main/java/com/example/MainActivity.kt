@@ -141,8 +141,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: RonovaViewModel by viewModels()
 
     override fun attachBaseContext(newBase: android.content.Context) {
-        val lang = LocaleHelper.getPersistedLanguage(newBase)
-        super.attachBaseContext(LocaleHelper.getLocalizedContext(newBase, lang))
+        super.attachBaseContext(LocaleHelper.getLocalizedContext(newBase, LocaleHelper.LANGUAGE_BANGLA))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,19 +157,16 @@ class MainActivity : ComponentActivity() {
             )
         )
         setContent {
-            val currentLanguage by viewModel.currentLanguage.collectAsState()
-            val isBangla = currentLanguage == LocaleHelper.LANGUAGE_BANGLA
             val baseContext = LocalContext.current
-
-            val localizedConfiguration = remember(currentLanguage) {
-                LocaleHelper.getLocalizedConfiguration(baseContext, currentLanguage)
+            val localizedConfiguration = remember {
+                LocaleHelper.getLocalizedConfiguration(baseContext, LocaleHelper.LANGUAGE_BANGLA)
             }
 
             CompositionLocalProvider(
                 androidx.activity.compose.LocalActivityResultRegistryOwner provides this,
                 LocalConfiguration provides localizedConfiguration
             ) {
-                RonovaTheme(isBangla = isBangla) {
+                RonovaTheme(isBangla = true) {
                     RonovaApp(viewModel = viewModel)
                 }
             }
@@ -328,7 +324,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                         color = RonovaCardBorder.copy(alpha = 0.5f)
                     )
 
-                    // All 11 destinations from PRD Section 3
+                    // 10 destinations required: হোম, মেসেজ, কল হিস্ট্রি, সংযুক্ত ডিভাইস, মেশ নেটওয়ার্ক, স্টোর ও ফরওয়ার্ড, অনুমতি, ব্যাটারি নির্দেশনা, নিরাপত্তা এবং সেটিংস
                     val drawerDestinations = listOf(
                         Triple(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home to "drawer_home"),
                         Triple(Screen.Chats.route, stringResource(R.string.nav_chats), Icons.AutoMirrored.Filled.Chat to "drawer_chats"),
@@ -336,11 +332,10 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                         Triple(Screen.Discovery.route, stringResource(R.string.drawer_connected_peers), Icons.AutoMirrored.Filled.BluetoothSearching to "drawer_peers"),
                         Triple(Screen.RelayNetwork.route, stringResource(R.string.drawer_mesh_map), Icons.Default.Hub to "drawer_mesh_map"),
                         Triple(Screen.PendingMessages.route, stringResource(R.string.drawer_store_forward), Icons.Default.Schedule to "drawer_store_fwd"),
-                        Triple(Screen.BatteryGuidance.route, stringResource(R.string.drawer_battery_guidance), Icons.Default.BatteryChargingFull to "drawer_battery"),
                         Triple(Screen.Permissions.route, stringResource(R.string.drawer_permissions), Icons.Default.VerifiedUser to "drawer_permissions"),
+                        Triple(Screen.BatteryGuidance.route, stringResource(R.string.drawer_battery_guidance), Icons.Default.BatteryChargingFull to "drawer_battery"),
                         Triple(Screen.SecuritySettings.route, stringResource(R.string.drawer_privacy_security), Icons.Default.Lock to "drawer_security"),
-                        Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "drawer_settings"),
-                        Triple(Screen.About.route, stringResource(R.string.drawer_about), Icons.Default.Info to "drawer_about")
+                        Triple(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings to "drawer_settings")
                     )
 
                     drawerDestinations.forEach { (route, label, iconAndTag) ->
@@ -350,8 +345,9 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                             label = {
                                 Text(
                                     text = label,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                                    fontSize = 13.5.sp
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                                    fontSize = 14.5.sp,
+                                    color = if (selected) RonovaTextPrimary else RonovaTextSecondary
                                 )
                             },
                             selected = selected,
@@ -359,7 +355,8 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                                 Icon(
                                     imageVector = icon,
                                     contentDescription = label,
-                                    tint = if (selected) RonovaGoldDark else RonovaTextSecondary
+                                    tint = if (selected) RonovaGoldDark else RonovaTextSecondary,
+                                    modifier = Modifier.size(22.dp)
                                 )
                             },
                             onClick = {
@@ -374,17 +371,23 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                                     }
                                 }
                             },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(14.dp),
                             colors = NavigationDrawerItemDefaults.colors(
                                 selectedContainerColor = RonovaGoldLight,
                                 selectedTextColor = RonovaTextPrimary,
                                 selectedIconColor = RonovaGoldDark,
                                 unselectedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                unselectedTextColor = RonovaTextPrimary,
+                                unselectedTextColor = RonovaTextSecondary,
                                 unselectedIconColor = RonovaTextSecondary
                             ),
                             modifier = Modifier
-                                .padding(horizontal = 10.dp, vertical = 2.dp)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                                .then(
+                                    if (selected) Modifier.border(
+                                        BorderStroke(1.dp, RonovaGoldPrimary.copy(alpha = 0.5f)),
+                                        RoundedCornerShape(14.dp)
+                                    ) else Modifier
+                                )
                                 .testTag(tag)
                         )
                     }
@@ -483,7 +486,18 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     SplashScreen(
                         viewModel = viewModel,
                         onNavigateNext = {
-                            navController.navigate(Screen.Welcome.route) {
+                            val isCompleted = viewModel.isSetupCompleted.value
+                            val hasBt = PermissionManager.hasBluetoothPermissions(context)
+                            val step = viewModel.setupStep.value
+
+                            val targetRoute = when {
+                                isCompleted -> Screen.Home.route
+                                step == "CONFIG" && hasBt -> Screen.BluetoothSetup.route
+                                step == "PERMISSIONS" -> Screen.Permissions.route
+                                else -> Screen.Welcome.route
+                            }
+
+                            navController.navigate(targetRoute) {
                                 popUpTo(Screen.Splash.route) { inclusive = true }
                             }
                         }
@@ -493,7 +507,10 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                 // 2. Welcome
                 composable(Screen.Welcome.route) {
                     WelcomeScreen(
-                        onContinue = { navController.navigate(Screen.Permissions.route) }
+                        onContinue = {
+                            viewModel.updateSetupStep("PERMISSIONS")
+                            navController.navigate(Screen.Permissions.route)
+                        }
                     )
                 }
 
@@ -501,6 +518,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                 composable(Screen.Permissions.route) {
                     PermissionsScreen(
                         onPermissionsGranted = {
+                            viewModel.updateSetupStep("CONFIG")
                             navController.navigate(Screen.BluetoothSetup.route)
                         },
                         onBack = { navController.popBackStack() }
@@ -512,8 +530,9 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     BluetoothSetupScreen(
                         viewModel = viewModel,
                         onSetupComplete = {
+                            viewModel.completeSetup()
                             navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Welcome.route) { inclusive = true }
+                                popUpTo(0) { inclusive = true }
                             }
                         }
                     )
@@ -741,7 +760,12 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     onNavigateToNotifications = { navController.navigate(Screen.NotificationSettings.route) },
                     onNavigateToDiagnostics = { navController.navigate(Screen.Diagnostics.route) },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
-                    onMenuClick = { scope.launch { drawerState.open() } }
+                    onMenuClick = { scope.launch { drawerState.open() } },
+                    onResetSetup = {
+                        navController.navigate(Screen.Welcome.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
                 )
             }
 

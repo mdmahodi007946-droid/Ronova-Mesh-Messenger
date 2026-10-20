@@ -96,8 +96,31 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     private val _isForegroundServiceRunning = MutableStateFlow(false)
     val isForegroundServiceRunning: StateFlow<Boolean> = _isForegroundServiceRunning.asStateFlow()
 
-    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.getPersistedLanguage(app))
+    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.LANGUAGE_BANGLA)
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
+
+    private val _isSetupCompleted = MutableStateFlow(repository.isSetupCompleted())
+    val isSetupCompleted: StateFlow<Boolean> = _isSetupCompleted.asStateFlow()
+
+    private val _setupStep = MutableStateFlow(repository.getSetupStep())
+    val setupStep: StateFlow<String> = _setupStep.asStateFlow()
+
+    fun completeSetup() {
+        repository.setSetupCompleted(true)
+        _isSetupCompleted.value = true
+        _setupStep.value = "COMPLETED"
+    }
+
+    fun updateSetupStep(step: String) {
+        repository.setSetupStep(step)
+        _setupStep.value = step
+    }
+
+    fun resetSetup() {
+        repository.resetSetup()
+        _isSetupCompleted.value = false
+        _setupStep.value = "WELCOME"
+    }
 
     fun setLanguage(languageCode: String) {
         com.example.core.locale.LocaleHelper.setLanguage(app, languageCode)

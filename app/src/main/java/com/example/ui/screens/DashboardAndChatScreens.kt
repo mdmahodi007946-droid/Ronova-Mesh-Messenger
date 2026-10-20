@@ -153,24 +153,20 @@ fun HomeScreen(
                     StatusBadge(status = status)
                 },
                 actions = {
-                    IconButton(
-                        onClick = onNavigateToRelayNetwork,
-                        modifier = Modifier.testTag("home_mesh_topology_icon_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Hub,
+                    Box(modifier = Modifier.padding(end = 4.dp)) {
+                        com.example.ui.components.Ronova3DHeaderButton(
+                            icon = Icons.Default.Hub,
                             contentDescription = stringResource(R.string.home_mesh_map),
-                            tint = RonovaGoldDark
+                            onClick = onNavigateToRelayNetwork,
+                            testTag = "home_mesh_topology_icon_button"
                         )
                     }
-                    IconButton(
-                        onClick = onNavigateToSettings,
-                        modifier = Modifier.testTag("home_settings_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
+                    Box(modifier = Modifier.padding(end = 8.dp)) {
+                        com.example.ui.components.Ronova3DHeaderButton(
+                            icon = Icons.Default.Settings,
                             contentDescription = stringResource(R.string.nav_settings),
-                            tint = RonovaGoldDark
+                            onClick = onNavigateToSettings,
+                            testTag = "home_settings_button"
                         )
                     }
                 }
@@ -180,10 +176,73 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // Permission revocation recovery warning (shown if permissions revoked post-setup)
                 item {
-                    Spacer(modifier = Modifier.height(2.dp))
+                    val hasBtPermissions = com.example.core.permission.PermissionManager.hasBluetoothPermissions(context)
+                    if (!hasBtPermissions) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, RonovaError.copy(alpha = 0.4f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFFEE2E2)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = RonovaError,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.perm_revoked_home_warning),
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = RonovaError,
+                                            fontSize = 11.5.sp,
+                                            lineHeight = 16.sp
+                                        )
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Button(
+                                    onClick = {
+                                        com.example.core.permission.PermissionManager.openAppSettings(context)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = RonovaError),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                    modifier = Modifier.height(30.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.perm_revoked_fix_button),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
                     // Compact Identity Card with cryptographic fingerprint & status
                     Card(
                         modifier = Modifier.fillMaxWidth(),

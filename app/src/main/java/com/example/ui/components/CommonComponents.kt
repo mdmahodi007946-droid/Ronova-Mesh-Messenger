@@ -3,7 +3,9 @@ package com.example.ui.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -11,6 +13,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -78,6 +84,75 @@ import com.example.ui.theme.RonovaTextSecondary
 import com.example.ui.theme.RonovaVioletAccent
 import com.example.ui.theme.RonovaWarning
 
+@Composable
+fun Ronova3DHeaderButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    testTag: String = ""
+) {
+    val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val isPressed by androidx.compose.foundation.interaction.collectIsPressedAsState(interactionSource)
+    val scale by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1.0f,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 100),
+        label = "header_btn_scale"
+    )
+    val elevation by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isPressed) 0.5.dp else 2.dp,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 100),
+        label = "header_btn_elevation"
+    )
+
+    Surface(
+        modifier = modifier
+            .size(38.dp)
+            .androidx.compose.ui.graphics.graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            ),
+        shape = RoundedCornerShape(11.dp),
+        color = Color(0xFFFFFDF7),
+        shadowElevation = elevation,
+        border = BorderStroke(
+            1.dp,
+            Brush.verticalGradient(
+                listOf(
+                    Color.White.copy(alpha = 0.95f),
+                    RonovaGoldSecondary.copy(alpha = 0.7f),
+                    RonovaGoldDark.copy(alpha = 0.25f)
+                )
+            )
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        if (isPressed) listOf(Color(0xFFFFECB3), Color(0xFFFFF8E1))
+                        else listOf(Color(0xFFFFFFFF), Color(0xFFFFF8E1))
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = RonovaGoldDark,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RonovaTopBar(
@@ -127,25 +202,21 @@ fun RonovaTopBar(
             },
             navigationIcon = {
                 if (onMenuClick != null) {
-                    IconButton(
-                        onClick = onMenuClick,
-                        modifier = Modifier.testTag("top_bar_menu_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
+                    Box(modifier = Modifier.padding(start = 10.dp, end = 4.dp)) {
+                        Ronova3DHeaderButton(
+                            icon = Icons.Default.Menu,
                             contentDescription = stringResource(R.string.content_desc_menu),
-                            tint = RonovaGoldDark
+                            onClick = onMenuClick,
+                            testTag = "top_bar_menu_button"
                         )
                     }
                 } else if (onBack != null) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier.testTag("top_bar_back_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    Box(modifier = Modifier.padding(start = 10.dp, end = 4.dp)) {
+                        Ronova3DHeaderButton(
+                            icon = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_desc_back),
-                            tint = RonovaGoldDark
+                            onClick = onBack,
+                            testTag = "top_bar_back_button"
                         )
                     }
                 }
@@ -495,42 +566,82 @@ fun Ronova3DButton(
     icon: ImageVector? = null,
     enabled: Boolean = true,
     isLoading: Boolean = false,
+    selected: Boolean = false,
     testTag: String = ""
 ) {
+    val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val isPressed by androidx.compose.foundation.interaction.collectIsPressedAsState(interactionSource)
+
+    val scale by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isPressed && enabled) 0.97f else 1.0f,
+        animationSpec = androidx.compose.animation.core.tween(100),
+        label = "btn_scale"
+    )
+    val elevation by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (!enabled) 0.dp else if (isPressed) 1.dp else 2.5.dp,
+        animationSpec = androidx.compose.animation.core.tween(100),
+        label = "btn_elevation"
+    )
+
     Surface(
         modifier = modifier
-            .height(48.dp)
+            .height(46.dp)
+            .androidx.compose.ui.graphics.graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
-            .clickable(enabled = enabled && !isLoading) { onClick() },
-        shape = RoundedCornerShape(14.dp),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled && !isLoading
+            ) { onClick() },
+        shape = RoundedCornerShape(13.dp),
         color = Color.Transparent,
-        shadowElevation = 2.dp
+        shadowElevation = elevation
     ) {
+        // Glassmorphism styling with yellow brand palette: #FFC107, #FFD54F, #FFF8E1
+        val backgroundBrush = when {
+            !enabled -> Brush.verticalGradient(
+                listOf(Color(0xFFF3F4F6), Color(0xFFE5E7EB))
+            )
+            selected -> Brush.verticalGradient(
+                listOf(Color(0xFFFFD54F), Color(0xFFFFC107))
+            )
+            isPressed -> Brush.verticalGradient(
+                listOf(Color(0xFFFFE082), Color(0xFFFFC107))
+            )
+            else -> Brush.verticalGradient(
+                listOf(Color(0xFFFFFDE7), Color(0xFFFFD54F))
+            )
+        }
+
+        val borderBrush = when {
+            !enabled -> Brush.verticalGradient(listOf(Color(0xFFE0E0E0), Color(0xFFD6D6D6)))
+            selected -> Brush.verticalGradient(
+                listOf(Color.White.copy(alpha = 0.95f), RonovaGoldDark)
+            )
+            else -> Brush.verticalGradient(
+                listOf(
+                    Color.White.copy(alpha = 0.95f),
+                    RonovaGoldSecondary.copy(alpha = 0.85f),
+                    RonovaGoldDark.copy(alpha = 0.4f)
+                )
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = if (enabled) Brush.verticalGradient(
-                        colors = listOf(RonovaGoldSecondary, RonovaGoldPrimary)
-                    ) else Brush.verticalGradient(
-                        colors = listOf(Color(0xFFEEEEEE), Color(0xFFDDDDDD))
-                    ),
-                    shape = RoundedCornerShape(14.dp)
-                )
-                .border(
-                    BorderStroke(
-                        1.dp,
-                        if (enabled) RonovaGoldDark.copy(alpha = 0.5f) else Color(0xFFCCCCCC)
-                    ),
-                    RoundedCornerShape(14.dp)
-                )
-                .padding(horizontal = 16.dp),
+                .background(backgroundBrush, shape = RoundedCornerShape(13.dp))
+                .border(BorderStroke(1.dp, borderBrush), RoundedCornerShape(13.dp))
+                .padding(horizontal = 14.dp),
             contentAlignment = Alignment.Center
         ) {
             if (isLoading) {
                 androidx.compose.material3.CircularProgressIndicator(
                     color = RonovaTextPrimary,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(19.dp),
                     strokeWidth = 2.dp
                 )
             } else {
@@ -552,7 +663,8 @@ fun Ronova3DButton(
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = if (enabled) RonovaTextPrimary else RonovaTextMuted,
-                            letterSpacing = 0.2.sp
+                            fontSize = 14.sp,
+                            letterSpacing = 0.1.sp
                         )
                     )
                 }

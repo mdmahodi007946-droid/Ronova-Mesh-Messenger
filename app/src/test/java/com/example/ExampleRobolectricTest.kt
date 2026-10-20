@@ -159,33 +159,58 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `locale helper persistence and language switching test`() {
+    fun `bengali is the primary and permanent language`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         
         com.example.core.locale.LocaleHelper.setLanguage(context, "bn")
         assertEquals("bn", com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
 
-        com.example.core.locale.LocaleHelper.setLanguage(context, "en")
-        assertEquals("en", com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
+        val bnContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "bn")
+        assertEquals("হোম", bnContext.getString(R.string.nav_home))
+        assertEquals("মেসেজ", bnContext.getString(R.string.nav_chats))
+        assertEquals("কল হিস্ট্রি", bnContext.getString(R.string.nav_calls))
+        assertEquals("সেটিংস", bnContext.getString(R.string.nav_settings))
+        assertEquals("সংযুক্ত ডিভাইস", bnContext.getString(R.string.drawer_connected_peers))
+        assertEquals("মেশ নেটওয়ার্ক", bnContext.getString(R.string.drawer_mesh_map))
+        assertEquals("স্টোর ও ফরওয়ার্ড", bnContext.getString(R.string.drawer_store_forward))
+        assertEquals("অনুমতি", bnContext.getString(R.string.drawer_permissions))
+        assertEquals("ব্যাটারি নির্দেশনা", bnContext.getString(R.string.drawer_battery_guidance))
+        assertEquals("নিরাপত্তা", bnContext.getString(R.string.drawer_privacy_security))
     }
 
     @Test
-    fun `localized context resolves English and Bengali strings`() {
+    fun `persistent setup flow state management test`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.core.database.AppDatabase::class.java).build()
+        val repo = com.example.data.MeshRepository(db, context)
 
-        val enContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "en")
-        assertEquals("Home", enContext.getString(R.string.nav_home))
-        assertEquals("Messages", enContext.getString(R.string.nav_chats))
-        assertEquals("Call History", enContext.getString(R.string.nav_calls))
-        assertEquals("Settings", enContext.getString(R.string.nav_settings))
-        assertEquals("Connected Peers", enContext.getString(R.string.drawer_connected_peers))
+        // Initially setup is not completed
+        repo.resetSetup()
+        assertFalse(repo.isSetupCompleted())
+        assertEquals("WELCOME", repo.getSetupStep())
 
-        val bnContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "bn")
-        assertEquals("হোম", bnContext.getString(R.string.nav_home))
-        assertEquals("বার্তা", bnContext.getString(R.string.nav_chats))
-        assertEquals("কলের ইতিহাস", bnContext.getString(R.string.nav_calls))
-        assertEquals("সেটিংস", bnContext.getString(R.string.nav_settings))
-        assertEquals("সংযুক্ত নোডসমূহ", bnContext.getString(R.string.drawer_connected_peers))
+        // User advances step
+        repo.setSetupStep("PERMISSIONS")
+        assertEquals("PERMISSIONS", repo.getSetupStep())
+
+        repo.setSetupStep("CONFIG")
+        assertEquals("CONFIG", repo.getSetupStep())
+
+        // User finishes setup
+        repo.setSetupCompleted(true)
+        assertTrue(repo.isSetupCompleted())
+        assertEquals("COMPLETED", repo.getSetupStep())
+
+        // Subsequent check preserves completed state
+        val repoAfterRestart = com.example.data.MeshRepository(db, context)
+        assertTrue(repoAfterRestart.isSetupCompleted())
+
+        // User deliberately resets setup from settings
+        repoAfterRestart.resetSetup()
+        assertFalse(repoAfterRestart.isSetupCompleted())
+        assertEquals("WELCOME", repoAfterRestart.getSetupStep())
+
+        db.close()
     }
 
     @Test
@@ -204,7 +229,7 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `eleven drawer navigation destinations are defined`() {
+    fun `ten drawer navigation destinations are defined`() {
         val drawerRoutes = listOf(
             com.example.ui.navigation.Screen.Home.route,
             com.example.ui.navigation.Screen.Chats.route,
@@ -212,12 +237,11 @@ class ExampleRobolectricTest {
             com.example.ui.navigation.Screen.Discovery.route,
             com.example.ui.navigation.Screen.RelayNetwork.route,
             com.example.ui.navigation.Screen.PendingMessages.route,
-            com.example.ui.navigation.Screen.BatteryGuidance.route,
             com.example.ui.navigation.Screen.Permissions.route,
+            com.example.ui.navigation.Screen.BatteryGuidance.route,
             com.example.ui.navigation.Screen.SecuritySettings.route,
-            com.example.ui.navigation.Screen.Settings.route,
-            com.example.ui.navigation.Screen.About.route
+            com.example.ui.navigation.Screen.Settings.route
         )
-        assertEquals(11, drawerRoutes.size)
+        assertEquals(10, drawerRoutes.size)
     }
 }

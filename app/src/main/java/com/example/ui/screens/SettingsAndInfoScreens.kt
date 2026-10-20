@@ -1880,12 +1880,51 @@ fun SettingsHubScreen(
     onNavigateToNotifications: () -> Unit,
     onNavigateToDiagnostics: () -> Unit,
     onNavigateToAbout: () -> Unit,
-    onMenuClick: (() -> Unit)? = null
+    onMenuClick: (() -> Unit)? = null,
+    onResetSetup: (() -> Unit)? = null
 ) {
-    val currentLang by viewModel.currentLanguage.collectAsState()
     val retentionPolicy by viewModel.retentionPolicy.collectAsState()
     val archivedCount by viewModel.archivedMessagesCount.collectAsState()
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
+    var showResetSetupDialog by remember { mutableStateOf(false) }
+
+    if (showResetSetupDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showResetSetupDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.setup_restart_dialog_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(text = stringResource(R.string.setup_restart_dialog_desc))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showResetSetupDialog = false
+                        viewModel.resetSetup()
+                        onResetSetup?.invoke()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldDark)
+                ) {
+                    Text(
+                        text = stringResource(R.string.setup_restart_confirm),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showResetSetupDialog = false }
+                ) {
+                    Text(text = stringResource(R.string.setup_restart_cancel))
+                }
+            }
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -1905,13 +1944,13 @@ fun SettingsHubScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Section 0: Language Selection
+                // Section 0: Persistent Setup Management
                 item {
                     Text(
-                        text = stringResource(R.string.settings_language_section),
+                        text = "সেটআপ ও কনফিগারেশন",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = RonovaPinkDark
+                            color = RonovaGoldDark
                         ),
                         modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                     )
@@ -1926,80 +1965,43 @@ fun SettingsHubScreen(
                         border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = stringResource(R.string.settings_language_title),
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_language_subtitle),
-                                fontSize = 11.5.sp,
-                                color = RonovaTextMuted
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                val isEn = currentLang == "en"
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable { viewModel.setLanguage("en") }
-                                        .testTag("lang_english_button"),
-                                    color = if (isEn) RonovaPinkLight else Color(0xFFF9F9F9),
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = if (isEn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isEn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                            contentDescription = null,
-                                            tint = if (isEn) RonovaPinkPrimary else RonovaTextMuted,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(R.string.lang_english),
-                                            fontWeight = if (isEn) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isEn) RonovaPinkDark else RonovaTextPrimary,
-                                            fontSize = 13.sp
-                                        )
-                                    }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.setup_restart_title),
+                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.setup_restart_subtitle),
+                                        fontSize = 11.5.sp,
+                                        color = RonovaTextMuted
+                                    )
                                 }
-
-                                val isBn = currentLang == "bn"
                                 Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable { viewModel.setLanguage("bn") }
-                                        .testTag("lang_bangla_button"),
-                                    color = if (isBn) RonovaPinkLight else Color(0xFFF9F9F9),
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = if (isBn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
+                                    color = Color(0xFFE8F5E9),
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, RonovaSuccess.copy(alpha = 0.3f))
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isBn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                            contentDescription = null,
-                                            tint = if (isBn) RonovaPinkPrimary else RonovaTextMuted,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(R.string.lang_bangla),
-                                            fontWeight = if (isBn) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isBn) RonovaPinkDark else RonovaTextPrimary,
-                                            fontSize = 13.sp
-                                        )
-                                    }
+                                    Text(
+                                        text = stringResource(R.string.setup_status_completed),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = RonovaSuccess,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
                                 }
                             }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            com.example.ui.components.Ronova3DButton(
+                                text = stringResource(R.string.setup_restart_title),
+                                onClick = { showResetSetupDialog = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "reset_setup_button"
+                            )
                         }
                     }
                 }
