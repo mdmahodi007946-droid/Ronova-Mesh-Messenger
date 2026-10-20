@@ -32,6 +32,8 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -112,9 +114,11 @@ fun RonovaTopBar(
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
     onOpenDrawer: (() -> Unit)? = null,
+    onMenuClick: (() -> Unit)? = null,
     statusBadge: (@Composable () -> Unit)? = null,
     actions: @Composable () -> Unit = {}
 ) {
+    val menuAction = onOpenDrawer ?: onMenuClick
     Surface(
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.6f)),
@@ -153,9 +157,9 @@ fun RonovaTopBar(
                 }
             },
             navigationIcon = {
-                if (onOpenDrawer != null) {
+                if (menuAction != null) {
                     IconButton(
-                        onClick = onOpenDrawer,
+                        onClick = menuAction,
                         modifier = Modifier.testTag("top_bar_menu_button")
                     ) {
                         Icon(
@@ -182,6 +186,44 @@ fun RonovaTopBar(
                 containerColor = Color.Transparent
             ),
             windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+        )
+    }
+}
+
+@Composable
+fun Ronova3DButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    testTag: String = ""
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .height(52.dp)
+            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+        shape = RoundedCornerShape(14.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = RonovaGoldPrimary,
+            contentColor = RonovaTextPrimary,
+            disabledContainerColor = RonovaGoldPrimary.copy(alpha = 0.4f),
+            disabledContentColor = RonovaTextPrimary.copy(alpha = 0.4f)
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 0.dp,
+            disabledElevation = 0.dp
+        )
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                letterSpacing = 0.3.sp
+            )
         )
     }
 }
