@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import com.example.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
