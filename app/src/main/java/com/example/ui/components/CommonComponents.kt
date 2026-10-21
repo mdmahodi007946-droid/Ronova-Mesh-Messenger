@@ -3,7 +3,9 @@ package com.example.ui.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -11,6 +13,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.scale
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -107,6 +114,58 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.R
 import com.example.ui.navigation.Screen
 
+/**
+ * 3D Header Action Control: 40dp rounded-square button with 2-layer shadow, subtle highlight, and 1dp pressed shift.
+ */
+@Composable
+fun HeaderAction(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    testTag: String = ""
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val elevation by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 3.dp,
+        animationSpec = tween(durationMillis = 100),
+        label = "header_action_elevation"
+    )
+    val contentOffset by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 0.dp,
+        animationSpec = tween(durationMillis = 100),
+        label = "header_action_offset"
+    )
+
+    Surface(
+        onClick = onClick,
+        interactionSource = interactionSource,
+        modifier = modifier
+            .size(40.dp)
+            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = elevation,
+        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.8f))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = contentOffset),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = RonovaGoldDark,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RonovaTopBar(
@@ -121,75 +180,193 @@ fun RonovaTopBar(
     val menuAction = onOpenDrawer ?: onMenuClick
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.6f)),
-        shadowElevation = 0.5.dp
+        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f)),
+        shadowElevation = 1.dp
     ) {
-        TopAppBar(
-            title = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f, fill = false)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                if (menuAction != null) {
+                    HeaderAction(
+                        icon = Icons.Default.Menu,
+                        contentDescription = stringResource(R.string.content_desc_menu),
+                        onClick = menuAction,
+                        testTag = "top_bar_menu_button"
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                } else if (onBack != null) {
+                    HeaderAction(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.content_desc_back),
+                        onClick = onBack,
+                        testTag = "top_bar_back_button"
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+
+                Column(modifier = Modifier.weight(1f, fill = false)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaTextPrimary,
+                            fontSize = 16.sp
+                        ),
+                        maxLines = 1
+                    )
+                    if (subtitle != null) {
                         Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                letterSpacing = 0.2.sp
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = RonovaTextMuted,
+                                fontSize = 11.sp
                             ),
                             maxLines = 1
                         )
-                        if (subtitle != null) {
-                            Text(
-                                text = subtitle,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = RonovaTextMuted,
-                                    fontSize = 11.sp
-                                ),
-                                maxLines = 1
-                            )
-                        }
-                    }
-                    if (statusBadge != null) {
-                        statusBadge()
                     }
                 }
-            },
-            navigationIcon = {
-                if (menuAction != null) {
-                    IconButton(
-                        onClick = menuAction,
-                        modifier = Modifier.testTag("top_bar_menu_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
-                } else if (onBack != null) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier.testTag("top_bar_back_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
+                if (statusBadge != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    statusBadge()
                 }
-            },
-            actions = { actions() },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent
-            ),
-            windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
-        )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                actions()
+            }
+        }
     }
 }
 
+/**
+ * Medium Glass Button per PRD Section 5:
+ * Height 44dp, min touch target 48dp, horizontal padding 16dp, label 14sp Bengali semibold, icon 18dp.
+ * Surface: translucent brand fill over vertical highlight gradient, 1dp inner light border, soft shadow.
+ * States: default, pressed (scale 0.97, reduced shadow), disabled (alpha 0.4), loading (spinner), selected.
+ */
+@Composable
+fun RonovaGlassButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    isLoading: Boolean = false,
+    isSelected: Boolean = false,
+    testTag: String = ""
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed && enabled && !isLoading) 0.97f else 1.0f,
+        animationSpec = tween(durationMillis = 100),
+        label = "glass_button_scale"
+    )
+
+    val backgroundColor = when {
+        !enabled -> Color(0xFFE0E0E0).copy(alpha = 0.4f)
+        isSelected -> RonovaGoldPrimary
+        isPressed -> RonovaGoldPrimary.copy(alpha = 0.9f)
+        else -> RonovaGoldPrimary.copy(alpha = 0.75f)
+    }
+
+    val contentColor = when {
+        !enabled -> RonovaTextMuted.copy(alpha = 0.6f)
+        else -> RonovaTextPrimary
+    }
+
+    val borderColor = when {
+        isSelected -> RonovaGoldDark
+        !enabled -> Color.LightGray.copy(alpha = 0.3f)
+        else -> Color.White.copy(alpha = 0.7f)
+    }
+
+    val shadowElevation = if (enabled && !isPressed) 3.dp else 0.dp
+
+    Box(
+        modifier = modifier
+            .heightIn(min = 48.dp) // Minimum interactive touch target 48dp
+            .scale(scale)
+            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            onClick = {
+                if (enabled && !isLoading) {
+                    onClick()
+                }
+            },
+            enabled = enabled && !isLoading,
+            interactionSource = interactionSource,
+            shape = RoundedCornerShape(14.dp),
+            color = backgroundColor,
+            shadowElevation = shadowElevation,
+            border = BorderStroke(1.dp, borderColor),
+            modifier = Modifier
+                .height(44.dp)
+                .fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = if (isSelected) 0.25f else 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = contentColor,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    } else if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = contentColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = contentColor
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Backwards compatibility delegate mapping Ronova3DButton to RonovaGlassButton.
+ */
 @Composable
 fun Ronova3DButton(
     text: String,
@@ -198,47 +375,26 @@ fun Ronova3DButton(
     enabled: Boolean = true,
     testTag: String = ""
 ) {
-    Button(
+    RonovaGlassButton(
+        text = text,
         onClick = onClick,
+        modifier = modifier,
         enabled = enabled,
-        modifier = modifier
-            .height(52.dp)
-            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
-        shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = RonovaGoldPrimary,
-            contentColor = RonovaTextPrimary,
-            disabledContainerColor = RonovaGoldPrimary.copy(alpha = 0.4f),
-            disabledContentColor = RonovaTextPrimary.copy(alpha = 0.4f)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 0.dp,
-            disabledElevation = 0.dp
-        )
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp,
-                letterSpacing = 0.3.sp
-            )
-        )
-    }
+        testTag = testTag
+    )
 }
 
 @Composable
 fun StatusBadge(status: BluetoothStatus) {
     val (bgColor, textColor, label) = when (status) {
-        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "Connected")
-        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Scanning...")
-        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Linking...")
-        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "Mesh Ready")
-        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "Permission Needed")
-        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "Bluetooth Off")
-        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "No Bluetooth")
-        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "Mesh Error")
+        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "সংযুক্ত")
+        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "স্ক্যান হচ্ছে…")
+        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "লিংক হচ্ছে…")
+        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "মেশ প্রস্তুত")
+        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "অনুমতি প্রয়োজন")
+        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "ব্লুটুথ বন্ধ")
+        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "ব্লুটুথ নেই")
+        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "মেশ ত্রুটি")
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")

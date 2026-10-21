@@ -87,17 +87,19 @@ import com.example.ui.theme.RonovaPinkSecondary
 import com.example.ui.theme.RonovaSuccess
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
+import com.example.data.StartDestination
 import com.example.viewmodel.RonovaViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
     viewModel: RonovaViewModel,
-    onNavigateNext: () -> Unit
+    onNavigateNext: (StartDestination) -> Unit
 ) {
     LaunchedEffect(Unit) {
-        delay(1600L)
-        onNavigateNext()
+        val dest = viewModel.getStartDestination()
+        delay(1200L)
+        onNavigateNext(dest)
     }
 
     Box(
@@ -791,11 +793,214 @@ fun BluetoothSetupScreen(
 
                 val canEnter = status == BluetoothStatus.READY || status == BluetoothStatus.CONNECTED
                 Ronova3DButton(
-                    text = stringResource(R.string.bt_enter_mesh),
+                    text = "পরবর্তী ধাপ: পরিচয় যাচাই",
                     onClick = onSetupComplete,
                     enabled = canEnter,
                     modifier = Modifier.fillMaxWidth(),
                     testTag = "finish_setup_button"
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun IdentitySetupScreen(
+    viewModel: RonovaViewModel,
+    onSetupComplete: () -> Unit
+) {
+    val context = LocalContext.current
+    var hasError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .widthIn(max = 560.dp)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                RonovaTopBar(
+                    title = stringResource(R.string.identity_setup_title),
+                    subtitle = stringResource(R.string.identity_setup_subtitle)
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(RonovaGoldLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = RonovaGoldDark,
+                        modifier = Modifier.size(44.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = stringResource(R.string.identity_keystore_verified),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = RonovaTextPrimary
+                    )
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.identity_keystore_desc),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = RonovaTextMuted,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Identity Card with Fingerprint & Copy Action
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, RonovaCardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.home_node_identity),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = RonovaTextMuted,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable {
+                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Device ID", viewModel.myDeviceId))
+                                    android.widget.Toast.makeText(context, context.getString(R.string.home_copied_id), android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = stringResource(R.string.home_node_id_copy_desc),
+                                    tint = RonovaGoldDark,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "কপি",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = RonovaGoldDark
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = viewModel.myDeviceId,
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = RonovaTextPrimary,
+                                fontSize = 13.5.sp
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Specs list
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, RonovaCardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.identity_specs_title),
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = RonovaTextPrimary
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.identity_spec_ecdh),
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary, fontSize = 12.sp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.identity_spec_aes),
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary, fontSize = 12.sp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.identity_spec_hmac),
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary, fontSize = 12.sp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.identity_spec_relay),
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted, fontSize = 11.5.sp)
+                        )
+                    }
+                }
+
+                if (hasError) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = RonovaError.copy(alpha = 0.1f)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaError.copy(alpha = 0.3f))
+                    ) {
+                        Text(
+                            text = errorMessage,
+                            color = RonovaError,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Ronova3DButton(
+                    text = stringResource(R.string.identity_complete_button),
+                    onClick = {
+                        val hasBtPerm = viewModel.hasBluetoothPermissions()
+                        val isBtOn = viewModel.isBluetoothEnabled()
+                        val hasId = viewModel.myDeviceId.isNotEmpty()
+
+                        if (!hasBtPerm || !isBtOn || !hasId) {
+                            hasError = true
+                            errorMessage = context.getString(R.string.identity_setup_failed_error)
+                        } else {
+                            hasError = false
+                            viewModel.completeSetup()
+                            onSetupComplete()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    testTag = "complete_setup_button"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }

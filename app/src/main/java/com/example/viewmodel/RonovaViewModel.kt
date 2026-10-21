@@ -122,13 +122,46 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         prefs.edit().putBoolean("pref_message_sound", enabled).apply()
     }
 
-    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.getPersistedLanguage(app))
-    val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
+    val setupRepository = app.setupRepository
+    val setupPreferences = setupRepository.setupPreferencesFlow
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            com.example.data.SetupPreferences(
+                com.example.data.SetupState.NOT_STARTED,
+                1,
+                com.example.data.SetupRepository.CURRENT_SCHEMA_VERSION,
+                0L
+            )
+        )
 
-    fun setLanguage(languageCode: String) {
-        com.example.core.locale.LocaleHelper.setLanguage(app, languageCode)
-        _currentLanguage.value = languageCode
+    fun saveSetupStep(step: Int) {
+        viewModelScope.launch {
+            setupRepository.saveStepProgress(step)
+        }
     }
+
+    fun completeSetup() {
+        viewModelScope.launch {
+            setupRepository.markCompleted()
+        }
+    }
+
+    fun resetSetup(onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            setupRepository.resetSetup()
+            withContext(Dispatchers.Main) {
+                onComplete()
+            }
+        }
+    }
+
+    suspend fun getStartDestination(): com.example.data.StartDestination {
+        return setupRepository.computeStartDestination()
+    }
+
+    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.LOCALE_BANGLA)
+    val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
 
     fun hasMicrophonePermission(): Boolean {
         return com.example.core.permission.PermissionManager.hasMicrophonePermission(app)

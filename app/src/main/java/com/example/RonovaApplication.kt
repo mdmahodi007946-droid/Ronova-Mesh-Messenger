@@ -23,6 +23,7 @@ class RonovaApplication : Application() {
     val audioCallManager by lazy {
         AudioCallManager(this, cryptoManager, bluetoothMeshManager, repository, applicationScope)
     }
+    val setupRepository by lazy { com.example.data.SetupRepository(this) }
 
     override fun onCreate() {
         super.onCreate()

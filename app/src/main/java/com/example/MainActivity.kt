@@ -79,6 +79,7 @@ import com.example.ui.screens.DiagnosticsScreen
 import com.example.ui.screens.DiscoveryScreen
 import com.example.ui.screens.ErrorRecoveryScreen
 import com.example.ui.screens.HomeScreen
+import com.example.ui.screens.IdentitySetupScreen
 import com.example.ui.screens.IncomingVoiceCallScreen
 import com.example.ui.screens.MessageDeliveryDetailsScreen
 import com.example.ui.screens.NotificationSettingsScreen
@@ -373,37 +374,80 @@ fun RonovaApp(viewModel: RonovaViewModel) {
             composable(Screen.Splash.route) {
                 SplashScreen(
                     viewModel = viewModel,
-                    onNavigateNext = {
-                        navController.navigate(Screen.Welcome.route) {
-                            popUpTo(Screen.Splash.route) { inclusive = true }
+                    onNavigateNext = { startDest ->
+                        when (startDest) {
+                            is com.example.data.StartDestination.Home -> {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
+                                }
+                            }
+                            is com.example.data.StartDestination.PermissionRecovery -> {
+                                navController.navigate(Screen.Permissions.route) {
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
+                                }
+                            }
+                            is com.example.data.StartDestination.Setup -> {
+                                val target = when (startDest.resumeAtStep) {
+                                    2 -> Screen.Permissions.route
+                                    3 -> Screen.BluetoothSetup.route
+                                    4 -> Screen.IdentitySetup.route
+                                    else -> Screen.Welcome.route
+                                }
+                                navController.navigate(target) {
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
+                                }
+                            }
+                            is com.example.data.StartDestination.Loading -> {}
                         }
                     }
                 )
             }
 
-            // 2. Welcome
+            // 2. Welcome (Step 1)
             composable(Screen.Welcome.route) {
                 WelcomeScreen(
-                    onContinue = { navController.navigate(Screen.Permissions.route) }
-                )
-            }
-
-            // 3. Permissions
-            composable(Screen.Permissions.route) {
-                PermissionsScreen(
-                    onPermissionsGranted = {
-                        navController.navigate(Screen.BluetoothSetup.route)
+                    onContinue = {
+                        viewModel.saveSetupStep(2)
+                        navController.navigate(Screen.Permissions.route)
                     }
                 )
             }
 
-            // 4. Bluetooth Setup
+            // 3. Permissions (Step 2)
+            composable(Screen.Permissions.route) {
+                PermissionsScreen(
+                    onPermissionsGranted = {
+                        val setupPrefs = viewModel.setupPreferences.value
+                        if (setupPrefs.state == com.example.data.SetupState.COMPLETED) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Permissions.route) { inclusive = true }
+                            }
+                        } else {
+                            viewModel.saveSetupStep(3)
+                            navController.navigate(Screen.BluetoothSetup.route)
+                        }
+                    }
+                )
+            }
+
+            // 4. Bluetooth Setup (Step 3)
             composable(Screen.BluetoothSetup.route) {
                 BluetoothSetupScreen(
                     viewModel = viewModel,
                     onSetupComplete = {
+                        viewModel.saveSetupStep(4)
+                        navController.navigate(Screen.IdentitySetup.route)
+                    }
+                )
+            }
+
+            // 5. Identity Verification (Step 4 & 5)
+            composable(Screen.IdentitySetup.route) {
+                IdentitySetupScreen(
+                    viewModel = viewModel,
+                    onSetupComplete = {
                         navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                            popUpTo(0) { inclusive = true }
                         }
                     }
                 )

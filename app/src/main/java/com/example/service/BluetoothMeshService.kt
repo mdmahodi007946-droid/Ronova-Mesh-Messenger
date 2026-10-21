@@ -77,20 +77,20 @@ class BluetoothMeshService : Service() {
 
             val meshChannel = NotificationChannel(
                 CHANNEL_MESH,
-                "Ronova Mesh Background Network",
+                "রোনোভা মেশ ব্যাকগ্রাউন্ড নেটওয়ার্ক",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Keeps Bluetooth mesh routing and peer discovery active in background"
+                description = "ব্যাকগ্রাউন্ডে ব্লুটুথ মেশ রাউটিং ও পিয়ার ডিসকভারি সক্রিয় রাখে"
                 setShowBadge(false)
             }
             nm.createNotificationChannel(meshChannel)
 
             val callChannel = NotificationChannel(
                 CHANNEL_CALLS,
-                "Ronova Voice Calls",
+                "রোনোভা ভয়েস কল",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Incoming offline voice call alerts"
+                description = "ইনকামিং অফলাইন ভয়েস কল সতর্কতা"
                 enableVibration(true)
             }
             nm.createNotificationChannel(callChannel)
@@ -121,10 +121,10 @@ class BluetoothMeshService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_MESH)
             .setContentTitle(title)
             .setContentText(content)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop Mesh", stopPendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "মেশ বন্ধ করুন", stopPendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }

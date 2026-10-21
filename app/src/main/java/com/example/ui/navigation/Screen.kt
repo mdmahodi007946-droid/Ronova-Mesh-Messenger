@@ -6,6 +6,7 @@ sealed class Screen(val route: String) {
     object Welcome : Screen("welcome")
     object Permissions : Screen("permissions")
     object BluetoothSetup : Screen("bluetooth_setup")
+    object IdentitySetup : Screen("identity_setup")
 
     // Core Mesh & Communication
     object Home : Screen("home")

@@ -1,9 +1,8 @@
 package com.example.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,19 +24,16 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Policy
-import androidx.compose.material.icons.filled.Router
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Surface
@@ -49,8 +44,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -64,149 +60,98 @@ import com.example.ui.theme.RonovaGoldPrimary
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
 
-data class DrawerItem(
+data class RonovaDrawerItem(
     val route: String,
     val titleRes: Int,
     val icon: ImageVector,
-    val testTag: String
+    val testTag: String,
+    val badgeCount: Int = 0
 )
 
 @Composable
-fun RonovaDrawerContent(
+fun RonovaNavigationDrawerSheet(
     currentRoute: String?,
-    myDeviceId: String,
+    deviceId: String,
+    unreadMessagesCount: Int = 0,
+    missedCallsCount: Int = 0,
+    pendingRelaysCount: Int = 0,
     onNavigate: (String) -> Unit,
     onClose: () -> Unit
 ) {
-    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val drawerWidth = if (screenWidth * 0.8f < 320.dp) screenWidth * 0.8f else 320.dp
 
     val drawerItems = listOf(
-        DrawerItem(Screen.Home.route, R.string.nav_home, Icons.Default.Home, "drawer_item_home"),
-        DrawerItem(Screen.Chats.route, R.string.nav_chats, Icons.AutoMirrored.Filled.Chat, "drawer_item_chats"),
-        DrawerItem(Screen.CallHistory.route, R.string.nav_calls, Icons.Default.Call, "drawer_item_calls"),
-        DrawerItem(Screen.Discovery.route, R.string.drawer_connected_peers, Icons.Default.Bluetooth, "drawer_item_peers"),
-        DrawerItem(Screen.RelayNetwork.route, R.string.drawer_mesh_map, Icons.Default.Hub, "drawer_item_mesh_map"),
-        DrawerItem(Screen.PendingMessages.route, R.string.drawer_store_forward, Icons.Default.SwapHoriz, "drawer_item_store_forward"),
-        DrawerItem(Screen.BatteryGuidance.route, R.string.drawer_battery_guidance, Icons.Default.BatteryAlert, "drawer_item_battery"),
-        DrawerItem(Screen.Permissions.route, R.string.drawer_permissions, Icons.Default.Security, "drawer_item_permissions"),
-        DrawerItem(Screen.PrivacyPolicy.route, R.string.drawer_privacy_security, Icons.Default.Policy, "drawer_item_privacy"),
-        DrawerItem(Screen.Settings.route, R.string.nav_settings, Icons.Default.Settings, "drawer_item_settings"),
-        DrawerItem(Screen.About.route, R.string.drawer_about, Icons.Default.Info, "drawer_item_about")
+        RonovaDrawerItem(Screen.Home.route, R.string.nav_home, Icons.Default.Home, "drawer_item_home"),
+        RonovaDrawerItem(Screen.Chats.route, R.string.nav_chats, Icons.AutoMirrored.Filled.Chat, "drawer_item_chats", unreadMessagesCount),
+        RonovaDrawerItem(Screen.CallHistory.route, R.string.nav_calls, Icons.Default.Call, "drawer_item_calls", missedCallsCount),
+        RonovaDrawerItem(Screen.Discovery.route, R.string.drawer_connected_peers, Icons.Default.Bluetooth, "drawer_item_peers"),
+        RonovaDrawerItem(Screen.RelayNetwork.route, R.string.drawer_mesh_map, Icons.Default.Hub, "drawer_item_mesh_map"),
+        RonovaDrawerItem(Screen.PendingMessages.route, R.string.drawer_store_forward, Icons.Default.SwapHoriz, "drawer_item_store_forward", pendingRelaysCount),
+        RonovaDrawerItem(Screen.Permissions.route, R.string.drawer_permissions, Icons.Default.Security, "drawer_item_permissions"),
+        RonovaDrawerItem(Screen.BatteryGuidance.route, R.string.drawer_battery_guidance, Icons.Default.BatteryAlert, "drawer_item_battery"),
+        RonovaDrawerItem(Screen.SecuritySettings.route, R.string.drawer_privacy_security, Icons.Default.Lock, "drawer_item_security"),
+        RonovaDrawerItem(Screen.Settings.route, R.string.nav_settings, Icons.Default.Settings, "drawer_item_settings"),
+        RonovaDrawerItem(Screen.About.route, R.string.drawer_about, Icons.Default.Info, "drawer_item_about")
     )
 
     ModalDrawerSheet(
         modifier = Modifier
-            .widthIn(max = 320.dp)
+            .width(drawerWidth)
             .fillMaxHeight(),
         drawerContainerColor = MaterialTheme.colorScheme.surface,
-        drawerTonalElevation = 2.dp
+        drawerTonalElevation = 3.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .statusBarsPadding()
         ) {
-            // Header
+            // Drawer Header: App logo, name, and tagline ONLY (Section 6)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(RonovaGoldLight)
-                    .padding(horizontal = 18.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 18.dp)
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(RonovaGoldPrimary),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Router,
-                                    contentDescription = null,
-                                    tint = RonovaTextPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.app_name),
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = RonovaTextPrimary
-                                    )
-                                )
-                                Text(
-                                    text = stringResource(R.string.drawer_header_subtitle),
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = RonovaTextMuted,
-                                        fontSize = 11.sp
-                                    )
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = onClose,
-                            modifier = Modifier.size(32.dp).testTag("drawer_close_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Close",
-                                tint = RonovaTextPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Node ID chip
-                    Surface(
-                        color = Color.White,
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Node ID", myDeviceId))
-                                    android.widget.Toast.makeText(context, context.getString(R.string.home_copied_id), android.widget.Toast.LENGTH_SHORT).show()
-                                }
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = myDeviceId,
-                                fontSize = 11.5.sp,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_image),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    Column {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = RonovaGoldDark
+                                color = RonovaTextPrimary,
+                                fontSize = 18.sp
                             )
-                            Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copy",
-                                tint = RonovaGoldPrimary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(R.string.tagline),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = RonovaTextMuted,
+                                fontSize = 11.5.sp,
+                                lineHeight = 15.sp
+                            ),
+                            maxLines = 2
+                        )
                     }
                 }
             }
 
-            HorizontalDivider(color = RonovaCardBorder.copy(alpha = 0.5f))
+            HorizontalDivider(color = RonovaCardBorder.copy(alpha = 0.5f), thickness = 1.dp)
 
-            // Navigation Items List
+            // Navigation Items List: 56 dp row height, 24 dp vector icons, 16 sp Bengali labels, active pill
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -217,8 +162,8 @@ fun RonovaDrawerContent(
                 drawerItems.forEach { item ->
                     val isSelected = currentRoute == item.route
                     val itemBg = if (isSelected) RonovaGoldLight else Color.Transparent
-                    val itemBorder = if (isSelected) BorderStroke(1.dp, RonovaGoldPrimary) else null
-                    val itemTextColor = if (isSelected) RonovaTextPrimary else RonovaTextPrimary
+                    val itemBorder = if (isSelected) BorderStroke(1.dp, RonovaGoldPrimary.copy(alpha = 0.6f)) else null
+                    val itemTextColor = if (isSelected) RonovaGoldDark else RonovaTextPrimary
                     val itemIconColor = if (isSelected) RonovaGoldDark else RonovaTextMuted
 
                     Surface(
@@ -226,40 +171,59 @@ fun RonovaDrawerContent(
                             onClose()
                             onNavigate(item.route)
                         },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         color = itemBg,
                         border = itemBorder,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(56.dp)
                             .testTag(item.testTag)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                .padding(horizontal = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = null,
-                                tint = itemIconColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = stringResource(item.titleRes),
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = itemTextColor,
-                                    fontSize = 13.5.sp
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = stringResource(item.titleRes),
+                                    tint = itemIconColor,
+                                    modifier = Modifier.size(24.dp)
                                 )
-                            )
+                                Text(
+                                    text = stringResource(item.titleRes),
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = itemTextColor,
+                                        fontSize = 15.5.sp
+                                    )
+                                )
+                            }
+
+                            if (item.badgeCount > 0) {
+                                Badge(
+                                    containerColor = RonovaGoldPrimary,
+                                    contentColor = RonovaTextPrimary
+                                ) {
+                                    Text(
+                                        text = "${item.badgeCount}",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            HorizontalDivider(color = RonovaCardBorder.copy(alpha = 0.3f))
+            HorizontalDivider(color = RonovaCardBorder.copy(alpha = 0.4f), thickness = 1.dp)
 
             // Footer info
             Box(

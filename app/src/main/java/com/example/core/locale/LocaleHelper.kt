@@ -2,39 +2,23 @@ package com.example.core.locale
 
 import android.app.LocaleManager
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
 import java.util.Locale
 
+/**
+ * Bengali-First localization helper.
+ * Strictly forces and preserves Bengali (bn) locale across all Android versions.
+ */
 object LocaleHelper {
 
-    private const val PREFS_NAME = "ronova_locale_prefs"
-    private const val KEY_LANGUAGE = "selected_language"
-    const val LANGUAGE_ENGLISH = "bn" // Forced Bengali
-    const val LANGUAGE_BANGLA = "bn"
+    const val LOCALE_BANGLA = "bn"
 
-    fun getPersistedLanguage(context: Context): String {
-        return LANGUAGE_BANGLA
-    }
+    fun getPersistedLanguage(context: Context): String = LOCALE_BANGLA
 
-    fun setLanguage(context: Context, languageCode: String) {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_LANGUAGE, LANGUAGE_BANGLA).apply()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                val localeManager = context.getSystemService(LocaleManager::class.java)
-                localeManager?.applicationLocales = LocaleList.forLanguageTags(languageCode)
-            } catch (e: Exception) {
-                // Handled gracefully
-            }
-        }
-    }
-
-    fun getLocalizedContext(context: Context, languageCode: String): Context {
-        val locale = Locale(languageCode)
+    fun getLocalizedContext(context: Context): Context {
+        val locale = Locale(LOCALE_BANGLA)
         Locale.setDefault(locale)
 
         val config = Configuration(context.resources.configuration)
@@ -48,8 +32,8 @@ object LocaleHelper {
         return context.createConfigurationContext(config)
     }
 
-    fun getLocalizedConfiguration(context: Context, languageCode: String): Configuration {
-        val locale = Locale(languageCode)
+    fun getLocalizedConfiguration(context: Context): Configuration {
+        val locale = Locale(LOCALE_BANGLA)
         val config = Configuration(context.resources.configuration)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             config.setLocales(LocaleList(locale))
