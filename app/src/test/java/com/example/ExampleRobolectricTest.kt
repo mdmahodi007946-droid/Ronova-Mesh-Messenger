@@ -162,7 +162,6 @@ class ExampleRobolectricTest {
     fun `bengali is the primary and permanent language`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         
-        com.example.core.locale.LocaleHelper.setLanguage(context, "bn")
         assertEquals("bn", com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
 
         val bnContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "bn")
@@ -229,7 +228,7 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `ten drawer navigation destinations are defined`() {
+    fun `eleven drawer navigation destinations are defined`() {
         val drawerRoutes = listOf(
             com.example.ui.navigation.Screen.Home.route,
             com.example.ui.navigation.Screen.Chats.route,
@@ -240,8 +239,9 @@ class ExampleRobolectricTest {
             com.example.ui.navigation.Screen.Permissions.route,
             com.example.ui.navigation.Screen.BatteryGuidance.route,
             com.example.ui.navigation.Screen.SecuritySettings.route,
-            com.example.ui.navigation.Screen.Settings.route
+            com.example.ui.navigation.Screen.Settings.route,
+            com.example.ui.navigation.Screen.About.route
         )
-        assertEquals(10, drawerRoutes.size)
+        assertEquals(11, drawerRoutes.size)
     }
 }

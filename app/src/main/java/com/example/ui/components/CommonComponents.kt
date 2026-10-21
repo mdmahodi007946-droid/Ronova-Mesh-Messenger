@@ -49,7 +49,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
@@ -113,6 +115,69 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.R
 import com.example.ui.navigation.Screen
 
+import androidx.compose.foundation.layout.offset
+
+/**
+ * 3D header control adhering to PRD v2.0 Section 5:
+ * - 40 dp rounded-square button (RoundedCornerShape(10.dp))
+ * - Two-layer shadow (ambient 2 dp plus key 4 dp)
+ * - Subtle top highlight (white to warm tint vertical gradient)
+ * - 1 dp light border
+ * - Pressed state lowers elevation and shifts content 1 dp
+ * - Vector icons only
+ * - Shared across all screens
+ */
+@Composable
+fun HeaderAction(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    testTag: String? = null
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val shape = RoundedCornerShape(10.dp)
+    val elevation = if (isPressed) 1.dp else 4.dp
+    val offsetY = if (isPressed) 1.dp else 0.dp
+
+    Box(
+        modifier = modifier
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
+            .size(40.dp)
+            .shadow(
+                elevation = elevation,
+                shape = shape,
+                ambientColor = Color(0x33000000),
+                spotColor = Color(0x40000000)
+            )
+            .offset(y = offsetY)
+            .clip(shape)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFFFFFF),
+                        Color(0xFFFFF9E6)
+                    )
+                )
+            )
+            .border(1.dp, RonovaCardBorder.copy(alpha = 0.9f), shape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(),
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = RonovaGoldDark,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RonovaTopBar(
@@ -128,71 +193,70 @@ fun RonovaTopBar(
     Surface(
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.6f)),
-        shadowElevation = 0.5.dp
+        shadowElevation = 1.dp,
+        modifier = Modifier.fillMaxWidth().height(56.dp)
     ) {
-        TopAppBar(
-            title = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f, fill = false)) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
+                if (drawerAction != null) {
+                    HeaderAction(
+                        icon = Icons.Default.Menu,
+                        contentDescription = "মেনু",
+                        onClick = drawerAction,
+                        testTag = "top_bar_menu_button"
+                    )
+                } else if (onBack != null) {
+                    HeaderAction(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "পেছনে যান",
+                        onClick = onBack,
+                        testTag = "top_bar_back_button"
+                    )
+                }
+
+                Column(modifier = Modifier.padding(start = 2.dp)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 17.sp
+                        ),
+                        maxLines = 1
+                    )
+                    if (subtitle != null) {
                         Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                letterSpacing = 0.2.sp
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = RonovaTextMuted,
+                                fontSize = 11.sp
                             ),
                             maxLines = 1
                         )
-                        if (subtitle != null) {
-                            Text(
-                                text = subtitle,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = RonovaTextMuted,
-                                    fontSize = 11.sp
-                                ),
-                                maxLines = 1
-                            )
-                        }
-                    }
-                    if (statusBadge != null) {
-                        statusBadge()
                     }
                 }
-            },
-            navigationIcon = {
-                if (drawerAction != null) {
-                    IconButton(
-                        onClick = drawerAction,
-                        modifier = Modifier.testTag("top_bar_menu_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
-                } else if (onBack != null) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier.testTag("top_bar_back_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                if (statusBadge != null) {
+                    statusBadge()
                 }
-            },
-            actions = { actions() },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent
-            ),
-            windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
-        )
+                actions()
+            }
+        }
     }
 }
 
@@ -341,14 +405,14 @@ fun RonovaGlassButton(
 @Composable
 fun StatusBadge(status: BluetoothStatus) {
     val (bgColor, textColor, label) = when (status) {
-        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "Connected")
-        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Scanning...")
-        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Linking...")
-        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "Mesh Ready")
-        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "Permission Needed")
-        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "Bluetooth Off")
-        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "No Bluetooth")
-        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "Mesh Error")
+        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "মেশে সংযুক্ত")
+        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "স্ক্যান হচ্ছে…")
+        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "সংযোগ হচ্ছে…")
+        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "মেশ প্রস্তুত")
+        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "অনুমতি প্রয়োজন")
+        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "ব্লুটুথ বন্ধ")
+        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "সমর্থিত নয়")
+        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "মেশ ত্রুটি")
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -386,9 +450,95 @@ fun StatusBadge(status: BluetoothStatus) {
                 text = label,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Medium,
-                color = textColor,
-                fontFamily = AlataFontFamily
+                color = textColor
             )
+        }
+    }
+}
+
+/**
+ * Slim status chip row adhering to Section 5:
+ * Inside or directly under the header, expandable on tap to real status.
+ * Never creates a gap or double border above the header.
+ */
+@Composable
+fun MeshStatusChipRow(
+    status: BluetoothStatus,
+    activeConnections: Int = 0,
+    isDiscoverable: Boolean = false,
+    onEnableBluetooth: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val (dotColor, statusText) = when (status) {
+        BluetoothStatus.CONNECTED -> Pair(RonovaSuccess, "মেশে সংযুক্ত ($activeConnections টি ডিভাইস)")
+        BluetoothStatus.DISCOVERING -> Pair(RonovaWarning, "নোড খোঁজা হচ্ছে…")
+        BluetoothStatus.CONNECTING -> Pair(RonovaWarning, "সংযোগ স্থাপন হচ্ছে…")
+        BluetoothStatus.READY -> Pair(RonovaGoldDark, "মেশ রেডিও প্রস্তুত")
+        BluetoothStatus.PERMISSION_REQUIRED -> Pair(RonovaError, "ব্লুটুথ অনুমতি প্রয়োজন")
+        BluetoothStatus.DISABLED -> Pair(Color(0xFFE53935), "ব্লুটুথ বন্ধ রয়েছে")
+        BluetoothStatus.UNSUPPORTED -> Pair(RonovaError, "ব্লুটুথ সমর্থিত নয়")
+        BluetoothStatus.ERROR -> Pair(RonovaError, "মেশ ত্রুটি")
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(RonovaGoldLight.copy(alpha = 0.5f))
+            .border(BorderStroke(0.5.dp, RonovaCardBorder.copy(alpha = 0.4f)))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded }
+                .padding(horizontal = 16.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(dotColor)
+                )
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = RonovaTextPrimary,
+                        fontSize = 12.sp
+                    )
+                )
+            }
+
+            if (status == BluetoothStatus.DISABLED) {
+                Surface(
+                    onClick = onEnableBluetooth,
+                    shape = RoundedCornerShape(8.dp),
+                    color = RonovaGoldPrimary,
+                    modifier = Modifier.height(26.dp)
+                ) {
+                    Text(
+                        text = "চালু করুন",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = RonovaTextPrimary,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
+            } else {
+                Text(
+                    text = if (isDiscoverable) "দৃশ্যমান" else "লুকানো",
+                    fontSize = 11.sp,
+                    color = RonovaTextMuted,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }

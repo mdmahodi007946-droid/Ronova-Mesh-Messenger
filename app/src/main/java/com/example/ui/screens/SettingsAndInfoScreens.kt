@@ -61,7 +61,7 @@ import androidx.compose.material.icons.filled.WifiOff
 import com.example.core.database.MessageEntity
 import com.example.data.RetentionPolicy
 import com.example.ui.components.SpecFeatureItem
-import com.example.ui.theme.RonovaCardBorder
+import com.example.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -119,8 +119,8 @@ fun TrustedDevicesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Trusted Devices",
-                subtitle = "Cryptographically Verified Peers",
+                title = stringResource(R.string.trusted_devices_title),
+                subtitle = stringResource(R.string.trusted_devices_subtitle),
                 onBack = onBack
             )
 
@@ -136,24 +136,24 @@ fun TrustedDevicesScreen(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .background(RonovaPinkLight),
+                                .background(RonovaGoldLight),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = RonovaPinkPrimary,
+                                tint = RonovaGoldPrimary,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "No trusted peers yet",
+                            text = stringResource(R.string.trusted_devices_empty),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Verify device cryptographic fingerprints to pin them as trusted contacts.",
+                            text = stringResource(R.string.trusted_devices_empty_desc),
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                     }
@@ -171,7 +171,8 @@ fun TrustedDevicesScreen(
                                 .fillMaxWidth()
                                 .clickable { onNavigateToVerify(dev.deviceId) },
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, RonovaCardBorder)
                         ) {
                             Row(
                                 modifier = Modifier.padding(14.dp),
@@ -211,7 +212,7 @@ fun TrustedDevicesScreen(
                                     onClick = { viewModel.setDeviceTrust(dev.deviceId, "UNTRUSTED") },
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("Revoke", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text("প্রত্যাহার", fontSize = 11.sp, color = RonovaTextMuted)
                                 }
                             }
                         }
@@ -235,8 +236,8 @@ fun BlockedDevicesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Blocked Devices",
-                subtitle = "Prevent packets and calls from these nodes",
+                title = stringResource(R.string.blocked_devices_title),
+                subtitle = stringResource(R.string.blocked_devices_subtitle),
                 onBack = onBack
             )
 
@@ -252,24 +253,24 @@ fun BlockedDevicesScreen(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .background(RonovaPinkLight),
+                                .background(RonovaGoldLight),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Block,
                                 contentDescription = null,
-                                tint = RonovaPinkPrimary,
+                                tint = RonovaGoldPrimary,
                                 modifier = Modifier.size(32.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "No blocked devices",
+                            text = stringResource(R.string.blocked_devices_empty),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Blocked nodes cannot send you messages or trigger incoming voice calls.",
+                            text = stringResource(R.string.blocked_devices_empty_desc),
                             style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                         )
                     }
@@ -285,7 +286,8 @@ fun BlockedDevicesScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, RonovaCardBorder)
                         ) {
                             Row(
                                 modifier = Modifier.padding(14.dp),
@@ -306,10 +308,10 @@ fun BlockedDevicesScreen(
                                 }
                                 Button(
                                     onClick = { viewModel.setDeviceTrust(dev.deviceId, "UNTRUSTED") },
-                                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                                    colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldPrimary),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("Unblock", fontSize = 11.sp)
+                                    Text(stringResource(R.string.verify_unblock_btn), fontSize = 11.sp, color = RonovaTextPrimary)
                                 }
                             }
                         }
@@ -999,12 +1001,12 @@ fun BatteryGuidanceScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Battery & Background Guidance",
-                subtitle = "Ensuring reliable mesh relaying",
+                title = stringResource(R.string.drawer_battery_guidance),
+                subtitle = "নিরবচ্ছিন্ন মেশ নেটওয়ার্ক সচল রাখার উপায়",
                 onBack = onBack
             )
 
@@ -1017,9 +1019,9 @@ fun BatteryGuidanceScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(
@@ -1027,21 +1029,26 @@ fun BatteryGuidanceScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
+                                Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
                                     Text(
-                                        text = "Mesh Foreground Service",
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                        text = "মেশ ফোরগ্রাউন্ড সার্ভিস",
+                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "Keeps Bluetooth RFCOMM server alive when phone is locked.",
-                                        fontSize = 11.sp,
-                                        color = RonovaTextMuted
+                                        text = "স্ক্রিন লক থাকা অবস্থাতেও ব্যাকগ্রাউন্ড ব্লুটুথ সংযোগ ও মেসেজ রিলে সচল রাখে।",
+                                        fontSize = 11.5.sp,
+                                        color = RonovaTextMuted,
+                                        lineHeight = 16.sp
                                     )
                                 }
                                 Switch(
                                     checked = isRunning,
                                     onCheckedChange = { viewModel.toggleForegroundService(it) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = RonovaGoldDark,
+                                        checkedTrackColor = RonovaGoldPrimary
+                                    )
                                 )
                             }
                         }
@@ -1051,38 +1058,43 @@ fun BatteryGuidanceScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "OEM Battery Optimization Advice",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "• Samsung: Settings → Apps → Ronova Mesh → Battery → Select 'Unrestricted'.",
-                                fontSize = 12.sp,
-                                color = RonovaTextPrimary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "• Xiaomi/MIUI: Enable 'Autostart' and set Battery Saver to 'No restrictions'.",
-                                fontSize = 12.sp,
-                                color = RonovaTextPrimary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "• Google Pixel: Settings → Apps → Ronova Mesh → App battery usage → Unrestricted.",
-                                fontSize = 12.sp,
+                                text = "ডিভাইস প্রস্তুতকারকদের ব্যাটারি অপ্টিমাইজেশন",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = RonovaTextPrimary
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Without unrestricted battery access, Android may pause Bluetooth background sockets after 10 minutes of screen-off.",
-                                fontSize = 11.sp,
-                                color = RonovaWarning
+                                text = "• Samsung: সেটিংস → অ্যাপস → Ronova Mesh → ব্যাটারি → 'Unrestricted' নির্বাচন করুন।",
+                                fontSize = 12.sp,
+                                color = RonovaTextPrimary,
+                                lineHeight = 17.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "• Xiaomi/MIUI: 'Autostart' সক্রিয় করুন এবং ব্যাটারি সেভারে 'No restrictions' দিন।",
+                                fontSize = 12.sp,
+                                color = RonovaTextPrimary,
+                                lineHeight = 17.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "• Google Pixel: সেটিংস → অ্যাপস → Ronova Mesh → অ্যাপ ব্যাটারি ব্যবহার → Unrestricted নির্বাচন করুন।",
+                                fontSize = 12.sp,
+                                color = RonovaTextPrimary,
+                                lineHeight = 17.sp
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "সতর্কতা: ব্যাটারি অপ্টিমাইজেশন মুক্ত না থাকলে স্ক্রিন বন্ধের কিছু সময় পর অ্যান্ড্রয়েড ওএস ব্লুটুথ ব্যাকগ্রাউন্ড সকেট বন্ধ করে দিতে পারে।",
+                                fontSize = 11.5.sp,
+                                color = RonovaWarning,
+                                lineHeight = 16.sp
                             )
                         }
                     }
@@ -1106,10 +1118,10 @@ fun BatteryGuidanceScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .height(48.dp)
                             .testTag("battery_settings_button"),
-                        colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                        shape = RoundedCornerShape(14.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldPrimary),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.BatteryAlert,
@@ -1119,7 +1131,7 @@ fun BatteryGuidanceScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Open System Battery Settings",
+                            text = "সিস্টেম ব্যাটারি সেটিংস খুলুন",
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary,
                             fontSize = 14.sp
@@ -1142,12 +1154,12 @@ fun NotificationSettingsScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFFAFAFA)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Notification Settings",
-                subtitle = "Call alerts and message ringtones",
+                title = stringResource(R.string.notification_settings_title),
+                subtitle = stringResource(R.string.notification_settings_subtitle),
                 onBack = onBack
             )
 
@@ -1160,19 +1172,37 @@ fun NotificationSettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(14.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Incoming Voice Call Alerts", fontWeight = FontWeight.Bold)
+                            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                                Text(
+                                    text = stringResource(R.string.notif_call_alerts),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = RonovaTextPrimary
+                                )
+                                Text(
+                                    text = stringResource(R.string.notif_call_alerts_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = RonovaTextSecondary
+                                )
+                            }
                             Switch(
                                 checked = callAlerts,
                                 onCheckedChange = { viewModel.setCallAlertsEnabled(it) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = RonovaGoldDark,
+                                    checkedTrackColor = RonovaGoldPrimary
+                                )
                             )
                         }
                     }
@@ -1181,19 +1211,37 @@ fun NotificationSettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(14.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Vibrate on Messages & Calls", fontWeight = FontWeight.Bold)
+                            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                                Text(
+                                    text = stringResource(R.string.notif_vibrate_general),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = RonovaTextPrimary
+                                )
+                                Text(
+                                    text = stringResource(R.string.notif_vibrate_general_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = RonovaTextSecondary
+                                )
+                            }
                             Switch(
                                 checked = vibration,
                                 onCheckedChange = { viewModel.setVibrationEnabled(it) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = RonovaGoldDark,
+                                    checkedTrackColor = RonovaGoldPrimary
+                                )
                             )
                         }
                     }
@@ -1202,19 +1250,37 @@ fun NotificationSettingsScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(14.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.5f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Message Chime", fontWeight = FontWeight.Bold)
+                            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                                Text(
+                                    text = stringResource(R.string.notif_sound),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = RonovaTextPrimary
+                                )
+                                Text(
+                                    text = "ইনকামিং মেসেজের জন্য মৃদু টোন বাজান",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = RonovaTextSecondary
+                                )
+                            }
                             Switch(
                                 checked = messageSound,
                                 onCheckedChange = { viewModel.setMessageSoundEnabled(it) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = RonovaPinkPrimary)
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = RonovaGoldDark,
+                                    checkedTrackColor = RonovaGoldPrimary
+                                )
                             )
                         }
                     }

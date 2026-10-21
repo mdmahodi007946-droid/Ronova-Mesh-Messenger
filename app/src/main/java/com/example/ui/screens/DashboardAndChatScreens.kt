@@ -141,26 +141,18 @@ fun HomeScreen(
                     StatusBadge(status = status)
                 },
                 actions = {
-                    IconButton(
+                    com.example.ui.components.HeaderAction(
+                        icon = Icons.Default.Router,
+                        contentDescription = stringResource(R.string.settings_diagnostics),
                         onClick = onNavigateToDiagnostics,
-                        modifier = Modifier.testTag("home_diagnostics_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Router,
-                            contentDescription = "Diagnostics",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
-                    IconButton(
+                        testTag = "home_diagnostics_button"
+                    )
+                    com.example.ui.components.HeaderAction(
+                        icon = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.nav_settings),
                         onClick = onNavigateToSettings,
-                        modifier = Modifier.testTag("home_settings_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
+                        testTag = "home_settings_button"
+                    )
                 }
             )
 
@@ -200,14 +192,14 @@ fun HomeScreen(
                                         Icon(
                                             imageVector = Icons.Default.Security,
                                             contentDescription = null,
-                                            tint = RonovaPinkDark,
+                                            tint = RonovaGoldDark,
                                             modifier = Modifier.size(22.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = "Node Identity",
+                                            text = stringResource(R.string.home_node_identity),
                                             style = MaterialTheme.typography.titleSmall.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 color = RonovaTextPrimary
@@ -218,13 +210,13 @@ fun HomeScreen(
                                             modifier = Modifier.clickable {
                                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Node ID", viewModel.myDeviceId))
-                                                android.widget.Toast.makeText(context, "Node ID copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                                                android.widget.Toast.makeText(context, context.getString(R.string.home_copied_id), android.widget.Toast.LENGTH_SHORT).show()
                                             }
                                         ) {
                                             Text(
                                                 text = viewModel.myDeviceId,
                                                 style = MaterialTheme.typography.bodySmall.copy(
-                                                    color = RonovaPinkDark,
+                                                    color = RonovaGoldDark,
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 12.5.sp
                                                 )
@@ -232,19 +224,19 @@ fun HomeScreen(
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Icon(
                                                 imageVector = Icons.Default.ContentCopy,
-                                                contentDescription = "Copy Node ID",
-                                                tint = RonovaPinkPrimary,
+                                                contentDescription = stringResource(R.string.home_node_id_copy_desc),
+                                                tint = RonovaGoldDark,
                                                 modifier = Modifier.size(13.dp)
                                             )
                                         }
                                     }
                                 }
                                 Surface(
-                                    color = if (isRelayOn) RonovaPinkLight else Color(0xFFF5F5F5),
+                                    color = if (isRelayOn) RonovaGoldLight else Color(0xFFF5F5F5),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
                                     Text(
-                                        text = if (isRelayOn) "Relay Active" else "Direct Only",
+                                        text = if (isRelayOn) stringResource(R.string.home_relay_active) else stringResource(R.string.home_direct_only),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = if (isRelayOn) RonovaSuccess else RonovaTextMuted,
@@ -256,22 +248,22 @@ fun HomeScreen(
                     }
                 }
 
-                // Stats Row with Alata typography and soft gradients
+                // Stats Row with real repository data
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         StatCard(
-                            title = "Peers",
+                            title = stringResource(R.string.home_peers_stat),
                             value = "${connectedPeers.count { it.isConnected }}",
                             icon = Icons.Default.Router,
-                            accentColor = RonovaPinkPrimary,
+                            accentColor = RonovaGoldPrimary,
                             modifier = Modifier.weight(1f),
                             onClick = onNavigateToDiscovery
                         )
                         StatCard(
-                            title = "Store & Fwd",
+                            title = stringResource(R.string.home_store_fwd_stat),
                             value = "${pendingPackets.size}",
                             icon = Icons.Default.SwapHoriz,
                             accentColor = RonovaWarning,
@@ -279,10 +271,10 @@ fun HomeScreen(
                             onClick = onNavigateToPending
                         )
                         StatCard(
-                            title = "Chats",
+                            title = stringResource(R.string.home_chats_stat),
                             value = "${conversations.size}",
                             icon = Icons.Default.Chat,
-                            accentColor = RonovaPinkDark,
+                            accentColor = RonovaGoldDark,
                             modifier = Modifier.weight(1f),
                             onClick = onNavigateToChats
                         )
@@ -301,17 +293,18 @@ fun HomeScreen(
                                 .weight(1f)
                                 .height(50.dp)
                                 .testTag("home_scan_peers_button"),
-                            colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                            colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldPrimary),
                             shape = RoundedCornerShape(16.dp),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = null,
+                                tint = RonovaTextPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.home_scan_peers), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(stringResource(R.string.home_scan_peers), color = RonovaTextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
 
                         OutlinedButton(
@@ -321,8 +314,8 @@ fun HomeScreen(
                                 .height(50.dp)
                                 .testTag("home_mesh_topology_button"),
                             shape = RoundedCornerShape(16.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.5.dp, RonovaPinkPrimary),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaPinkPrimary)
+                            border = androidx.compose.foundation.BorderStroke(1.5.dp, RonovaGoldDark),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaGoldDark)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Router,
@@ -331,14 +324,13 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "Mesh Map",
+                                stringResource(R.string.home_mesh_map),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
                         }
                     }
                 }
-
 
                 // Connected Mesh Peers Section
                 item {
@@ -348,15 +340,15 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Connected Mesh Peers",
+                            text = stringResource(R.string.home_connected_peers_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextPrimary
                             )
                         )
                         Text(
-                            text = "View All",
-                            color = RonovaPinkPrimary,
+                            text = stringResource(R.string.home_view_all),
+                            color = RonovaGoldDark,
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.clickable { onNavigateToDiscovery() }
                         )
@@ -382,19 +374,19 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clip(CircleShape)
-                                        .background(RonovaPinkLight),
+                                        .background(RonovaGoldLight),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Bluetooth,
                                         contentDescription = null,
-                                        tint = RonovaPinkPrimary,
+                                        tint = RonovaGoldDark,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    text = "No direct peers connected right now.",
+                                    text = stringResource(R.string.home_no_peers_msg),
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         color = RonovaTextPrimary,
                                         fontWeight = FontWeight.Bold
@@ -402,7 +394,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Discovered nodes will automatically connect and form a mesh path.",
+                                    text = stringResource(R.string.home_no_peers_sub),
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = RonovaTextMuted,
                                         fontSize = 12.sp,
@@ -438,15 +430,15 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Recent Conversations",
+                            text = stringResource(R.string.home_recent_convs),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextPrimary
                             )
                         )
                         Text(
-                            text = "Open Chats",
-                            color = RonovaPinkPrimary,
+                            text = stringResource(R.string.home_open_chats),
+                            color = RonovaGoldDark,
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.clickable { onNavigateToChats() }
                         )
@@ -471,19 +463,19 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clip(CircleShape)
-                                        .background(RonovaPinkLight),
+                                        .background(RonovaGoldLight),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Chat,
                                         contentDescription = null,
-                                        tint = RonovaPinkPrimary,
+                                        tint = RonovaGoldDark,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    text = "No conversations yet.",
+                                    text = stringResource(R.string.home_no_convs_msg),
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         color = RonovaTextPrimary,
                                         fontWeight = FontWeight.Bold
@@ -493,9 +485,9 @@ fun HomeScreen(
                                 OutlinedButton(
                                     onClick = onNavigateToDiscovery,
                                     shape = RoundedCornerShape(12.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, RonovaPinkPrimary)
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, RonovaGoldDark)
                                 ) {
-                                    Text(stringResource(R.string.home_find_nearby_nodes), color = RonovaPinkPrimary, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.home_find_nearby_nodes), color = RonovaGoldDark, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -556,7 +548,7 @@ fun ConnectedPeerItem(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = peer.deviceName.ifEmpty { "Mesh Peer" },
+                        text = peer.deviceName.ifEmpty { stringResource(R.string.node_unnamed) },
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary
@@ -576,7 +568,7 @@ fun ConnectedPeerItem(
                 IconButton(onClick = onVerify) {
                     Icon(
                         imageVector = Icons.Default.Info,
-                        contentDescription = "Verify",
+                        contentDescription = stringResource(R.string.chat_verify),
                         tint = RonovaTextMuted
                     )
                 }
@@ -585,12 +577,12 @@ fun ConnectedPeerItem(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(RonovaPinkLight)
+                        .background(RonovaGoldLight)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Chat,
-                        contentDescription = "Chat",
-                        tint = RonovaPinkPrimary,
+                        contentDescription = stringResource(R.string.nav_chats),
+                        tint = RonovaGoldDark,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -624,13 +616,13 @@ fun ConversationRowItem(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(RonovaPinkLight),
+                    .background(RonovaGoldLight),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Chat,
                     contentDescription = null,
-                    tint = RonovaPinkPrimary,
+                    tint = RonovaGoldDark,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -679,12 +671,12 @@ fun ConversationRowItem(
                             modifier = Modifier
                                 .size(22.dp)
                                 .clip(CircleShape)
-                                .background(RonovaPinkPrimary),
+                                .background(RonovaGoldPrimary),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "${conversation.unreadCount}",
-                                color = Color.White,
+                                color = RonovaTextPrimary,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -724,8 +716,8 @@ fun ConversationListScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = "Conversations",
-                subtitle = "Encrypted Mesh Chats",
+                title = stringResource(R.string.conversations_title),
+                subtitle = stringResource(R.string.conversations_subtitle),
                 onBack = onBack
             )
 
@@ -742,7 +734,7 @@ fun ConversationListScreen(
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = RonovaPinkPrimary,
+                    focusedBorderColor = RonovaGoldDark,
                     unfocusedBorderColor = RonovaCardBorder,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                     focusedContainerColor = MaterialTheme.colorScheme.surface
@@ -763,24 +755,24 @@ fun ConversationListScreen(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(RonovaPinkLight),
+                                .background(RonovaGoldLight),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Chat,
                                 contentDescription = null,
-                                tint = RonovaPinkPrimary,
+                                tint = RonovaGoldDark,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = if (searchQuery.isNotEmpty()) "No matching conversations" else "No messages yet",
+                            text = if (searchQuery.isNotEmpty()) stringResource(R.string.no_matching_convs) else stringResource(R.string.chat_no_conversations),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Connect with nearby nodes or scan peers to begin chatting.",
+                            text = stringResource(R.string.chat_start_first),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = RonovaTextMuted,
                                 fontSize = 12.sp
@@ -813,12 +805,12 @@ fun ConversationListScreen(
             ) {
                 FloatingActionButton(
                     onClick = onStartNewChat,
-                    containerColor = RonovaPinkPrimary,
-                    contentColor = Color.White,
+                    containerColor = RonovaGoldPrimary,
+                    contentColor = RonovaTextPrimary,
                     shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.testTag("fab_new_chat")
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "New Chat")
+                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.new_chat_title))
                 }
             }
         }
@@ -861,29 +853,21 @@ fun OneToOneChatScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
                 title = device?.displayName ?: deviceId,
-                subtitle = "E2E Encrypted • ${device?.trustStatus ?: "UNVERIFIED"}",
+                subtitle = "${stringResource(R.string.e2e_encrypted_status)} • ${if (device?.trustStatus == "TRUSTED") stringResource(R.string.verified_status) else stringResource(R.string.unverified_status)}",
                 onBack = onBack,
                 actions = {
-                    IconButton(
+                    com.example.ui.components.HeaderAction(
+                        icon = Icons.Default.Call,
+                        contentDescription = stringResource(R.string.chat_call),
                         onClick = { onVoiceCall(deviceId) },
-                        modifier = Modifier.testTag("chat_voice_call_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Call,
-                            contentDescription = "Voice Call",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
-                    IconButton(
+                        testTag = "chat_voice_call_button"
+                    )
+                    com.example.ui.components.HeaderAction(
+                        icon = Icons.Default.Info,
+                        contentDescription = stringResource(R.string.device_info_title),
                         onClick = { onNavigateToVerify(deviceId) },
-                        modifier = Modifier.testTag("chat_verify_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "Device Info",
-                            tint = RonovaTextMuted
-                        )
-                    }
+                        testTag = "chat_verify_button"
+                    )
                 }
             )
 
@@ -895,7 +879,7 @@ fun OneToOneChatScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
-                    color = RonovaPinkLight,
+                    color = RonovaGoldLight,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -905,14 +889,14 @@ fun OneToOneChatScreen(
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
-                            tint = RonovaPinkDark,
+                            tint = RonovaGoldDark,
                             modifier = Modifier.size(12.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "End-to-End Encrypted over Bluetooth Mesh",
-                            fontSize = 10.sp,
-                            color = RonovaPinkDark,
+                            text = stringResource(R.string.chat_encrypted_badge),
+                            fontSize = 10.5.sp,
+                            color = RonovaGoldDark,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -955,12 +939,12 @@ fun OneToOneChatScreen(
                         modifier = Modifier
                             .weight(1f)
                             .testTag("chat_message_input"),
-                        placeholder = { Text("Message via mesh...") },
+                        placeholder = { Text(stringResource(R.string.chat_input_placeholder)) },
                         maxLines = 4,
                         shape = RoundedCornerShape(20.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = RonovaPinkPrimary,
-                            unfocusedBorderColor = Color(0xFFE5E7EB)
+                            focusedBorderColor = RonovaGoldDark,
+                            unfocusedBorderColor = RonovaCardBorder
                         )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -974,13 +958,13 @@ fun OneToOneChatScreen(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(RonovaPinkPrimary)
+                            .background(RonovaGoldPrimary)
                             .testTag("chat_send_button")
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Send Message",
-                            tint = Color.White,
+                            contentDescription = stringResource(R.string.chat_send),
+                            tint = RonovaTextPrimary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -1005,8 +989,8 @@ fun MessageDeliveryDetailsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Message Delivery Details",
-                subtitle = "Protocol Envelope & Relay Path",
+                title = stringResource(R.string.delivery_details_title),
+                subtitle = stringResource(R.string.delivery_details_subtitle),
                 onBack = onBack
             )
 
@@ -1015,7 +999,7 @@ fun MessageDeliveryDetailsScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Message not found", color = RonovaTextMuted)
+                    Text(stringResource(R.string.message_not_found), color = RonovaTextMuted)
                 }
             } else {
                 val msg = message!!
@@ -1035,7 +1019,7 @@ fun MessageDeliveryDetailsScreen(
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
                             Text(
-                                text = "Message Content",
+                                text = stringResource(R.string.message_content_label),
                                 style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -1053,7 +1037,7 @@ fun MessageDeliveryDetailsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Column {
-                                    Text("Delivery State", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text(stringResource(R.string.delivery_state_label), fontSize = 11.sp, color = RonovaTextMuted)
                                     Text(
                                         text = msg.deliveryState,
                                         fontWeight = FontWeight.Bold,
@@ -1061,12 +1045,12 @@ fun MessageDeliveryDetailsScreen(
                                             "DELIVERED" -> RonovaSuccess
                                             "RELAYED" -> RonovaWarning
                                             "FAILED", "EXPIRED" -> RonovaError
-                                            else -> RonovaPinkPrimary
+                                            else -> RonovaGoldDark
                                         }
                                     )
                                 }
                                 Column {
-                                    Text("Hops Traversed", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text(stringResource(R.string.hops_traversed_label), fontSize = 11.sp, color = RonovaTextMuted)
                                     Text(
                                         text = "${msg.hopCount}",
                                         fontWeight = FontWeight.Bold,
@@ -1074,9 +1058,9 @@ fun MessageDeliveryDetailsScreen(
                                     )
                                 }
                                 Column {
-                                    Text("Direction", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text(stringResource(R.string.direction_label), fontSize = 11.sp, color = RonovaTextMuted)
                                     Text(
-                                        text = if (msg.isOutgoing) "Outgoing" else "Incoming",
+                                        text = if (msg.isOutgoing) stringResource(R.string.direction_outgoing) else stringResource(R.string.direction_incoming),
                                         fontWeight = FontWeight.Bold,
                                         color = RonovaTextPrimary
                                     )
@@ -1095,18 +1079,18 @@ fun MessageDeliveryDetailsScreen(
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
                             Text(
-                                text = "Protocol Metadata",
+                                text = stringResource(R.string.protocol_metadata_label),
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            MetadataRow(label = "Message ID", value = msg.messageId)
-                            MetadataRow(label = "Sender Node", value = msg.senderDeviceId)
-                            MetadataRow(label = "Recipient Node", value = msg.recipientDeviceId)
-                            MetadataRow(label = "Timestamp", value = timeFormatted)
-                            MetadataRow(label = "Relay Nodes", value = msg.routeNodesJson)
+                            MetadataRow(label = stringResource(R.string.msg_meta_id), value = msg.messageId)
+                            MetadataRow(label = stringResource(R.string.msg_meta_sender), value = msg.senderDeviceId)
+                            MetadataRow(label = stringResource(R.string.msg_meta_recipient), value = msg.recipientDeviceId)
+                            MetadataRow(label = stringResource(R.string.msg_meta_timestamp), value = timeFormatted)
+                            MetadataRow(label = stringResource(R.string.msg_meta_relays), value = msg.routeNodesJson)
                             MetadataRow(
-                                label = "Encrypted Ciphertext",
+                                label = stringResource(R.string.msg_meta_ciphertext),
                                 value = msg.encryptedPayload.take(24).plus("... (AES-256-GCM)")
                             )
                         }
@@ -1119,15 +1103,15 @@ fun MessageDeliveryDetailsScreen(
                             onClick = {
                                 viewModel.retryPendingMessage(msg)
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                            colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldPrimary),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
+                            Icon(imageVector = Icons.Default.Refresh, contentDescription = null, tint = RonovaTextPrimary)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Retry Sending Over Mesh")
+                            Text(stringResource(R.string.retry_send_mesh), color = RonovaTextPrimary, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -1145,7 +1129,7 @@ fun MessageDeliveryDetailsScreen(
                     ) {
                         Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Delete Local Message")
+                        Text(stringResource(R.string.delete_local_msg))
                     }
                 }
             }
@@ -1180,17 +1164,15 @@ fun PendingMessagesScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = "Pending Store & Forward Queue",
-                subtitle = "Messages waiting for next-hop routes",
+                title = stringResource(R.string.pending_queue_title),
+                subtitle = stringResource(R.string.pending_queue_subtitle),
                 onBack = onBack,
                 actions = {
-                    IconButton(onClick = { viewModel.resendPendingPackets() }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Retry All",
-                            tint = RonovaPinkPrimary
-                        )
-                    }
+                    com.example.ui.components.HeaderAction(
+                        icon = Icons.Default.Refresh,
+                        contentDescription = stringResource(R.string.pending_retry_all),
+                        onClick = { viewModel.resendPendingPackets() }
+                    )
                 }
             )
 
@@ -1218,13 +1200,14 @@ fun PendingMessagesScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "No pending packets in queue",
+                            text = stringResource(R.string.pending_queue_empty),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "All mesh packets have successfully reached their direct or relay destinations.",
-                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
+                            text = stringResource(R.string.pending_queue_empty_desc),
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
@@ -1237,7 +1220,7 @@ fun PendingMessagesScreen(
                 ) {
                     item {
                         Text(
-                            text = "Outgoing Messages Waiting for Peer (${pendingMessages.size})",
+                            text = stringResource(R.string.pending_outgoing_title, pendingMessages.size),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -1261,22 +1244,22 @@ fun PendingMessagesScreen(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
-                                        text = "To: ${msg.recipientDeviceId}",
+                                        text = "প্রাপক: ${msg.recipientDeviceId}",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
                                     Text(
-                                        text = "State: ${msg.deliveryState}",
+                                        text = "অবস্থা: ${msg.deliveryState}",
                                         fontSize = 10.sp,
                                         color = RonovaWarning
                                     )
                                 }
                                 Button(
                                     onClick = { viewModel.retryPendingMessage(msg) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                                    colors = ButtonDefaults.buttonColors(containerColor = RonovaGoldPrimary),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("Retry", fontSize = 11.sp)
+                                    Text(stringResource(R.string.action_retry), color = RonovaTextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -1290,12 +1273,12 @@ fun PendingMessagesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Multi-hop Relay Queue (${pendingPackets.size})",
+                                text = stringResource(R.string.pending_relaying_title, pendingPackets.size),
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                             )
                             if (pendingPackets.isNotEmpty()) {
                                 Text(
-                                    text = "Clear Queue",
+                                    text = stringResource(R.string.clear_queue_action),
                                     color = RonovaError,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
@@ -1313,19 +1296,19 @@ fun PendingMessagesScreen(
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = "Packet: ${packet.packetId.take(12)}...",
+                                    text = stringResource(R.string.packet_label, packet.packetId.take(12)),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
                                 )
                                 Text(
-                                    text = "Origin: ${packet.originDeviceId} → Dest: ${packet.destinationDeviceId}",
+                                    text = stringResource(R.string.route_origin_dest, packet.originDeviceId, packet.destinationDeviceId),
                                     fontSize = 11.sp,
                                     color = RonovaTextMuted
                                 )
                                 Text(
-                                    text = "Current Hops: ${packet.hopCount} / ${packet.maxHops}",
+                                    text = stringResource(R.string.current_hops_label, packet.hopCount, packet.maxHops),
                                     fontSize = 10.sp,
-                                    color = RonovaPinkDark
+                                    color = RonovaGoldDark
                                 )
                             }
                         }

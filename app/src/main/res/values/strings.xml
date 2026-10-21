@@ -500,4 +500,53 @@
     <string name="packet_label">প্যাকেট: %1$s</string>
     <string name="route_origin_dest">উৎস: %1$s → গন্তব্য: %2$s</string>
     <string name="current_hops_label">বর্তমান হপ: %1$d / %2$d</string>
+
+    <!-- Additional Screen Strings -->
+    <string name="storage_db_size_title">স্থানীয় ডেটাবেস সাইজ</string>
+    <string name="storage_db_size_sub">ডিভাইসে সংরক্ষিত রুম SQLite</string>
+    <string name="storage_db_size_desc">সমস্ত বার্তা, ডিভাইসের পরিচয় এবং রাউটিং প্যাকেট কেবল স্থানীয় ডিভাইসে সংরক্ষিত হয়। কোনো ক্লাউড সার্ভার বা বাহ্যিক সিঙ্ক নেই।</string>
+    <string name="storage_messages_over_30">বার্তা &gt; ৩০ দিন</string>
+    <string name="storage_archived_messages">সংরক্ষিত বার্তা</string>
+    <string name="storage_archive_over_30_btn">আর্কাইভ &gt; ৩০ দিন</string>
+    <string name="storage_view_archived_btn">আর্কাইভ করা বার্তা দেখুন (%1$d)</string>
+    <string name="storage_clear_relay_btn">সম্পন্ন রিলে ক্যাশ মুছুন</string>
+    <string name="storage_delete_all_calls_btn">সব ভয়েস কল লগ মুছুন</string>
+    <string name="storage_retention_policy_card_title">৩০ দিনের বার্তা ধারণ নীতিমালা</string>
+    <string name="storage_retention_policy_card_desc">স্থানীয় স্টোরেজ পরিচ্ছন্ন রাখতে এবং শীর্ষ কর্মক্ষমতা বজায় রাখতে স্বয়ংক্রিয় মুছে ফেলা বা সংরক্ষণ নীতিমালা নির্বাচন করুন।</string>
+    <string name="storage_quick_actions_title">ধারণ অবস্থা ও কুইক অ্যাকশন</string>
+
+    <string name="relay_capacity_title">স্টোর ও ফরওয়ার্ড ধারণক্ষমতা</string>
+    <string name="relay_capacity_desc">পরবর্তী হপ রুটের অপেক্ষায় স্থানীয়ভাবে সংরক্ষিত সর্বোচ্চ এনক্রিপ্ট করা প্যাকেট।</string>
+    <string name="relay_capacity_unit">%1$d প্যাকেট</string>
+    <string name="relay_hops_unit">%1$d হপ</string>
+    <string name="relay_battery_unit">%1$d%%</string>
+
+    <string name="topology_routing_table_title">সক্রিয় মেশ রাউটিং টেবিল</string>
+    <string name="topology_no_routes">বর্তমানে কোনো মেশ রুট স্থাপিত নেই।</string>
+    <string name="topology_no_routes_desc">কাছাকাছি ১০-৩০ মিটারের মধ্যে অন্যান্য রোনোভা ডিভাইস থাকলে সেগুলো স্বয়ংক্রিয়ভাবে হপ হিসেবে যুক্ত হবে।</string>
+    <string name="topology_center_device">কেন্দ্র: এই ডিভাইস (%1$s)</string>
+
+    <string name="diag_audit_log_title">নিরাপত্তা ও অডিট ইভেন্ট লগ (%1$d)</string>
+    <string name="diag_no_events">কোনো নিরাপত্তা ঘটনা রেকর্ড করা হয়নি।</string>
+    <string name="diag_active_sockets_count">সক্রিয় সকেট: %1$d</string>
+
+    <string name="disc_search_placeholder">ডিভাইসের নাম বা MAC ঠিকানা খুঁজুন…</string>
+    <string name="disc_no_devices_desc">কাছাকাছি মেশ নোড খুঁজতে ২.৪ GHz রেডিও স্ক্যান শুরু করুন।</string>
+    <string name="disc_start_scan_now">এখনই স্ক্যান শুরু করুন</string>
+    <string name="filter_all">সব (%1$d)</string>
+    <string name="filter_paired">পেয়ার্ড (%1$d)</string>
+    <string name="filter_discovered">আবিষ্কৃত (%1$d)</string>
+    <string name="action_link_mesh">মেশে যুক্ত করুন</string>
+    <string name="node_unnamed">নামবিহীন মেশ নোড</string>
+    <string name="unknown_device">অজানা ডিভাইস</string>
+
+    <string name="device_info_title">ডিভাইস তথ্য</string>
+    <string name="new_chat_title">নতুন চ্যাট</string>
+    <string name="no_matching_convs">কোনো কথোপকথন মেলেনি</string>
+    <string name="voice_call_btn">ভয়েস কল</string>
+    <string name="device_verified_badge">যাচাইকৃত</string>
+    <string name="device_unverified_badge">যাচাইহীন</string>
+    <string name="copy_id_action">কপি করুন</string>
+    <string name="copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
 </resources>
+

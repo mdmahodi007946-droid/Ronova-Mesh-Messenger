@@ -112,8 +112,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: RonovaViewModel by viewModels()
 
     override fun attachBaseContext(newBase: android.content.Context) {
-        val lang = LocaleHelper.getPersistedLanguage(newBase)
-        super.attachBaseContext(LocaleHelper.getLocalizedContext(newBase, lang))
+        super.attachBaseContext(LocaleHelper.getLocalizedContext(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,15 +128,13 @@ class MainActivity : ComponentActivity() {
             )
         )
         setContent {
-            val currentLanguage by viewModel.currentLanguage.collectAsState()
-            val isBangla = currentLanguage == LocaleHelper.LANGUAGE_BANGLA
             val baseContext = LocalContext.current
 
-            val localizedContext = remember(currentLanguage) {
-                LocaleHelper.getLocalizedContext(baseContext, currentLanguage)
+            val localizedContext = remember {
+                LocaleHelper.getLocalizedContext(baseContext)
             }
-            val localizedConfiguration = remember(currentLanguage) {
-                LocaleHelper.getLocalizedConfiguration(baseContext, currentLanguage)
+            val localizedConfiguration = remember {
+                LocaleHelper.getLocalizedConfiguration(baseContext)
             }
 
             CompositionLocalProvider(
@@ -145,7 +142,7 @@ class MainActivity : ComponentActivity() {
                 LocalContext provides localizedContext,
                 LocalConfiguration provides localizedConfiguration
             ) {
-                RonovaTheme(isBangla = isBangla) {
+                RonovaTheme(isBangla = true) {
                     RonovaApp(viewModel = viewModel)
                 }
             }
