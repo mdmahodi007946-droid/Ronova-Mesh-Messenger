@@ -168,6 +168,48 @@ class CryptoManager(private val context: Context) {
         return Base64.encodeToString(signature, Base64.NO_WRAP)
     }
 
+    /**
+     * PRD v2.1 Section 6 Profile Lock & Authorization Credential Management.
+     */
+    fun isProfileLocked(): Boolean {
+        return prefs.getBoolean(KEY_PROFILE_LOCKED, false)
+    }
+
+    fun setProfileLocked(locked: Boolean) {
+        prefs.edit().putBoolean(KEY_PROFILE_LOCKED, locked).apply()
+    }
+
+    fun getOrGenerateAuthorizationCredential(): String {
+        val existing = prefs.getString(KEY_AUTH_CREDENTIAL, null)
+        if (existing != null) return existing
+        return rotateAuthorizationCredential()
+    }
+
+    fun rotateAuthorizationCredential(): String {
+        val salt = ByteArray(16)
+        secureRandom.nextBytes(salt)
+        val sha256 = MessageDigest.getInstance("SHA-256")
+        sha256.update(privateKey.encoded)
+        val digest = sha256.digest(salt)
+        val hex = digest.joinToString("") { "%02X".format(it) }
+        val newCode = "AUTH-${hex.substring(0, 4)}-${hex.substring(4, 8)}-${hex.substring(8, 12)}"
+        prefs.edit()
+            .putString(KEY_AUTH_CREDENTIAL, newCode)
+            .putLong(KEY_AUTH_CREDENTIAL_ROTATED_AT, System.currentTimeMillis())
+            .apply()
+        return newCode
+    }
+
+    fun getCredentialRotatedTimestamp(): Long {
+        return prefs.getLong(KEY_AUTH_CREDENTIAL_ROTATED_AT, System.currentTimeMillis())
+    }
+
+    fun verifyAuthorizationCredential(candidate: String, expected: String): Boolean {
+        val cleanedCandidate = candidate.trim().uppercase()
+        val cleanedExpected = expected.trim().uppercase()
+        return MessageDigest.isEqual(cleanedCandidate.toByteArray(), cleanedExpected.toByteArray())
+    }
+
     fun resetIdentity(): KeyPair {
         prefs.edit().clear().apply()
         myKeyPair = loadOrGenerateKeyPair()
@@ -177,5 +219,8 @@ class CryptoManager(private val context: Context) {
     companion object {
         private const val KEY_PUBLIC = "ec_public_key"
         private const val KEY_PRIVATE = "ec_private_key"
+        private const val KEY_PROFILE_LOCKED = "key_profile_locked"
+        private const val KEY_AUTH_CREDENTIAL = "key_auth_credential"
+        private const val KEY_AUTH_CREDENTIAL_ROTATED_AT = "key_auth_credential_rotated_at"
     }
 }

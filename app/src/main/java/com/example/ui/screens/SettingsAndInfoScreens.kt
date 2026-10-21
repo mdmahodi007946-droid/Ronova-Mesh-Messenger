@@ -56,6 +56,9 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Unarchive
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.WifiOff
 import com.example.core.database.MessageEntity
@@ -1934,11 +1937,20 @@ fun SettingsHubScreen(
     onNavigateToBattery: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToDiagnostics: () -> Unit,
-    onNavigateToAbout: () -> Unit
+    onNavigateToAbout: () -> Unit,
+    onNavigateToUserProfile: () -> Unit = {},
+    onNavigateToProfileLock: () -> Unit = {},
+    onNavigateToApprovedContacts: () -> Unit = {},
+    onNavigateToTerms: () -> Unit = {},
+    onNavigateToRules: () -> Unit = {},
+    onNavigateToHelp: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val retentionPolicy by viewModel.retentionPolicy.collectAsState()
     val archivedCount by viewModel.archivedMessagesCount.collectAsState()
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
+    val isLocked by viewModel.isProfileLocked.collectAsState()
+    val currentLang by viewModel.languagePreference.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -1957,10 +1969,10 @@ fun SettingsHubScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Section 1: Policies & Security
+                // Section 1: User Profile & Security (PRD v2.1)
                 item {
                     Text(
-                        text = stringResource(R.string.settings_policies_section),
+                        text = stringResource(R.string.settings_security_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -1971,23 +1983,171 @@ fun SettingsHubScreen(
 
                 item {
                     SettingsTileCard(
-                        icon = Icons.Default.Shield,
-                        title = stringResource(R.string.settings_privacy_policy),
-                        subtitle = stringResource(R.string.settings_privacy_policy_sub),
-                        onClick = onNavigateToPrivacyPolicy
+                        icon = Icons.Default.Person,
+                        title = stringResource(R.string.settings_user_profile),
+                        subtitle = stringResource(R.string.settings_user_profile_sub),
+                        onClick = onNavigateToUserProfile
                     )
                 }
 
                 item {
                     SettingsTileCard(
-                        icon = Icons.Default.Gavel,
-                        title = stringResource(R.string.settings_user_policy),
-                        subtitle = stringResource(R.string.settings_user_policy_sub),
-                        onClick = onNavigateToUserPolicy
+                        icon = Icons.Default.Lock,
+                        title = stringResource(R.string.settings_profile_lock),
+                        subtitle = stringResource(R.string.settings_profile_lock_sub),
+                        badgeText = if (isLocked) "LOCKED" else "OPEN",
+                        onClick = onNavigateToProfileLock
                     )
                 }
 
-                // Section 2: Storage & 30-Day Auto Retention
+                item {
+                    SettingsTileCard(
+                        icon = Icons.Default.CheckCircle,
+                        title = stringResource(R.string.settings_approved_contacts),
+                        subtitle = stringResource(R.string.settings_approved_contacts_sub),
+                        onClick = onNavigateToApprovedContacts
+                    )
+                }
+
+                item {
+                    SettingsTileCard(
+                        icon = Icons.Default.Security,
+                        title = stringResource(R.string.settings_security),
+                        subtitle = stringResource(R.string.settings_security_sub),
+                        onClick = onNavigateToSecurity
+                    )
+                }
+
+                item {
+                    SettingsTileCard(
+                        icon = Icons.Default.CheckCircle,
+                        title = stringResource(R.string.settings_trusted),
+                        subtitle = stringResource(R.string.settings_trusted_sub),
+                        onClick = onNavigateToTrustedDevices
+                    )
+                }
+
+                item {
+                    SettingsTileCard(
+                        icon = Icons.Default.Block,
+                        title = stringResource(R.string.settings_blocked),
+                        subtitle = stringResource(R.string.settings_blocked_sub),
+                        onClick = onNavigateToBlockedDevices
+                    )
+                }
+
+                // Section 2: Language Preference (PRD v2.1 Section 4)
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "ভাষা / Language",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaPinkDark
+                        ),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                    )
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(14.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(RonovaPinkLight),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Language,
+                                        contentDescription = null,
+                                        tint = RonovaPinkPrimary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "ভাষা নির্বাচন / Language Preference",
+                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Current: " + when (currentLang) {
+                                            "bn" -> "বাংলা (Bengali)"
+                                            "en" -> "English"
+                                            else -> "System Default"
+                                        },
+                                        fontSize = 11.5.sp,
+                                        color = RonovaTextMuted
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                val langs = listOf("" to "System", "bn" to "বাংলা", "en" to "English")
+                                langs.forEach { (code, label) ->
+                                    val isSelected = currentLang == code
+                                    Button(
+                                        onClick = { viewModel.setLanguagePreference(code) },
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (isSelected) RonovaGoldPrimary else Color(0xFFF3F4F6),
+                                            contentColor = if (isSelected) RonovaTextPrimary else RonovaTextSecondary
+                                        ),
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text(text = label, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Section 3: Mesh Network & Relaying
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.settings_mesh_section),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaPinkDark
+                        ),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                    )
+                }
+
+                item {
+                    SettingsTileCard(
+                        icon = Icons.Default.Hub,
+                        title = stringResource(R.string.settings_relay),
+                        subtitle = if (isRelayOn) "Relay active (Participating in mesh)" else "Relay disabled",
+                        onClick = onNavigateToRelaySettings
+                    )
+                }
+
+                item {
+                    SettingsTileCard(
+                        icon = Icons.Default.Call,
+                        title = stringResource(R.string.settings_calls),
+                        subtitle = stringResource(R.string.settings_calls_sub),
+                        onClick = onNavigateToCallHistory
+                    )
+                }
+
+                // Section 4: Storage & 30-Day Auto Retention
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -2020,11 +2180,11 @@ fun SettingsHubScreen(
                     )
                 }
 
-                // Section 3: Security & Devices
+                // Section 5: Legal & Information (PRD v2.1)
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.settings_security_section),
+                        text = stringResource(R.string.settings_policies_section),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -2035,63 +2195,41 @@ fun SettingsHubScreen(
 
                 item {
                     SettingsTileCard(
-                        icon = Icons.Default.Lock,
-                        title = stringResource(R.string.settings_security),
-                        subtitle = stringResource(R.string.settings_security_sub),
-                        onClick = onNavigateToSecurity
+                        icon = Icons.Default.Gavel,
+                        title = stringResource(R.string.settings_terms),
+                        subtitle = stringResource(R.string.settings_terms_sub),
+                        onClick = onNavigateToTerms
                     )
                 }
 
                 item {
                     SettingsTileCard(
-                        icon = Icons.Default.CheckCircle,
-                        title = stringResource(R.string.settings_trusted),
-                        subtitle = stringResource(R.string.settings_trusted_sub),
-                        onClick = onNavigateToTrustedDevices
+                        icon = Icons.Default.Policy,
+                        title = stringResource(R.string.settings_rules),
+                        subtitle = stringResource(R.string.settings_rules_sub),
+                        onClick = onNavigateToRules
                     )
                 }
 
                 item {
                     SettingsTileCard(
-                        icon = Icons.Default.Block,
-                        title = stringResource(R.string.settings_blocked),
-                        subtitle = stringResource(R.string.settings_blocked_sub),
-                        onClick = onNavigateToBlockedDevices
-                    )
-                }
-
-                // Section 4: Mesh Network & Call History
-                item {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.settings_mesh_section),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = RonovaPinkDark
-                        ),
-                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                        icon = Icons.Default.Shield,
+                        title = stringResource(R.string.settings_privacy_policy),
+                        subtitle = stringResource(R.string.settings_privacy_policy_sub),
+                        onClick = onNavigateToPrivacyPolicy
                     )
                 }
 
                 item {
                     SettingsTileCard(
-                        icon = Icons.Default.Hub,
-                        title = stringResource(R.string.settings_relay),
-                        subtitle = if (isRelayOn) "Relay active (Participating in mesh)" else "Relay disabled",
-                        onClick = onNavigateToRelaySettings
+                        icon = Icons.Default.Help,
+                        title = stringResource(R.string.settings_help),
+                        subtitle = stringResource(R.string.settings_help_sub),
+                        onClick = onNavigateToHelp
                     )
                 }
 
-                item {
-                    SettingsTileCard(
-                        icon = Icons.Default.Call,
-                        title = stringResource(R.string.settings_calls),
-                        subtitle = stringResource(R.string.settings_calls_sub),
-                        onClick = onNavigateToCallHistory
-                    )
-                }
-
-                // Section 5: Device Optimization & About
+                // Section 6: System & App Info
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -2134,8 +2272,8 @@ fun SettingsHubScreen(
                 item {
                     SettingsTileCard(
                         icon = Icons.Default.Info,
-                        title = "About Ronova LTD",
-                        subtitle = "Version 1.0 • Ronova LTD contact & open source info",
+                        title = "About Ronova Mesh",
+                        subtitle = "Version 2.1 • Md Rony Ahmed (Owner & Developer)",
                         onClick = onNavigateToAbout
                     )
                 }
@@ -2241,8 +2379,8 @@ fun AboutScreen(
                 .widthIn(max = 680.dp)
         ) {
             RonovaTopBar(
-                title = "About Ronova LTD",
-                subtitle = "Decentralized Communication Innovation",
+                title = "About Ronova Mesh",
+                subtitle = "Decentralized & Hybrid Communication",
                 onBack = onBack
             )
 
@@ -2258,19 +2396,19 @@ fun AboutScreen(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
-                            .background(RonovaPinkLight),
+                            .background(RonovaGoldLight),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = null,
-                            tint = RonovaPinkPrimary,
+                            tint = RonovaGoldDark,
                             modifier = Modifier.size(42.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = "Ronova Bluetooth Mesh Messenger",
+                        text = "Ronova Mesh Messenger",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary
@@ -2279,20 +2417,20 @@ fun AboutScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Surface(
-                        color = RonovaPinkLight,
+                        color = RonovaGoldLight,
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "Version 1.0 Production Release",
+                            text = "Version 2.1 Release",
                             fontSize = 12.sp,
-                            color = RonovaPinkDark,
+                            color = RonovaGoldDark,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
                 }
 
-                // Specification Matrix matching User Reference (Screenshot 8)
+                // Specification Matrix matching PRD v2.1
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -2314,25 +2452,25 @@ fun AboutScreen(
                             SpecFeatureItem(
                                 icon = Icons.Default.PhoneAndroid,
                                 title = "Platform",
-                                description = "Android Native • Kotlin"
+                                description = "Android Native • Kotlin (API 24 to 36)"
                             )
 
                             SpecFeatureItem(
                                 icon = Icons.Default.Bluetooth,
                                 title = "Communication",
-                                description = "Bluetooth Classic + BLE, custom multi-hop relay"
+                                description = "Bluetooth Classic + BLE mesh relay, plus mobile internet for remote routing"
                             )
 
                             SpecFeatureItem(
                                 icon = Icons.Default.WifiOff,
-                                title = "Connectivity",
-                                description = "No internet, SIM, mobile data, cloud server or paid API required"
+                                title = "Routing Architecture",
+                                description = "Automatic route selection: direct Bluetooth nearby, multi-hop relay, or mobile internet"
                             )
 
                             SpecFeatureItem(
                                 icon = Icons.Default.AccountBalanceWallet,
                                 title = "Business model",
-                                description = "Free to use • No ads • No subscription"
+                                description = "Free to use • No ads • No subscription • No third-party trackers"
                             )
                         }
                     }
@@ -2348,12 +2486,12 @@ fun AboutScreen(
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
                             Text(
-                                text = "Project Mission",
+                                text = "Project Leadership & Ownership",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Ronova LTD is dedicated to providing free, sovereign communication tools that empower communities during network outages, emergency scenarios, or off-grid environments.",
+                                text = "Ronova Mesh provides sovereign peer-to-peer communication tools that empower communities during network outages, emergency scenarios, or off-grid environments, while supporting secure internet routing when users are separated by distance.",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = RonovaTextSecondary,
                                     lineHeight = 20.sp,
@@ -2362,12 +2500,12 @@ fun AboutScreen(
                             )
                             Spacer(modifier = Modifier.height(14.dp))
                             Text(
-                                text = "Developer & Organization:",
+                                text = "Developer & Owner:",
                                 fontSize = 11.5.sp,
                                 color = RonovaTextMuted
                             )
                             Text(
-                                text = "Ronova LTD",
+                                text = "Md Rony Ahmed (রনি আহমেদ)",
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextPrimary,
                                 fontSize = 14.sp
@@ -2381,7 +2519,7 @@ fun AboutScreen(
                             Text(
                                 text = "ronovaltd@gmail.com",
                                 fontWeight = FontWeight.Bold,
-                                color = RonovaPinkDark,
+                                color = RonovaGoldDark,
                                 fontSize = 14.sp
                             )
                         }

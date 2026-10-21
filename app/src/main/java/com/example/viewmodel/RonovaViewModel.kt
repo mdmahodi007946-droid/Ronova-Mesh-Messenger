@@ -9,11 +9,15 @@ import com.example.core.audio.ActiveCallInfo
 import com.example.core.audio.CallState
 import com.example.core.bluetooth.BluetoothStatus
 import com.example.core.bluetooth.MeshDiagnostics
+import com.example.core.database.ApprovedContactEntity
 import com.example.core.database.ConversationEntity
 import com.example.core.database.DeviceEntity
 import com.example.core.database.MessageEntity
 import com.example.core.database.PeerEntity
 import com.example.core.database.RelayQueueEntity
+import com.example.core.locale.LocaleHelper
+import com.example.core.network.RoutePreference
+import com.example.core.network.TransportRoute
 import com.example.core.protocol.MeshPacket
 import com.example.core.protocol.MeshPacketType
 import com.example.data.RetentionPolicy
@@ -36,11 +40,13 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     val meshManager = app.bluetoothMeshManager
     val audioCallManager = app.audioCallManager
     val repository = app.repository
+    val internetTransportManager = app.internetTransportManager
 
-    // State flows
+    // Core Identity
     val myDeviceId: String = cryptoManager.deviceId
     val myPublicKeyBase64: String = cryptoManager.publicKeyBase64
 
+    // Bluetooth Mesh State
     val bluetoothStatus: StateFlow<BluetoothStatus> = meshManager.bluetoothStatus
     val discoveredDevices: StateFlow<List<BluetoothDevice>> = meshManager.discoveredDevices
     val deviceRssiMap: StateFlow<Map<String, Int>> = meshManager.deviceRssiMap
@@ -48,6 +54,89 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     val diagnostics: StateFlow<MeshDiagnostics> = meshManager.diagnostics
     val currentCall: StateFlow<ActiveCallInfo> = audioCallManager.currentCall
 
+    // Internet & Connectivity State (PRD v2.1 Section 2.3)
+    val isInternetAvailable: StateFlow<Boolean> = internetTransportManager.isInternetAvailable
+    val isWifi: StateFlow<Boolean> = internetTransportManager.isWifi
+    val isCellular: StateFlow<Boolean> = internetTransportManager.isCellular
+
+    private val _routePreference = MutableStateFlow(repository.getRoutePreference())
+    val routePreference: StateFlow<RoutePreference> = _routePreference.asStateFlow()
+
+    fun setRoutePreference(pref: RoutePreference) {
+        _routePreference.value = pref
+        repository.setRoutePreference(pref)
+    }
+
+    // Profile Lock & Authorization State (PRD v2.1 Section 6 & 7)
+    private val _isProfileLocked = MutableStateFlow(cryptoManager.isProfileLocked())
+    val isProfileLocked: StateFlow<Boolean> = _isProfileLocked.asStateFlow()
+
+    private val _authCredential = MutableStateFlow(cryptoManager.getOrGenerateAuthorizationCredential())
+    val authCredential: StateFlow<String> = _authCredential.asStateFlow()
+
+    fun setProfileLocked(locked: Boolean) {
+        _isProfileLocked.value = locked
+        cryptoManager.setProfileLocked(locked)
+        viewModelScope.launch {
+            repository.logSecurityEvent(
+                "PROFILE_LOCK_CHANGED",
+                "Profile Lock set to: ${if (locked) "LOCKED" else "UNLOCKED"}"
+            )
+        }
+    }
+
+    fun rotateAuthCredential(): String {
+        val newCode = cryptoManager.rotateAuthorizationCredential()
+        _authCredential.value = newCode
+        viewModelScope.launch {
+            repository.logSecurityEvent("AUTH_CREDENTIAL_ROTATED", "Rotated authorization credential")
+        }
+        return newCode
+    }
+
+    // Discoverability & Privacy Preferences (PRD v2.1 Section 5 & 7)
+    private val _radarVisibility = MutableStateFlow(repository.getRadarVisibility())
+    val radarVisibility: StateFlow<Boolean> = _radarVisibility.asStateFlow()
+
+    fun setRadarVisibility(visible: Boolean) {
+        _radarVisibility.value = visible
+        repository.setRadarVisibility(visible)
+    }
+
+    private val _showDeviceName = MutableStateFlow(repository.getShowDeviceName())
+    val showDeviceName: StateFlow<Boolean> = _showDeviceName.asStateFlow()
+
+    fun setShowDeviceName(show: Boolean) {
+        _showDeviceName.value = show
+        repository.setShowDeviceName(show)
+    }
+
+    private val _allowIncomingCalls = MutableStateFlow(repository.getAllowIncomingCalls())
+    val allowIncomingCalls: StateFlow<Boolean> = _allowIncomingCalls.asStateFlow()
+
+    fun setAllowIncomingCalls(allow: Boolean) {
+        _allowIncomingCalls.value = allow
+        repository.setAllowIncomingCalls(allow)
+    }
+
+    private val _customNickname = MutableStateFlow(repository.getMeshDisplayName())
+    val customNickname: StateFlow<String> = _customNickname.asStateFlow()
+
+    fun setCustomNickname(name: String) {
+        _customNickname.value = name
+        repository.setMeshDisplayName(name)
+    }
+
+    // Language Preference (PRD v2.1 Section 4)
+    private val _languagePreference = MutableStateFlow(LocaleHelper.getPersistedLanguage(app))
+    val languagePreference: StateFlow<String> = _languagePreference.asStateFlow()
+
+    fun setLanguagePreference(lang: String) {
+        _languagePreference.value = lang
+        LocaleHelper.setPersistedLanguage(app, lang)
+    }
+
+    // Database Flows
     val conversations: StateFlow<List<ConversationEntity>> = repository.conversations
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -60,11 +149,17 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     val allDevices: StateFlow<List<DeviceEntity>> = repository.allDevices
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val approvedContacts: StateFlow<List<ApprovedContactEntity>> = repository.approvedContacts
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val pendingMessages: StateFlow<List<MessageEntity>> = repository.pendingMessages
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val pendingRelayPackets: StateFlow<List<RelayQueueEntity>> = repository.pendingRelayPackets
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val pendingQueueCount: StateFlow<Int> = repository.pendingQueueCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val connectedPeers: StateFlow<List<PeerEntity>> = repository.connectedPeers
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -93,10 +188,10 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     private val _maxHops = MutableStateFlow(5)
     val maxHops: StateFlow<Int> = _maxHops.asStateFlow()
 
-    private val _isForegroundServiceRunning = MutableStateFlow(com.example.service.BluetoothMeshService.isRunning)
+    private val _isForegroundServiceRunning = MutableStateFlow(BluetoothMeshService.isRunning)
     val isForegroundServiceRunning: StateFlow<Boolean> = _isForegroundServiceRunning.asStateFlow()
 
-    private val prefs = app.getSharedPreferences("ronova_preferences", android.content.Context.MODE_PRIVATE)
+    private val prefs = app.getSharedPreferences("ronova_preferences", Application.MODE_PRIVATE)
 
     private val _callAlertsEnabled = MutableStateFlow(prefs.getBoolean("pref_call_alerts", true))
     val callAlertsEnabled: StateFlow<Boolean> = _callAlertsEnabled.asStateFlow()
@@ -147,37 +242,37 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun resetSetup(onComplete: () -> Unit = {}) {
+    fun resetSetupWizard() {
         viewModelScope.launch {
             setupRepository.resetSetup()
-            withContext(Dispatchers.Main) {
-                onComplete()
-            }
+            repository.setSetupCompleted(false)
         }
-    }
-
-    suspend fun getStartDestination(): com.example.data.StartDestination {
-        return setupRepository.computeStartDestination()
-    }
-
-
-    fun hasMicrophonePermission(): Boolean {
-        return com.example.core.permission.PermissionManager.hasMicrophonePermission(app)
-    }
-
-    fun hasBluetoothPermissions(): Boolean {
-        return com.example.core.permission.PermissionManager.hasBluetoothPermissions(app)
     }
 
     fun isBluetoothEnabled(): Boolean {
         return com.example.core.permission.PermissionManager.isBluetoothEnabled(app)
     }
 
+    fun hasBluetoothPermissions(): Boolean {
+        return com.example.core.permission.PermissionManager.hasBluetoothPermissions(app)
+    }
+
+    suspend fun getStartDestination(): com.example.data.StartDestination {
+        return setupRepository.computeStartDestination()
+    }
+
     init {
-        // Collect incoming packets to handle text messages and delivery receipts
+        // Collect incoming Bluetooth packets
         viewModelScope.launch {
             meshManager.incomingPackets.collect { packet ->
-                handleIncomingPacket(packet)
+                handleIncomingPacket(packet, isInternet = false)
+            }
+        }
+
+        // Collect incoming Internet packets (PRD v2.1 Section 2.3)
+        viewModelScope.launch {
+            internetTransportManager.incomingInternetPackets.collect { packet ->
+                handleIncomingPacket(packet, isInternet = true)
             }
         }
 
@@ -192,10 +287,10 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         meshManager.startServer()
     }
 
-    private suspend fun handleIncomingPacket(packet: MeshPacket) {
+    private suspend fun handleIncomingPacket(packet: MeshPacket, isInternet: Boolean = false) {
         when (packet.type) {
             MeshPacketType.TEXT_MESSAGE -> {
-                // Check if device is blocked
+                // 1. Check if device is blocked
                 val senderDevice = repository.getDeviceById(packet.originDeviceId)
                 if (senderDevice?.trustStatus == "BLOCKED") {
                     repository.logSecurityEvent(
@@ -206,6 +301,19 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                     return
                 }
 
+                // 2. Profile Lock verification (PRD v2.1 Section 6.2)
+                if (_isProfileLocked.value) {
+                    val isApproved = repository.isContactApproved(packet.originDeviceId)
+                    if (!isApproved) {
+                        repository.logSecurityEvent(
+                            "UNAUTHORIZED_MESSAGE_REJECTED",
+                            "Rejected message from unapproved contact ${packet.originDeviceId} due to Profile Lock",
+                            packet.originDeviceId
+                        )
+                        return
+                    }
+                }
+
                 var decryptedText = packet.payload
                 try {
                     if (packet.senderPublicKeyBase64.isNotEmpty()) {
@@ -213,8 +321,10 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                         decryptedText = cryptoManager.decryptFromPeer(packet.payload, senderKey)
                     }
                 } catch (e: Exception) {
-                    // Could be unencrypted or payload decode error
+                    // Raw payload fallback
                 }
+
+                val transport = if (isInternet) "INTERNET" else "BLUETOOTH"
 
                 val msg = MessageEntity(
                     messageId = packet.packetId,
@@ -227,7 +337,8 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                     hopCount = packet.currentHop,
                     routeNodesJson = packet.toJsonObject().optJSONArray("rp")?.toString() ?: "[]",
                     isOutgoing = false,
-                    encryptedPayload = packet.payload
+                    encryptedPayload = packet.payload,
+                    transportType = transport
                 )
                 repository.saveMessage(msg)
 
@@ -240,15 +351,21 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                     payload = JSONObject().apply {
                         put("ackMessageId", packet.packetId)
                         put("hops", packet.currentHop)
+                        put("transport", transport)
                     }.toString()
                 )
-                meshManager.sendPacket(ack)
+                if (isInternet) {
+                    internetTransportManager.dispatchInternetPacket(ack)
+                } else {
+                    meshManager.sendPacket(ack)
+                }
             }
             MeshPacketType.ACK_DELIVERED -> {
                 try {
                     val obj = JSONObject(packet.payload)
                     val ackMessageId = obj.optString("ackMessageId", "")
                     val hops = obj.optInt("hops", packet.currentHop)
+                    val transport = obj.optString("transport", if (isInternet) "INTERNET" else "BLUETOOTH")
                     if (ackMessageId.isNotEmpty()) {
                         repository.updateMessageDeliveryState(
                             messageId = ackMessageId,
@@ -258,7 +375,6 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     }
                 } catch (e: Exception) {
-                    // Fallback using packetId
                     repository.updateMessageDeliveryState(
                         messageId = packet.packetId,
                         state = "DELIVERED",
@@ -270,6 +386,13 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /**
+     * Sends message with automatic route selection (PRD v2.1 Section 2.4):
+     * 1. Direct Bluetooth if in direct range.
+     * 2. Bluetooth Mesh Relay if route exists.
+     * 3. Internet Route if destination is remote & network is connected.
+     * 4. Offline Queue if no route available.
+     */
     fun sendMessage(recipientDeviceId: String, text: String) {
         if (text.isBlank()) return
 
@@ -282,10 +405,18 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                 try {
                     val peerKey = cryptoManager.decodePublicKey(recipientDevice.publicKeyBase64)
                     payload = cryptoManager.encryptForPeer(text, peerKey)
-                } catch (e: Exception) {
-                    // If encryption fails, fallback safely
-                }
+                } catch (_: Exception) {}
             }
+
+            // Determine route based on Section 2.4
+            val directPeer = connectedPeers.value.any { it.deviceId == recipientDeviceId && it.isConnected }
+            val route = internetTransportManager.selectRoute(
+                isDirectBluetoothConnected = directPeer,
+                isBluetoothMeshReachable = directPeer, // or known hop route
+                preference = _routePreference.value
+            )
+
+            val transportTypeStr = if (route == TransportRoute.INTERNET_REMOTE) "INTERNET" else "BLUETOOTH"
 
             val msg = MessageEntity(
                 messageId = messageId,
@@ -297,7 +428,8 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                 deliveryState = "QUEUED",
                 hopCount = 0,
                 isOutgoing = true,
-                encryptedPayload = payload
+                encryptedPayload = payload,
+                transportType = transportTypeStr
             )
             repository.saveMessage(msg)
 
@@ -311,25 +443,62 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                 hopLimit = _maxHops.value
             )
 
-            val sentToAny = meshManager.sendPacket(packet)
-            if (sentToAny) {
-                repository.updateMessageDeliveryState(messageId, "RELAYED", 1)
-            } else {
-                // Enqueue in relay queue for store-and-forward
-                repository.enqueueRelayPacket(
-                    RelayQueueEntity(
-                        packetId = messageId,
-                        destinationDeviceId = recipientDeviceId,
-                        originDeviceId = myDeviceId,
-                        rawPacketJson = packet.toJsonObject().toString(),
-                        hopCount = 0,
-                        maxHops = _maxHops.value,
-                        timestamp = System.currentTimeMillis(),
-                        expiryTimestamp = packet.expiryTimestamp,
-                        status = "PENDING"
-                    )
-                )
+            when (route) {
+                TransportRoute.DIRECT_BLUETOOTH, TransportRoute.MESH_RELAY -> {
+                    val sent = meshManager.sendPacket(packet)
+                    if (sent) {
+                        repository.updateMessageDeliveryState(messageId, "RELAYED", 1)
+                    } else {
+                        // Enqueue in relay queue
+                        enqueueToStoreAndForward(messageId, recipientDeviceId, packet)
+                    }
+                }
+                TransportRoute.INTERNET_REMOTE -> {
+                    val sent = internetTransportManager.dispatchInternetPacket(packet)
+                    if (sent) {
+                        repository.updateMessageDeliveryState(messageId, "SENT", 0)
+                    } else {
+                        enqueueToStoreAndForward(messageId, recipientDeviceId, packet)
+                    }
+                }
+                TransportRoute.OFFLINE_QUEUE -> {
+                    enqueueToStoreAndForward(messageId, recipientDeviceId, packet)
+                }
             }
+        }
+    }
+
+    private suspend fun enqueueToStoreAndForward(messageId: String, recipientDeviceId: String, packet: MeshPacket) {
+        repository.enqueueRelayPacket(
+            RelayQueueEntity(
+                packetId = messageId,
+                destinationDeviceId = recipientDeviceId,
+                originDeviceId = myDeviceId,
+                rawPacketJson = packet.toJsonObject().toString(),
+                hopCount = 0,
+                maxHops = _maxHops.value,
+                timestamp = System.currentTimeMillis(),
+                expiryTimestamp = packet.expiryTimestamp,
+                status = "PENDING"
+            )
+        )
+    }
+
+    fun approveContact(contactId: String, nickname: String, code: String) {
+        viewModelScope.launch {
+            repository.saveApprovedContact(contactId, nickname, code)
+        }
+    }
+
+    fun revokeApprovedContact(contactId: String) {
+        viewModelScope.launch {
+            repository.revokeApprovedContact(contactId)
+        }
+    }
+
+    fun clearAllApprovedContacts() {
+        viewModelScope.launch {
+            repository.clearAllApprovedContacts()
         }
     }
 
@@ -344,7 +513,11 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                 payload = message.encryptedPayload.ifEmpty { message.content },
                 hopLimit = _maxHops.value
             )
-            val sent = meshManager.sendPacket(packet)
+            val sent = if (message.transportType == "INTERNET") {
+                internetTransportManager.dispatchInternetPacket(packet)
+            } else {
+                meshManager.sendPacket(packet)
+            }
             if (sent) {
                 repository.updateMessageDeliveryState(message.messageId, "RELAYED", 1)
             }
@@ -353,8 +526,6 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resendPendingPackets() {
         viewModelScope.launch(Dispatchers.IO) {
-            val pending = repository.pendingRelayPackets
-            // trigger forward on all connected peers
             meshManager.startServer()
         }
     }

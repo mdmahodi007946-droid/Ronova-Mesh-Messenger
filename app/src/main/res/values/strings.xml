@@ -2,7 +2,7 @@
     <!-- App Branding -->
     <string name="app_name">Ronova Mesh</string>
     <string name="full_app_name">রোনোভা ব্লুটুথ মেশ মেসেঞ্জার</string>
-    <string name="company_name">রোনোভা লিমিটেড</string>
+    <string name="company_name">Md Rony Ahmed</string>
     <string name="tagline">বিকেন্দ্রীভূত, ইন্টারনেট-বিহীন মেসেজিং ও ভয়েস মেশ</string>
 
     <!-- Navigation & Drawer -->
@@ -546,7 +546,114 @@
     <string name="voice_call_btn">ভয়েস কল</string>
     <string name="device_verified_badge">যাচাইকৃত</string>
     <string name="device_unverified_badge">যাচাইহীন</string>
-    <string name="copy_id_action">কপি করুন</string>
-    <string name="copied_to_clipboard">ক্লিপবোর্ডে কপি করা হয়েছে</string>
+    <string name="copy_id_action">Copy</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="settings_saved_toast">Settings saved successfully</string>
+
+    <!-- Navigation & Bottom Bar -->
+    <string name="nav_network_map">Network Map</string>
+    <string name="lang_system">System Default</string>
+
+    <!-- Settings Sub-items -->
+    <string name="settings_user_profile">User Profile &amp; Identity</string>
+    <string name="settings_user_profile_sub">Custom nickname, radar visibility, and avatar</string>
+    <string name="settings_profile_lock">Profile Lock &amp; Privacy</string>
+    <string name="settings_profile_lock_sub">Configure authorization code and lock settings</string>
+    <string name="settings_approved_contacts">Approved Contacts</string>
+    <string name="settings_approved_contacts_sub">Manage contacts authorized to call and message when locked</string>
+    <string name="settings_routing_mode">Communication Transport</string>
+    <string name="settings_routing_mode_sub">Bluetooth mesh, mobile internet, or automatic routing</string>
+    <string name="settings_terms">Terms &amp; Conditions</string>
+    <string name="settings_terms_sub">Legal agreements and software licensing</string>
+    <string name="settings_rules">Rules of Use</string>
+    <string name="settings_rules_sub">Acceptable use and safety guidelines</string>
+    <string name="settings_help">Help &amp; Support</string>
+    <string name="settings_help_sub">Frequently asked questions and support contacts</string>
+
+    <!-- Profile Lock & Privacy -->
+    <string name="profile_lock_title">Profile Lock &amp; Privacy</string>
+    <string name="profile_lock_subtitle">Prevent unauthorized messages and calls</string>
+    <string name="profile_lock_toggle">Enable Profile Lock</string>
+    <string name="profile_lock_toggle_desc">When locked, only approved contacts can send you messages and calls.</string>
+    <string name="profile_lock_credential_title">Private Authorization Code</string>
+    <string name="profile_lock_credential_desc">Share this cryptographic token only with trusted contacts.</string>
+    <string name="profile_lock_rotate_btn">Rotate Authorization Code</string>
+    <string name="profile_lock_rotate_confirm_title">Rotate Authorization Code?</string>
+    <string name="profile_lock_rotate_confirm_desc">Rotating your code will invalidate past credentials. Unapproved peers will require the new code to contact you.</string>
+    <string name="profile_lock_copy_btn">Copy Code</string>
+    <string name="profile_lock_copied">Authorization code copied to clipboard</string>
+    <string name="approved_contacts_title">Approved Contacts</string>
+    <string name="approved_contacts_subtitle">List of peers authorized to message and call</string>
+    <string name="approved_contacts_empty">No approved contacts yet</string>
+    <string name="approved_contacts_empty_desc">Verify an authorization code or add a contact to approve them.</string>
+    <string name="approved_contacts_add_btn">Approve New Contact</string>
+    <string name="approved_contacts_add_dialog_title">Enter Contact Authorization Code</string>
+    <string name="approved_contacts_add_dialog_desc">Enter the peer\'s Node ID and their private authorization code.</string>
+    <string name="approved_contacts_peer_id_hint">Peer Node ID (e.g. RNV-XXXX-XXXX-XXXX)</string>
+    <string name="approved_contacts_code_hint">Authorization Code (e.g. AUTH-XXXX-XXXX-XXXX)</string>
+    <string name="approved_contacts_nickname_hint">Contact Nickname (Optional)</string>
+    <string name="approved_contacts_revoke_btn">Revoke Approval</string>
+    <string name="approved_contacts_revoked_toast">Contact authorization revoked</string>
+
+    <!-- Network Map / Radar -->
+    <string name="radar_title">Network Map &amp; Radar</string>
+    <string name="radar_subtitle">Live monitoring of nearby active and relay nodes</string>
+    <string name="radar_center_label">Center: This Device (%1$s)</string>
+    <string name="radar_legend_direct">Direct Bluetooth</string>
+    <string name="radar_legend_relay">Relay Hop</string>
+    <string name="radar_legend_internet">Internet Route</string>
+    <string name="radar_no_peers">No active nodes detected in range</string>
+    <string name="radar_disclaimer">The radar visualizer is RF signal-based, not GPS location.</string>
+    <string name="radar_peer_direct">Direct Bluetooth connection</string>
+    <string name="radar_peer_relay">Mesh Relay (%1$d hops)</string>
+    <string name="radar_peer_internet">Remote (Mobile Internet)</string>
+    <string name="radar_peer_locked">Profile Lock Active</string>
+    <string name="radar_peer_distance_approx">Approximate RF distance: %1$s</string>
+    <string name="radar_action_chat">Send Message</string>
+    <string name="radar_action_call">Voice Call</string>
+    <string name="radar_action_profile">Node Details</string>
+
+    <!-- Transport & Routing Policy -->
+    <string name="transport_bluetooth">Bluetooth Mesh</string>
+    <string name="transport_internet">Mobile Internet</string>
+    <string name="routing_policy_title">Automatic Route Selection Policy</string>
+    <string name="routing_policy_subtitle">Set preferred communication transport</string>
+    <string name="routing_auto">Automatic Selection (Recommended)</string>
+    <string name="routing_auto_desc">Prefers direct Bluetooth nearby; automatically uses mobile internet when remote.</string>
+    <string name="routing_bluetooth_only">Bluetooth Only (Zero Data)</string>
+    <string name="routing_bluetooth_only_desc">Never uses mobile internet. Completely free, offline, and cellular-independent.</string>
+    <string name="routing_internet_preferred">Internet Preferred</string>
+    <string name="routing_internet_preferred_desc">Uses internet when available; falls back to Bluetooth mesh when offline.</string>
+
+    <!-- User Profile -->
+    <string name="user_profile_title">User Profile</string>
+    <string name="user_profile_subtitle">Node nickname and radar visibility</string>
+    <string name="profile_nickname_title">Custom Nickname</string>
+    <string name="profile_nickname_hint">Enter your preferred name…</string>
+    <string name="profile_save_btn">Save Profile</string>
+    <string name="profile_show_name_toggle">Show Bluetooth Device Name</string>
+    <string name="profile_show_name_desc">When disabled, only your custom nickname or Node ID is displayed to peers.</string>
+    <string name="profile_radar_visibility_toggle">Visible on Radar</string>
+    <string name="profile_radar_visibility_desc">When disabled, your node is hidden from the radar map.</string>
+    <string name="profile_allow_calls_toggle">Accept Incoming Voice Calls</string>
+    <string name="profile_allow_calls_desc">When disabled, incoming voice calls will be automatically rejected.</string>
+
+    <!-- Terms, Rules & Help -->
+    <string name="terms_title">Terms &amp; Conditions</string>
+    <string name="terms_subtitle">Legal and operational terms for using Ronova Mesh</string>
+    <string name="rules_title">Rules of Use &amp; Responsibility</string>
+    <string name="rules_subtitle">Safe, ethical, and responsible peer-to-peer communication</string>
+    <string name="help_title">Help &amp; Support</string>
+    <string name="help_subtitle">Usage guide and technical documentation</string>
+    <string name="help_faq_offline_title">How do messages transmit without internet?</string>
+    <string name="help_faq_offline_desc">Ronova Mesh communicates device-to-device over Bluetooth radios. No cell towers, SIM cards, or servers are needed.</string>
+    <string name="help_faq_relay_title">How does multi-hop relay work?</string>
+    <string name="help_faq_relay_desc">When the recipient is out of direct range, intermediate participating devices forward encrypted packets. Intermediaries cannot decrypt your message.</string>
+    <string name="help_faq_internet_title">When is mobile internet used?</string>
+    <string name="help_faq_internet_desc">When users are in different cities/countries outside Bluetooth range, end-to-end encrypted packets can route via mobile internet.</string>
+    <string name="help_faq_profile_lock_title">What is Profile Lock?</string>
+    <string name="help_faq_profile_lock_desc">Profile Lock ensures that unapproved nodes cannot message or call you without your private authorization code.</string>
+    <string name="help_contact_support_title">Official Support &amp; Developer Contact</string>
+    <string name="help_contact_support_desc">Developer: Md Rony Ahmed\nEmail: ronovaltd@gmail.com\nContact for support, bug reports, and inquiries.</string>
 </resources>
 

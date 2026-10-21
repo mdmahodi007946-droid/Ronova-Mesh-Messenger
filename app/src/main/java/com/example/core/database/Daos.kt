@@ -93,6 +93,9 @@ interface MessageDao {
     @Query("UPDATE messages SET deliveryState = :state, hopCount = :hopCount, routeNodesJson = :routeJson WHERE messageId = :messageId")
     suspend fun updateDeliveryState(messageId: String, state: String, hopCount: Int, routeJson: String)
 
+    @Query("UPDATE messages SET deliveryState = :state, hopCount = :hopCount, routeNodesJson = :routeJson, transportType = :transportType WHERE messageId = :messageId")
+    suspend fun updateDeliveryStateAndTransport(messageId: String, state: String, hopCount: Int, routeJson: String, transportType: String)
+
     @Query("DELETE FROM messages WHERE timestamp < :cutoffTimestamp")
     suspend fun deleteMessagesOlderThan(cutoffTimestamp: Long): Int
 
@@ -191,4 +194,25 @@ interface SecurityEventDao {
 
     @Query("DELETE FROM security_events")
     suspend fun clearEvents()
+}
+
+@Dao
+interface ApprovedContactDao {
+    @Query("SELECT * FROM approved_contacts ORDER BY authorizedAt DESC")
+    fun getAllApprovedContacts(): Flow<List<ApprovedContactEntity>>
+
+    @Query("SELECT * FROM approved_contacts WHERE contactId = :contactId LIMIT 1")
+    suspend fun getApprovedContact(contactId: String): ApprovedContactEntity?
+
+    @Query("SELECT * FROM approved_contacts WHERE contactId = :contactId LIMIT 1")
+    fun getApprovedContactFlow(contactId: String): Flow<ApprovedContactEntity?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdate(contact: ApprovedContactEntity)
+
+    @Query("DELETE FROM approved_contacts WHERE contactId = :contactId")
+    suspend fun revokeContact(contactId: String)
+
+    @Query("DELETE FROM approved_contacts")
+    suspend fun clearAll()
 }

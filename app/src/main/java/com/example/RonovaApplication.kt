@@ -24,6 +24,7 @@ class RonovaApplication : Application() {
         AudioCallManager(this, cryptoManager, bluetoothMeshManager, repository, applicationScope)
     }
     val setupRepository by lazy { com.example.data.SetupRepository(this) }
+    val internetTransportManager by lazy { com.example.core.network.InternetTransportManager(this, applicationScope) }
 
     override fun onCreate() {
         super.onCreate()

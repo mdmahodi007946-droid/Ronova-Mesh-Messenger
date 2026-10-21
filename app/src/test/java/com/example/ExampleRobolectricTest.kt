@@ -159,10 +159,16 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `bengali is the primary and permanent language`() {
+    fun `bengali and english localization test`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         
-        assertEquals("bn", com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
+        // Default is system language according to PRD v2.1
+        val initialLang = com.example.core.locale.LocaleHelper.getPersistedLanguage(context)
+        assertEquals(com.example.core.locale.LocaleHelper.LANGUAGE_SYSTEM, initialLang)
+
+        // Can switch to Bengali explicitly
+        com.example.core.locale.LocaleHelper.setPersistedLanguage(context, com.example.core.locale.LocaleHelper.LANGUAGE_BANGLA)
+        assertEquals(com.example.core.locale.LocaleHelper.LANGUAGE_BANGLA, com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
 
         val bnContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "bn")
         assertEquals("হোম", bnContext.getString(R.string.nav_home))
@@ -170,11 +176,14 @@ class ExampleRobolectricTest {
         assertEquals("কল হিস্ট্রি", bnContext.getString(R.string.nav_calls))
         assertEquals("সেটিংস", bnContext.getString(R.string.nav_settings))
         assertEquals("সংযুক্ত ডিভাইস", bnContext.getString(R.string.drawer_connected_peers))
-        assertEquals("মেশ নেটওয়ার্ক", bnContext.getString(R.string.drawer_mesh_map))
+        assertEquals("মেশ মানচিত্র ও রাডার", bnContext.getString(R.string.drawer_mesh_map))
         assertEquals("স্টোর ও ফরওয়ার্ড", bnContext.getString(R.string.drawer_store_forward))
         assertEquals("অনুমতি", bnContext.getString(R.string.drawer_permissions))
         assertEquals("ব্যাটারি নির্দেশনা", bnContext.getString(R.string.drawer_battery_guidance))
-        assertEquals("নিরাপত্তা", bnContext.getString(R.string.drawer_privacy_security))
+        assertEquals("নিরাপত্তা ও লক", bnContext.getString(R.string.drawer_privacy_security))
+        
+        // Reset to system
+        com.example.core.locale.LocaleHelper.setPersistedLanguage(context, com.example.core.locale.LocaleHelper.LANGUAGE_SYSTEM)
     }
 
     @Test
@@ -213,18 +222,20 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `four primary bottom navigation destinations are defined`() {
+    fun `five primary bottom navigation destinations are defined`() {
         val expectedBottomRoutes = listOf(
             com.example.ui.navigation.Screen.Home.route,
-            com.example.ui.navigation.Screen.Settings.route,
+            com.example.ui.navigation.Screen.NetworkMap.route,
             com.example.ui.navigation.Screen.Chats.route,
-            com.example.ui.navigation.Screen.CallHistory.route
+            com.example.ui.navigation.Screen.CallHistory.route,
+            com.example.ui.navigation.Screen.Settings.route
         )
-        assertEquals(4, expectedBottomRoutes.size)
+        assertEquals(5, expectedBottomRoutes.size)
         assertEquals("home", expectedBottomRoutes[0])
-        assertEquals("settings", expectedBottomRoutes[1])
+        assertEquals("network_map", expectedBottomRoutes[1])
         assertEquals("chats", expectedBottomRoutes[2])
         assertEquals("call_history", expectedBottomRoutes[3])
+        assertEquals("settings", expectedBottomRoutes[4])
     }
 
     @Test
@@ -244,4 +255,87 @@ class ExampleRobolectricTest {
         )
         assertEquals(11, drawerRoutes.size)
     }
+
+    @Test
+    fun `approved contacts authorization check and management`() = kotlinx.coroutines.runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.core.database.AppDatabase::class.java).build()
+        val repo = com.example.data.MeshRepository(db, context)
+
+        val peerDeviceId = "RNV-AUTH-PEER-1234"
+        
+        // Initially not approved
+        assertFalse(repo.isContactApproved(peerDeviceId))
+
+        // Add approved contact
+        repo.saveApprovedContact(
+            contactId = peerDeviceId,
+            nickname = "Trusted Friend",
+            credential = "SECRET_TOKEN_ABC"
+        )
+
+        assertTrue(repo.isContactApproved(peerDeviceId))
+
+        // Revoke contact
+        repo.revokeApprovedContact(peerDeviceId)
+        assertFalse(repo.isContactApproved(peerDeviceId))
+
+        db.close()
+    }
+
+    @Test
+    fun `profile lock toggle and authorization credential verification`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val crypto = com.example.core.crypto.CryptoManager(context)
+
+        // Initially unlocked
+        assertFalse(crypto.isProfileLocked())
+
+        crypto.setProfileLocked(true)
+        assertTrue(crypto.isProfileLocked())
+
+        val cred = crypto.getOrGenerateAuthorizationCredential()
+        assertNotNull(cred)
+        assertTrue(crypto.verifyAuthorizationCredential(cred, cred))
+        assertFalse(crypto.verifyAuthorizationCredential("INVALID_CODE", cred))
+
+        // Unlock
+        crypto.setProfileLocked(false)
+        assertFalse(crypto.isProfileLocked())
+    }
+
+    @Test
+    fun `auth credential generation and rotation`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val crypto = com.example.core.crypto.CryptoManager(context)
+
+        val cred1 = crypto.getOrGenerateAuthorizationCredential()
+        assertNotNull(cred1)
+        assertTrue(cred1.startsWith("AUTH-"))
+
+        val cred2 = crypto.rotateAuthorizationCredential()
+        assertNotNull(cred2)
+        assertTrue(cred2.startsWith("AUTH-"))
+        org.junit.Assert.assertNotEquals(cred1, cred2)
+    }
+
+    @Test
+    fun `preferred transport routing preference persistence`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = androidx.room.Room.inMemoryDatabaseBuilder(context, com.example.core.database.AppDatabase::class.java).build()
+        val repo = com.example.data.MeshRepository(db, context)
+
+        // Default transport is AUTOMATIC
+        val defaultPreference = repo.getRoutePreference()
+        assertEquals(com.example.core.network.RoutePreference.AUTOMATIC, defaultPreference)
+
+        repo.setRoutePreference(com.example.core.network.RoutePreference.BLUETOOTH_ONLY)
+        assertEquals(com.example.core.network.RoutePreference.BLUETOOTH_ONLY, repo.getRoutePreference())
+
+        repo.setRoutePreference(com.example.core.network.RoutePreference.INTERNET_PREFERRED)
+        assertEquals(com.example.core.network.RoutePreference.INTERNET_PREFERRED, repo.getRoutePreference())
+
+        db.close()
+    }
 }
+

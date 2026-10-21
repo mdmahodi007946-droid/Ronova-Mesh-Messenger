@@ -12,7 +12,9 @@ data class DeviceEntity(
     val lastSeenTimestamp: Long = System.currentTimeMillis(),
     val bluetoothAddress: String = "",
     val isDirectPeer: Boolean = false,
-    val hopDistance: Int = 1
+    val hopDistance: Int = 1,
+    val isProfileLocked: Boolean = false,
+    val isInternetReachable: Boolean = false
 )
 
 @Entity(tableName = "conversations")
@@ -22,7 +24,8 @@ data class ConversationEntity(
     val lastMessageText: String = "",
     val lastMessageTimestamp: Long = System.currentTimeMillis(),
     val unreadCount: Int = 0,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    val lastTransportType: String = "BLUETOOTH" // "BLUETOOTH", "INTERNET"
 )
 
 @Entity(tableName = "messages")
@@ -33,12 +36,13 @@ data class MessageEntity(
     val recipientDeviceId: String,
     val content: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val deliveryState: String = "QUEUED", // "DRAFT", "QUEUED", "SENDING", "RELAYED", "DELIVERED", "FAILED", "EXPIRED"
+    val deliveryState: String = "QUEUED", // "DRAFT", "QUEUED", "SENDING", "RELAYED", "DELIVERED", "READ", "FAILED", "EXPIRED"
     val hopCount: Int = 0,
     val routeNodesJson: String = "[]",
     val isOutgoing: Boolean = true,
     val encryptedPayload: String = "",
-    val isArchived: Boolean = false
+    val isArchived: Boolean = false,
+    val transportType: String = "BLUETOOTH" // "BLUETOOTH", "INTERNET"
 )
 
 @Entity(tableName = "relay_queue")
@@ -63,7 +67,9 @@ data class PeerEntity(
     val deviceName: String,
     val rssi: Int = 0,
     val isConnected: Boolean = false,
-    val lastSeen: Long = System.currentTimeMillis()
+    val lastSeen: Long = System.currentTimeMillis(),
+    val isDirectBluetooth: Boolean = true,
+    val isProfileLocked: Boolean = false
 )
 
 @Entity(tableName = "call_history")
@@ -75,7 +81,8 @@ data class CallHistoryEntity(
     val endTime: Long = System.currentTimeMillis(),
     val durationSeconds: Long = 0,
     val callType: String = "OUTGOING", // "OUTGOING", "INCOMING", "MISSED"
-    val callResult: String = "COMPLETED" // "COMPLETED", "REJECTED", "BUSY", "FAILED", "CANCELLED"
+    val callResult: String = "COMPLETED", // "COMPLETED", "REJECTED", "BUSY", "FAILED", "CANCELLED"
+    val transportType: String = "BLUETOOTH" // "BLUETOOTH", "INTERNET"
 )
 
 @Entity(tableName = "security_events")
@@ -85,4 +92,12 @@ data class SecurityEventEntity(
     val description: String,
     val timestamp: Long = System.currentTimeMillis(),
     val deviceId: String = ""
+)
+
+@Entity(tableName = "approved_contacts")
+data class ApprovedContactEntity(
+    @PrimaryKey val contactId: String, // peer deviceId
+    val nickname: String,
+    val authorizedAt: Long = System.currentTimeMillis(),
+    val authorizationCredential: String = ""
 )

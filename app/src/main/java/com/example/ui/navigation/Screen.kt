@@ -1,16 +1,21 @@
 package com.example.ui.navigation
 
 sealed class Screen(val route: String) {
-    // Onboarding
+    // Onboarding & Setup
     object Splash : Screen("splash")
     object Welcome : Screen("welcome")
     object Permissions : Screen("permissions")
     object BluetoothSetup : Screen("bluetooth_setup")
     object IdentitySetup : Screen("identity_setup")
 
-    // Core Mesh & Communication
+    // Core Bottom Navigation (5 destinations per PRD v2.1 Section 9)
     object Home : Screen("home")
+    object NetworkMap : Screen("network_map")
     object Chats : Screen("chats")
+    object CallHistory : Screen("call_history")
+    object Settings : Screen("settings")
+
+    // Communication Details
     object Chat : Screen("chat/{deviceId}") {
         fun createRoute(deviceId: String) = "chat/$deviceId"
     }
@@ -24,9 +29,12 @@ sealed class Screen(val route: String) {
     object VerifyDevice : Screen("verify_device/{deviceId}") {
         fun createRoute(deviceId: String) = "verify_device/$deviceId"
     }
+    object UserProfile : Screen("user_profile")
+    object ProfileLock : Screen("profile_lock")
+    object ApprovedContacts : Screen("approved_contacts")
 
     // Mesh Network & Relay
-    object RelayNetwork : Screen("relay_network")
+    object RelayNetwork : Screen("network_map") // alias for NetworkMap
     object RelaySettings : Screen("relay_settings")
 
     // Voice Calling
@@ -39,7 +47,6 @@ sealed class Screen(val route: String) {
     object ActiveCall : Screen("active_call/{deviceId}") {
         fun createRoute(deviceId: String) = "active_call/$deviceId"
     }
-    object CallHistory : Screen("call_history")
 
     // Security & Devices
     object TrustedDevices : Screen("trusted_devices")
@@ -47,13 +54,15 @@ sealed class Screen(val route: String) {
     object SecuritySettings : Screen("security_settings")
 
     // System & Settings
-    object Settings : Screen("settings")
     object StorageSettings : Screen("storage_settings")
     object BatteryGuidance : Screen("battery_guidance")
     object NotificationSettings : Screen("notification_settings")
     object PrivacyLicenses : Screen("privacy_licenses")
     object PrivacyPolicy : Screen("privacy_policy")
-    object UserPolicy : Screen("user_policy")
+    object TermsAndConditions : Screen("terms_and_conditions")
+    object RulesOfUse : Screen("rules_of_use")
+    object HelpAndSupport : Screen("help_and_support")
+    object UserPolicy : Screen("rules_of_use") // alias
     object ArchivedMessages : Screen("archived_messages")
     object Diagnostics : Screen("diagnostics")
     object About : Screen("about")

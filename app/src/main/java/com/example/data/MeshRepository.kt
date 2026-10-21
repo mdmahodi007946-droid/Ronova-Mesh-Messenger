@@ -39,6 +39,10 @@ class MeshRepository(
         private const val KEY_MESH_DISPLAY_NAME = "key_mesh_display_name"
         private const val KEY_MESH_CHANNEL = "key_mesh_channel"
         private const val KEY_RELAY_ENABLED = "key_relay_enabled"
+        private const val KEY_ROUTE_PREFERENCE = "key_route_preference"
+        private const val KEY_RADAR_VISIBILITY = "key_radar_visibility"
+        private const val KEY_SHOW_DEVICE_NAME = "key_show_device_name"
+        private const val KEY_ALLOW_INCOMING_CALLS = "key_allow_incoming_calls"
     }
 
     fun isSetupCompleted(): Boolean {
@@ -289,5 +293,71 @@ class MeshRepository(
 
     suspend fun deleteAllArchivedMessages(): Int {
         return database.messageDao().deleteAllArchivedMessages()
+    }
+
+    // Approved Contacts (PRD v2.1 Section 6)
+    val approvedContacts: Flow<List<com.example.core.database.ApprovedContactEntity>> =
+        database.approvedContactDao().getAllApprovedContacts()
+
+    suspend fun isContactApproved(contactId: String): Boolean {
+        return database.approvedContactDao().getApprovedContact(contactId) != null
+    }
+
+    suspend fun saveApprovedContact(contactId: String, nickname: String, credential: String) {
+        database.approvedContactDao().insertOrUpdate(
+            com.example.core.database.ApprovedContactEntity(
+                contactId = contactId,
+                nickname = nickname,
+                authorizedAt = System.currentTimeMillis(),
+                authorizationCredential = credential
+            )
+        )
+        logSecurityEvent("CONTACT_APPROVED", "Approved contact: $nickname ($contactId)", contactId)
+    }
+
+    suspend fun revokeApprovedContact(contactId: String) {
+        database.approvedContactDao().revokeContact(contactId)
+        logSecurityEvent("CONTACT_REVOKED", "Revoked authorization for: $contactId", contactId)
+    }
+
+    suspend fun clearAllApprovedContacts() {
+        database.approvedContactDao().clearAll()
+        logSecurityEvent("CONTACTS_CLEARED", "Cleared all approved contacts")
+    }
+
+    // Transport Route Preference (PRD v2.1 Section 2.4)
+    fun getRoutePreference(): com.example.core.network.RoutePreference {
+        val code = prefs.getString(KEY_ROUTE_PREFERENCE, com.example.core.network.RoutePreference.AUTOMATIC.code)
+            ?: com.example.core.network.RoutePreference.AUTOMATIC.code
+        return com.example.core.network.RoutePreference.fromCode(code)
+    }
+
+    fun setRoutePreference(pref: com.example.core.network.RoutePreference) {
+        prefs.edit().putString(KEY_ROUTE_PREFERENCE, pref.code).apply()
+    }
+
+    // Privacy & Radar Settings (PRD v2.1 Section 5 & 7)
+    fun getRadarVisibility(): Boolean {
+        return prefs.getBoolean(KEY_RADAR_VISIBILITY, true)
+    }
+
+    fun setRadarVisibility(visible: Boolean) {
+        prefs.edit().putBoolean(KEY_RADAR_VISIBILITY, visible).apply()
+    }
+
+    fun getShowDeviceName(): Boolean {
+        return prefs.getBoolean(KEY_SHOW_DEVICE_NAME, true)
+    }
+
+    fun setShowDeviceName(show: Boolean) {
+        prefs.edit().putBoolean(KEY_SHOW_DEVICE_NAME, show).apply()
+    }
+
+    fun getAllowIncomingCalls(): Boolean {
+        return prefs.getBoolean(KEY_ALLOW_INCOMING_CALLS, true)
+    }
+
+    fun setAllowIncomingCalls(allow: Boolean) {
+        prefs.edit().putBoolean(KEY_ALLOW_INCOMING_CALLS, allow).apply()
     }
 }

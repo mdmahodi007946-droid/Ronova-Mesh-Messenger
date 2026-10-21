@@ -1,57 +1,67 @@
-# Ronova Mesh — Master PRD v2.0 Implementation Changes
+# Ronova Mesh — Master PRD v2.1 Implementation Changes
 
 ## 1. Project Inspection & Architecture Findings
-- **Application Core**: Ronova Mesh is a decentralized, offline-native Bluetooth mesh communication app with zero internet, SIM, or cloud dependency.
-- **Persistence Layer**: Room Database (`AppDatabase`) stores real peers, chat conversations, messages, store-and-forward queue packets, and call history logs. Zero mock data.
-- **Networking & Relay**: Multi-hop relay network routing over Bluetooth Classic RFCOMM and BLE advertising/scanning with AES-256-GCM authenticated encryption and ECDH secp256r1 key exchange.
-- **Audio Calling**: Peer-to-peer real-time voice calling over Bluetooth socket with full duplex audio capture and playback.
-- **Background Service**: Foreground service with ongoing notification (`BluetoothMeshService`) to maintain mesh topology and message routing.
-- **Security & Cloud Backup**: Cryptographic keypairs in Keystore; cloud backup disabled (`android:allowBackup="false"`) to protect encryption keys and local message databases.
+- **Application Overview**: Ronova Mesh is a decentralized, hybrid Android communication application designed for peer-to-peer Bluetooth mesh messaging and voice calling, with automatic fallback to mobile internet when recipients are remote.
+- **Developer & Owner**: Md Rony Ahmed (রনি আহমেদ) · Support Contact: `ronovaltd@gmail.com`.
+- **Zero Mock Data (PRD v2.1 §1)**: All peer lists, routing tables, message delivery queues, call histories, approved contacts, and network telemetry are backed by real Room database tables, real Bluetooth RFCOMM/BLE managers, real DataStore preferences, and the Android ConnectivityManager. No fake users, demo messages, simulated calls, or fabricated statuses.
+- **Hybrid Communication Architecture (PRD v2.1 §2)**:
+  - Direct Bluetooth communication (nearby peers).
+  - Multi-hop Bluetooth mesh (up to 5 hops, store-and-forward queue with TTL expiry).
+  - Mobile internet remote transport (`InternetTransportManager`) with real connectivity callbacks.
+  - Automatic Route Selection Policy: Direct Bluetooth -> Mesh Relay -> Remote Internet -> Offline Queue.
+- **User Profile & Privacy Lock (PRD v2.1 §6 & §7)**:
+  - Profile Lock: When enabled, unauthorized users cannot send messages or initiate calls.
+  - Cryptographic Private Authorization Credential (generated in Keystore-backed storage, revocable, and rotatable).
+  - Approved Contacts list: local storage in Room (`approved_contacts`) with per-contact approval and revocation.
+  - Discoverable radar map: Nodes remain visible for mesh routing while private communication is gated behind authorization credentials.
+- **Database Persistence**: Additive Room migration (`MIGRATION_2_3`) from schema version 2 to 3 preserving all historical conversations, messages, and calls without data loss.
 
 ## 2. Files Changed & Added
-- `AndroidManifest.xml`: Disabled `android:allowBackup` to prevent cloud leakage of keys/Room DB; verified Bluetooth, Microphone, and Foreground Service permissions.
-- `app/build.gradle.kts`: Bumped `versionCode = 2` and `versionName = "2.0"`.
-- `app/src/main/res/values/strings.xml`: Comprehensive Bengali strings covering all screens, dialogs, rationales, TalkBack descriptions, and policies.
-- `app/src/main/res/xml/locales_config.xml`: Configured for Bengali (`bn`).
-- `app/src/main/assets/fonts/OFL.txt`: Bundled standard SIL Open Font License 1.1 file for Hind Siliguri and Noto Sans Bengali open-source fonts.
-- `app/src/main/java/com/example/MainActivity.kt`: Integrated Bengali locale provider, edge-to-edge window insets, and centralized setup destination observer.
-- `app/src/main/java/com/example/ui/components/RonovaDrawerContent.kt`: Responsive drawer with maximum 80% screen width (or 320dp), 56dp row heights, vector icons, active selection indicator, and logo header (11 destinations matching PRD Section 6).
-- `app/src/main/java/com/example/ui/components/CommonComponents.kt`: Standardized `RonovaGlassButton`, `HeaderAction` 3D buttons, and slim `MeshStatusChipRow` banner.
-- `app/src/main/java/com/example/ui/screens/SettingsAndInfoScreens.kt`: Removed language selection card to strictly enforce Bengali-only UI without English variants; fixed notification switch spacing/alignment; fixed battery guidance double border and English copy.
-- `app/src/main/res/mipmap-*/ic_launcher*.png`: Bundled custom dark 'R' monogram launcher icon on brand yellow gradient across all screen densities.
-- `app/src/main/res/drawable/ic_launcher_foreground.xml`: Adaptive icon foreground with safe zone compliance.
-- `app/src/main/res/drawable/ic_launcher_background.xml`: Adaptive icon brand gradient background.
-- `app/src/main/res/drawable/ic_notification.xml`: Solid white notification small icon with transparency.
-- `app/src/test/java/com/example/ExampleRobolectricTest.kt`: Unit and Robolectric tests for navigation, localization, setup state transitions, drawer destinations, and store-and-forward retention.
+- `AndroidManifest.xml`: Configured for Android 11+ with `INTERNET`, `ACCESS_NETWORK_STATE`, Bluetooth permissions (`neverForLocation`), audio calling, and foreground service. Disabled `android:allowBackup` to safeguard cryptographic keys and database contents.
+- `app/build.gradle.kts`: Configured `versionCode = 3` and `versionName = "2.1"`.
+- `metadata.json`: Updated app description to reflect hybrid mesh and remote internet communication.
+- `app/src/main/res/xml/locales_config.xml`: Configured for English (`en`) and Bengali (`bn`).
+- `app/src/main/res/values/strings.xml`: Default English resource strings for all core, navigation, profile lock, radar, transport, terms, rules, and help screens.
+- `app/src/main/res/values-bn/strings.xml`: Bengali resource strings matching all UI components and dialogues.
+- `app/src/main/java/com/example/core/network/InternetTransportManager.kt`: Real network connectivity monitor, route selection engine, and packet dispatcher.
+- `app/src/main/java/com/example/core/database/Entities.kt`: Added `ApprovedContactEntity` and `transportType` fields across `MessageEntity`, `CallHistoryEntity`, and `ConversationEntity`.
+- `app/src/main/java/com/example/core/database/Daos.kt`: Added `ApprovedContactDao` with CRUD operations for authorized contacts.
+- `app/src/main/java/com/example/core/database/AppDatabase.kt`: Incremented schema to version 3 with additive `MIGRATION_2_3`.
+- `app/src/main/java/com/example/data/MeshRepository.kt`: Integrated approved contact management, transport route preferences, and radar privacy preferences.
+- `app/src/main/java/com/example/viewmodel/RonovaViewModel.kt`: Added reactive StateFlows for approved contacts, profile lock, authorization credentials, route preferences, and connectivity telemetry.
+- `app/src/main/java/com/example/ui/navigation/Screen.kt`: Defined routes for `NetworkMap`, `UserProfile`, `ProfileLock`, `ApprovedContacts`, `TermsAndConditions`, `RulesOfUse`, and `HelpAndSupport`.
+- `app/src/main/java/com/example/ui/screens/ProfileAndPolicyScreens.kt`: Created UI screens for User Profile, Profile Lock, Approved Contacts, Terms & Conditions, Rules of Use, and Help & Support.
+- `app/src/main/java/com/example/ui/screens/SettingsAndInfoScreens.kt`: Enhanced Settings Hub with User Profile & Security, Language Preference Selector (System, বাংলা, English), and updated AboutScreen with Version 2.1 specs and owner Md Rony Ahmed.
+- `app/src/main/java/com/example/MainActivity.kt`: Expanded bottom navigation bar to 5 items (Home, Network Map, Messages, Calls, Settings) per PRD v2.1 Section 9, and wired up all new screens to NavHost.
 
 ## 3. Deviations from PRD
-- **None**: All binding rules, Bengali localization requirements, glass button styling, 3D header controls, persistent setup wizard, drawer dimensions, and zero-mock-data rules have been strictly followed.
+- **None**: Every requirement in PRD v2.1 (hybrid communication paths, automatic routing policy, profile lock and authorization tokens, 5-tab bottom navigation, radar network map, dual-language support, and owner attribution) has been implemented faithfully without mock fallbacks.
 
 ## 4. Test Report (Verbatim & Honest Reporting)
 - **App Compilation (`compile_applet`)**:
   - Command: `compile_applet` (`gradle :app:compileDebugKotlin`)
-  - Result: **PASSED** (0 errors).
+  - Result: **PASSED** (0 errors, build succeeded).
 - **Local JVM & Robolectric Unit Tests (`testDebugUnitTest`)**:
   - Command: `gradle :app:testDebugUnitTest`
-  - Result: **PASSED** (all Robolectric tests for navigation, lifecycle, setup state transitions, and retention policy passed).
+  - Result: **PASSED** (all tests passed with exit code 0).
 - **Physical Multi-Device Hardware Testing (2 Physical Phones)**:
   - Status: **NOT RUN** (Cloud container build environment without physical Bluetooth transceivers or secondary physical devices). Packet serialization, crypto primitives, hop-limit increments, and routing algorithms verified locally.
 
 ## 5. Release Readiness Checklist (Section 15 Definition of Done)
-- **Bengali-first localization (PRD §4)**: **PASSED** (all user-facing UI text localized to Bengali, language selector removed, `locales_config.xml` configured for `bn`).
-- **Compact design & M3 styling (PRD §5)**: **PASSED** (glass buttons, 3D header action buttons, slim status chip, compact card spacing).
-- **Navigation & Drawer (PRD §6)**: **PASSED** (max 80% screen width / 320dp, 11 destinations, Back and scrim close behavior).
-- **Zero Mock Data (PRD §1 & §7)**: **PASSED** (all counters and lists bind directly to real Room DB and Bluetooth manager).
-- **Persistent First-Run Setup (PRD §8)**: **PASSED** (Preferences DataStore backed, step resumption, verified completion).
-- **Custom Launcher Icon (PRD §14)**: **PASSED** (adaptive icon + legacy PNGs for mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi; notification small icon white vector).
-- **Bundled Font & License (PRD §4 & §12)**: **PASSED** (bundled `noto_sans_bengali.ttf`, `hind_siliguri.ttf`, and `assets/fonts/OFL.txt`).
+- **Developer / Owner Attribution**: **PASSED** (Md Rony Ahmed credited in About, Help, strings, and manifest).
+- **Dual Language Support (PRD §4)**: **PASSED** (`values/strings.xml` in English default, `values-bn/strings.xml` in Bengali, in-app selector in Settings).
+- **5-Item Bottom Navigation Bar (PRD §9)**: **PASSED** (Home, Network Map, Messages, Call History, Settings).
+- **Radar Network Map (PRD §7)**: **PASSED** (Live pulsing radar canvas with direct, relay, and internet node representations).
+- **Profile Lock & Authorization Workflow (PRD §6)**: **PASSED** (Keystore-backed authorization codes, contact approval, credential rotation).
+- **Zero Mock Data (PRD §1)**: **PASSED** (All data streams bound to real Room DB, DataStore, and Android ConnectivityManager).
 - **Unit and Robolectric tests**: **PASSED** (`gradle :app:testDebugUnitTest`).
 - **Two Physical Devices Mesh Communication**: **NOT RUN** (Cloud container environment).
 
 ## 6. Release Note (বাংলায় রিলিজ নোট)
-**রোনোভা মেশ ২.০ (Ronova Mesh v2.0):**
-- সম্পূর্ণ বাংলা ইন্টারফেস ও আধুনিক নেভিগেশন ড্রয়ার।
-- নতুন ডার্ক 'R' মনোগ্রাম ও ব্র্যান্ড ইয়েলো গ্রেডিয়েন্ট আইকন।
-- টেকসই প্রথমবার সেটআপ উইজার্ড (Preferences DataStore ভিত্তিক)।
-- আধুনিক থ্রিডি ও গ্লাস বাটন ডিজাইন, সুষম প্যাডিং এবং কম্প্যাক্ট লেআউট।
-- অফলাইন ব্লুটুথ মেশ নেটওয়ার্ক, এন্ড-টু-এন্ড এনক্রিপশন (AES-256-GCM, ECDH) ও লোকাল রুম ডেটাবেস সংরক্ষণ।
+**রোনোভা মেশ ২.১ (Ronova Mesh v2.1):**
+- বিকাশক ও স্বত্বাধিকারী: মোঃ রনি আহমেদ (Md Rony Ahmed)।
+- হাইব্রিড যোগাযোগ ব্যবস্থা: অফলাইন ব্লুটুথ মেশ ও স্বয়ংক্রিয় দূরবর্তী মোবাইল ইন্টারনেট রাউটিং।
+- রাডার নেটওয়ার্ক ম্যাপ: ৫-ট্যাব বিশিষ্ট আধুনিক বটম নেভিগেশন বারে সরাসরি নেটওয়ার্ক ম্যাপ ও রাডার ভিউ।
+- প্রোফাইল লক ও অনুমোদন কোড: অননুমোদিত মেসেজ ও কল প্রতিরোধ করতে ক্রিপ্টোগ্রাফিক অথরাইজেশন কোড ও অনুমোদিত পরিচিতি তালিকা।
+- দ্বি-ভাষিক সমর্থন: সিস্টেম ডিফল্ট, বাংলা এবং ইংরেজি ভাষা সমর্থন ও অ্যাপের মধ্যে ভাষা পরিবর্তনের সুবিধা।
+- স্বচ্ছ নিয়মাবলী ও সহায়তা: ব্যবহারের শর্তাবলী, দায়িত্বশীল ব্যবহারের নিয়ম ও সাধারণ জিজ্ঞাসা (FAQ)।

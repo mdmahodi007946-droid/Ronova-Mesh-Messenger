@@ -97,6 +97,12 @@ import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.StorageSettingsScreen
 import com.example.ui.screens.TrustedDevicesScreen
 import com.example.ui.screens.UserPolicyScreen
+import com.example.ui.screens.ApprovedContactsScreen
+import com.example.ui.screens.HelpAndSupportScreen
+import com.example.ui.screens.ProfileLockScreen
+import com.example.ui.screens.RulesOfUseScreen
+import com.example.ui.screens.TermsAndConditionsScreen
+import com.example.ui.screens.UserProfileScreen
 import com.example.ui.screens.VerifyDeviceScreen
 import com.example.ui.screens.WelcomeScreen
 import com.example.ui.theme.RonovaCardBorder
@@ -236,6 +242,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
 
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
+        Screen.NetworkMap.route,
         Screen.Chats.route,
         Screen.CallHistory.route,
         Screen.Settings.route
@@ -251,6 +258,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
 
     val bottomNavItems = listOf(
         BottomNavDestination(Screen.Home.route, stringResource(R.string.nav_home), Icons.Default.Home, "bottom_nav_home"),
+        BottomNavDestination(Screen.NetworkMap.route, stringResource(R.string.nav_network_map), Icons.Default.Hub, "bottom_nav_map"),
         BottomNavDestination(Screen.Chats.route, stringResource(R.string.nav_chats), Icons.AutoMirrored.Filled.Chat, "bottom_nav_chats", unreadMessagesCount),
         BottomNavDestination(Screen.CallHistory.route, stringResource(R.string.nav_calls), Icons.Default.Call, "bottom_nav_calls", missedCallsCount),
         BottomNavDestination(Screen.Settings.route, stringResource(R.string.nav_settings), Icons.Default.Settings, "bottom_nav_settings")
@@ -669,7 +677,13 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     onNavigateToBattery = { navController.navigate(Screen.BatteryGuidance.route) },
                     onNavigateToNotifications = { navController.navigate(Screen.NotificationSettings.route) },
                     onNavigateToDiagnostics = { navController.navigate(Screen.Diagnostics.route) },
-                    onNavigateToAbout = { navController.navigate(Screen.About.route) }
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                    onNavigateToUserProfile = { navController.navigate(Screen.UserProfile.route) },
+                    onNavigateToProfileLock = { navController.navigate(Screen.ProfileLock.route) },
+                    onNavigateToApprovedContacts = { navController.navigate(Screen.ApprovedContacts.route) },
+                    onNavigateToTerms = { navController.navigate(Screen.TermsAndConditions.route) },
+                    onNavigateToRules = { navController.navigate(Screen.RulesOfUse.route) },
+                    onNavigateToHelp = { navController.navigate(Screen.HelpAndSupport.route) }
                 )
             }
 
@@ -747,6 +761,52 @@ fun RonovaApp(viewModel: RonovaViewModel) {
             composable(Screen.ErrorRecovery.route) {
                 ErrorRecoveryScreen(
                     viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 28. User Profile (PRD v2.1 Section 6)
+            composable(Screen.UserProfile.route) {
+                UserProfileScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 29. Profile Lock (PRD v2.1 Section 6)
+            composable(Screen.ProfileLock.route) {
+                ProfileLockScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() },
+                    onNavigateToApprovedContacts = { navController.navigate(Screen.ApprovedContacts.route) }
+                )
+            }
+
+            // 30. Approved Contacts (PRD v2.1 Section 6)
+            composable(Screen.ApprovedContacts.route) {
+                ApprovedContactsScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 31. Terms & Conditions (PRD v2.1 Section 10)
+            composable(Screen.TermsAndConditions.route) {
+                TermsAndConditionsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 32. Rules of Use (PRD v2.1 Section 10)
+            composable(Screen.RulesOfUse.route) {
+                RulesOfUseScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 33. Help & Support (PRD v2.1 Section 10)
+            composable(Screen.HelpAndSupport.route) {
+                HelpAndSupportScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
