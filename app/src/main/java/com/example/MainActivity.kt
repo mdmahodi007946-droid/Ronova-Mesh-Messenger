@@ -135,12 +135,16 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             val baseContext = LocalContext.current
+            val languagePref by viewModel.languagePreference.collectAsState()
 
-            val localizedContext = remember {
-                LocaleHelper.getLocalizedContext(baseContext)
+            val localizedContext = remember(languagePref) {
+                LocaleHelper.getLocalizedContext(baseContext, languagePref)
             }
-            val localizedConfiguration = remember {
-                LocaleHelper.getLocalizedConfiguration(baseContext)
+            val localizedConfiguration = remember(languagePref) {
+                LocaleHelper.getLocalizedConfiguration(baseContext, languagePref)
+            }
+            val isBangla = remember(languagePref) {
+                LocaleHelper.isBangla(localizedContext)
             }
 
             CompositionLocalProvider(
@@ -148,7 +152,7 @@ class MainActivity : ComponentActivity() {
                 LocalContext provides localizedContext,
                 LocalConfiguration provides localizedConfiguration
             ) {
-                RonovaTheme(isBangla = true) {
+                RonovaTheme(isBangla = isBangla) {
                     RonovaApp(viewModel = viewModel)
                 }
             }
@@ -571,7 +575,16 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                 RelayNetworkScreen(
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
-                    onNavigateToRelaySettings = { navController.navigate(Screen.RelaySettings.route) }
+                    onNavigateToRelaySettings = { navController.navigate(Screen.RelaySettings.route) },
+                    onNavigateToChat = { deviceId ->
+                        navController.navigate(Screen.Chat.createRoute(deviceId))
+                    },
+                    onNavigateToVoiceCall = { deviceId ->
+                        onSafeVoiceCall(deviceId)
+                    },
+                    onNavigateToVerify = { deviceId ->
+                        navController.navigate(Screen.VerifyDevice.createRoute(deviceId))
+                    }
                 )
             }
 

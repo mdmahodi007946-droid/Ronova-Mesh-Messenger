@@ -1,11 +1,12 @@
 # Ronova Bluetooth Mesh Messenger
 
-**Developer / Project Owner:** Ronova LTD  
+**Developer / Project Owner:** Md Rony Ahmed  
 **Support Contact:** ronovaltd@gmail.com  
-**Version:** 1.0 Production Release  
+**Version:** 2.1 Production Specification  
 **Primary Language:** Kotlin  
-**UI Framework:** Jetpack Compose & Material 3 (Pink-and-White Brand Theme)  
-**Target Platform:** Android 8.0+ (API 26+)
+**UI Framework:** Jetpack Compose & Material 3  
+**Target Platform:** Android 11+ (API 30+)  
+**Primary Communication:** Bluetooth Mesh + Mobile Internet
 
 ---
 
@@ -83,8 +84,14 @@ com.example
 23. **Notification Settings:** Ringtone, vibration, and persistent service toggles.
 24. **Privacy Policy & Open-Source Licenses:** Zero-cloud pledge, MIT/Apache 2.0 notices.
 25. **Application Diagnostics:** Live RFCOMM packet counters (Sent, Received, Relayed, Dropped) & security logs.
-26. **About Ronova LTD:** Company overview and support contact (`ronovaltd@gmail.com`).
+26. **About Ronova Mesh:** Developer Md Rony Ahmed overview and official support contact (`ronovaltd@gmail.com`).
 27. **Error & Recovery Screen:** Bluetooth server reset, queue flush, and EC keypair regeneration.
+28. **User Profile Screen:** Custom nickname, radar visibility toggle, and device name privacy controls.
+29. **Profile Lock Screen:** Private authorization code, contact authorization, and rotation.
+30. **Approved Contacts Screen:** List and revocation of authorized contacts for locked profiles.
+31. **Terms & Conditions Screen:** Legal agreements, software license, and acceptable usage.
+32. **Rules of Use Screen:** Community rules, responsible mesh relaying, and safety guidelines.
+33. **Help & Support Screen:** Frequently asked questions, troubleshooting, and direct support.
 
 ---
 

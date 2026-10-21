@@ -26,10 +26,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Card
@@ -610,6 +612,7 @@ fun MessageBubble(
     deliveryState: String,
     hopCount: Int,
     isOutgoing: Boolean,
+    transportType: String = "BLUETOOTH",
     onDetailsClick: () -> Unit
 ) {
     val bubbleShape = RoundedCornerShape(
@@ -663,6 +666,13 @@ fun MessageBubble(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.End
                 ) {
+                    Icon(
+                        imageVector = if (transportType == "INTERNET") Icons.Default.Public else Icons.Default.Bluetooth,
+                        contentDescription = if (transportType == "INTERNET") "Internet" else "Bluetooth",
+                        tint = if (isOutgoing) RonovaTextPrimary.copy(alpha = 0.65f) else RonovaTextMuted,
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = timeFormatted,
                         fontSize = 10.5.sp,

@@ -917,6 +917,7 @@ fun OneToOneChatScreen(
                         deliveryState = msg.deliveryState,
                         hopCount = msg.hopCount,
                         isOutgoing = msg.isOutgoing,
+                        transportType = msg.transportType,
                         onDetailsClick = { onNavigateToDetails(msg.messageId) }
                     )
                 }
