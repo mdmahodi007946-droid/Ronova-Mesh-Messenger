@@ -269,7 +269,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                 unreadMessagesCount = unreadMessagesCount,
                 missedCallsCount = missedCallsCount,
                 pendingRelaysCount = pendingRelaysCount,
-                onNavigate = { route ->
+                onNavigate = { route: String ->
                     coroutineScope.launch { drawerState.close() }
                     if (currentRoute != route) {
                         navController.navigate(route) {

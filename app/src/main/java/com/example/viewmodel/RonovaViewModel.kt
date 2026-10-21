@@ -160,8 +160,13 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         return setupRepository.computeStartDestination()
     }
 
-    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.LOCALE_BANGLA)
+    private val _currentLanguage = MutableStateFlow(com.example.core.locale.LocaleHelper.getPersistedLanguage(app))
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
+
+    fun setLanguage(lang: String) {
+        com.example.core.locale.LocaleHelper.persistLanguage(app, lang)
+        _currentLanguage.value = lang
+    }
 
     fun hasMicrophonePermission(): Boolean {
         return com.example.core.permission.PermissionManager.hasMicrophonePermission(app)
