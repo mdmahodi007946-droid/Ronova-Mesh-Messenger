@@ -1870,7 +1870,6 @@ fun SettingsHubScreen(
     onNavigateToDiagnostics: () -> Unit,
     onNavigateToAbout: () -> Unit
 ) {
-    val currentLang by viewModel.currentLanguage.collectAsState()
     val retentionPolicy by viewModel.retentionPolicy.collectAsState()
     val archivedCount by viewModel.archivedMessagesCount.collectAsState()
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
@@ -1892,105 +1891,6 @@ fun SettingsHubScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Section 0: Language Selection
-                item {
-                    Text(
-                        text = stringResource(R.string.settings_language_section),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = RonovaPinkDark
-                        ),
-                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
-                    )
-                }
-
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                        border = BorderStroke(1.dp, RonovaCardBorder)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = stringResource(R.string.settings_language_title),
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_language_subtitle),
-                                fontSize = 11.5.sp,
-                                color = RonovaTextMuted
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                val isEn = currentLang == "en"
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable { viewModel.setLanguage("en") }
-                                        .testTag("lang_english_button"),
-                                    color = if (isEn) RonovaPinkLight else Color(0xFFF9F9F9),
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = if (isEn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isEn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                            contentDescription = null,
-                                            tint = if (isEn) RonovaPinkPrimary else RonovaTextMuted,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(R.string.lang_english),
-                                            fontWeight = if (isEn) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isEn) RonovaPinkDark else RonovaTextPrimary,
-                                            fontSize = 13.sp
-                                        )
-                                    }
-                                }
-
-                                val isBn = currentLang == "bn"
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable { viewModel.setLanguage("bn") }
-                                        .testTag("lang_bangla_button"),
-                                    color = if (isBn) RonovaPinkLight else Color(0xFFF9F9F9),
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = if (isBn) BorderStroke(1.5.dp, RonovaPinkPrimary) else null
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isBn) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-                                            contentDescription = null,
-                                            tint = if (isBn) RonovaPinkPrimary else RonovaTextMuted,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(R.string.lang_bangla),
-                                            fontWeight = if (isBn) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isBn) RonovaPinkDark else RonovaTextPrimary,
-                                            fontSize = 13.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
                 // Section 1: Policies & Security
                 item {
                     Text(

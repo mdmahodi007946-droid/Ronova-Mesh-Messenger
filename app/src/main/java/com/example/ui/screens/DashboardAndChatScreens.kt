@@ -310,7 +310,7 @@ fun HomeScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Scan Peers", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(stringResource(R.string.home_scan_peers), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
 
                         OutlinedButton(
@@ -494,7 +494,7 @@ fun HomeScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, RonovaPinkPrimary)
                                 ) {
-                                    Text("Find Nearby Nodes", color = RonovaPinkPrimary, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.home_find_nearby_nodes), color = RonovaPinkPrimary, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -735,7 +735,7 @@ fun ConversationListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 10.dp),
-                placeholder = { Text("Search encrypted chats...") },
+                placeholder = { Text(stringResource(R.string.search_chats_placeholder)) },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = RonovaTextMuted)
                 },

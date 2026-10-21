@@ -13,10 +13,10 @@ import com.example.core.database.SecurityEventEntity
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 
-enum class RetentionPolicy(val code: String, val title: String) {
-    AUTO_DELETE("auto_delete", "Auto-Delete (> 30 Days)"),
-    AUTO_ARCHIVE("auto_archive", "Auto-Archive (> 30 Days)"),
-    KEEP_ALL("keep_all", "Keep All (No Auto-Cleanup)");
+enum class RetentionPolicy(val code: String, val title: String, val banglaTitle: String) {
+    AUTO_DELETE("auto_delete", "Auto-Delete (> 30 Days)", "স্বয়ংক্রিয় ডিলিট (> ৩০ দিন)"),
+    AUTO_ARCHIVE("auto_archive", "Auto-Archive (> 30 Days)", "স্বয়ংক্রিয় আর্কাইভ (> ৩০ দিন)"),
+    KEEP_ALL("keep_all", "Keep All (No Auto-Cleanup)", "সব বার্তা সংরক্ষণ");
 
     companion object {
         fun fromCode(code: String): RetentionPolicy {

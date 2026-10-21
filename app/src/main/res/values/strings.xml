@@ -248,7 +248,7 @@
     <string name="home_scan_peers">পিয়ার খুঁজুন</string>
     <string name="home_mesh_map">মেশ মানচিত্র</string>
     <string name="home_specs_title">সিস্টেম আর্কিটেকচার ও স্পেক্স</string>
-    <string name="home_specs_version">রোনোভা মেশ v১.০</string>
+    <string name="home_specs_version">রোনোভা মেশ v২.০</string>
     <string name="home_spec_platform_title">প্ল্যাটফর্ম</string>
     <string name="home_spec_platform_desc">অ্যান্ড্রয়েড নেটিভ • কোটলিন</string>
     <string name="home_spec_comm_title">যোগাযোগ</string>
@@ -458,4 +458,46 @@
     <string name="csb_badge_discoverable">দৃশ্যমান</string>
     <string name="diagnostics_title">নেটওয়ার্ক ডায়াগনস্টিকস</string>
     <string name="diagnostics_subtitle">রিয়েল-টাইম মেশ টেলিমেট্রি ও কর্মক্ষমতা</string>
+
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_regen_keys_title">কি-জোড়া পুনরায় তৈরি করবেন?</string>
+    <string name="confirm_regen_keys_desc">নতুন কি তৈরি করলে ডিভাইসের পাবলিক ফিঙ্গারপ্রিন্ট পরিবর্তিত হবে। পূর্বের বিশ্বস্ত পিয়ারদের সাথে পুনরায় পরিচয় যাচাই করতে হবে। আপনি কি নিশ্চিত?</string>
+    <string name="confirm_clear_relay_title">রিলে ক্যাশ মুছবেন?</string>
+    <string name="confirm_clear_relay_desc">আপনি কি নিশ্চিত যে সম্পন্ন হওয়া সব রিলে প্যাকেটের ক্যাশ মুছে ফেলতে চান?</string>
+    <string name="confirm_delete_calls_title">কল লগ মুছবেন?</string>
+    <string name="confirm_delete_calls_desc">আপনি কি নিশ্চিত যে সমস্ত ভয়েস কল ইতিহাস মুছে ফেলতে চান? এটি পুনরুদ্ধার করা যাবে না।</string>
+
+    <!-- Bengali Toasts -->
+    <string name="toast_new_keys_generated">নতুন ক্রিপ্টোগ্রাফিক পরিচয় তৈরি হয়েছে</string>
+    <string name="toast_cleanup_done">%1$d টি বার্তা সফলভাবে প্রক্রিয়া করা হয়েছে</string>
+    <string name="toast_cleanup_none">৩০ দিনের পুরোনো কোনো বার্তা পাওয়া যায়নি</string>
+    <string name="toast_archived_count">%1$d টি বার্তা আর্কাইভে সংরক্ষিত হয়েছে</string>
+    <string name="toast_archived_none">আর্কাইভ করার মতো কোনো বার্তা নেই</string>
+    <string name="toast_relay_cleared">সম্পন্ন রিলে ক্যাশ মুছে ফেলা হয়েছে</string>
+    <string name="toast_calls_cleared">সব ভয়েস কল লগ মুছে ফেলা হয়েছে</string>
+    <string name="toast_restored_count">%1$d টি বার্তা চ্যাটে পুনরুদ্ধার করা হয়েছে</string>
+
+    <!-- Protocol & UI Labels -->
+    <string name="crypto_arch_title">ক্রিপ্টোগ্রাফিক আর্কিটেকচার</string>
+    <string name="crypto_key_agreement">• কী চুক্তি: ECDH (Curve secp256r1 / NIST P-256)</string>
+    <string name="crypto_symmetric_cipher">• সিমেট্রিক সাইফার: AES-256-GCM (১২-বাইট IV, ১২৮-বিট ট্যাগ)</string>
+    <string name="crypto_packet_integrity">• প্যাকেট অখণ্ডতা: HMAC-SHA256 স্বাক্ষর</string>
+    <string name="crypto_relay_privacy">• রিলে গোপনীয়তা: মধ্যবর্তী নোড কেবল এনক্রিপ্ট করা পে-লোড ফরওয়ার্ড করে</string>
+    <string name="queue_log_maintenance_title">কিউ ও লগ রক্ষণাবেক্ষণ</string>
+    <string name="open_source_acknowledgments">ওপেন সোর্স কৃতজ্ঞতা স্বীকার</string>
+    <string name="message_content_label">বার্তার বিষয়বস্তু</string>
+    <string name="protocol_metadata_label">প্রোটোকল মেটাডেটা</string>
+    <string name="msg_meta_id">বার্তা আইডি</string>
+    <string name="msg_meta_sender">প্রেরক নোড</string>
+    <string name="msg_meta_recipient">প্রাপক নোড</string>
+    <string name="msg_meta_timestamp">সময়কাল</string>
+    <string name="msg_meta_relays">রিলে নোডসমূহ</string>
+    <string name="msg_meta_ciphertext">এনক্রিপ্ট করা সাইফারটেক্সট</string>
+    <string name="direction_outgoing">আউটগোয়িং</string>
+    <string name="direction_incoming">ইনকামিং</string>
+    <string name="relay_queue_header">মাল্টি-হপ রিলে কিউ (%1$d)</string>
+    <string name="clear_queue_action">কিউ খালি করুন</string>
+    <string name="packet_label">প্যাকেট: %1$s</string>
+    <string name="route_origin_dest">উৎস: %1$s → গন্তব্য: %2$s</string>
+    <string name="current_hops_label">বর্তমান হপ: %1$d / %2$d</string>
 </resources>
