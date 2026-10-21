@@ -105,6 +105,13 @@ import com.example.ui.screens.TermsAndConditionsScreen
 import com.example.ui.screens.UserProfileScreen
 import com.example.ui.screens.VerifyDeviceScreen
 import com.example.ui.screens.WelcomeScreen
+import com.example.ui.screens.DirectoryScreen
+import com.example.ui.screens.EditProfileScreen
+import com.example.ui.screens.FriendRequestsScreen
+import com.example.ui.screens.FriendsListScreen
+import com.example.ui.screens.GoogleSignInScreen
+import com.example.ui.screens.ProfileInitScreen
+import com.example.ui.screens.PublicUserProfileScreen
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaGoldLight
 import com.example.ui.theme.RonovaPinkPrimary
@@ -162,6 +169,25 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RonovaApp(viewModel: RonovaViewModel) {
+    val currentUser by viewModel.currentUser.collectAsState()
+    val myProfile by viewModel.myProfile.collectAsState()
+
+    if (currentUser == null) {
+        GoogleSignInScreen(
+            viewModel = viewModel,
+            onSignedIn = { /* Reactive StateFlow updates currentUser */ }
+        )
+        return
+    }
+
+    if (myProfile != null && myProfile?.displayName.isNullOrBlank()) {
+        ProfileInitScreen(
+            viewModel = viewModel,
+            onProfileCompleted = { /* Profile saved in Firestore and local state */ }
+        )
+        return
+    }
+
     val navController = rememberNavController()
     val callState by viewModel.currentCall.collectAsState()
     val context = LocalContext.current
@@ -820,6 +846,64 @@ fun RonovaApp(viewModel: RonovaViewModel) {
             // 33. Help & Support (PRD v2.1 Section 10)
             composable(Screen.HelpAndSupport.route) {
                 HelpAndSupportScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 34. Public Directory (PRD v2.2)
+            composable(Screen.Directory.route) {
+                DirectoryScreen(
+                    viewModel = viewModel,
+                    onNavigateToProfile = { uid ->
+                        navController.navigate(Screen.PublicUserProfile.createRoute(uid))
+                    },
+                    onNavigateToChat = { uid ->
+                        navController.navigate(Screen.Chat.createRoute(uid))
+                    }
+                )
+            }
+
+            // 35. Friends & Presence (PRD v2.2)
+            composable(Screen.FriendsList.route) {
+                FriendsListScreen(
+                    viewModel = viewModel,
+                    onNavigateToChat = { uid ->
+                        navController.navigate(Screen.Chat.createRoute(uid))
+                    },
+                    onVoiceCall = { uid ->
+                        onSafeVoiceCall(uid)
+                    },
+                    onNavigateToProfile = { uid ->
+                        navController.navigate(Screen.PublicUserProfile.createRoute(uid))
+                    }
+                )
+            }
+
+            // 36. Friend Requests (PRD v2.2)
+            composable(Screen.FriendRequests.route) {
+                FriendRequestsScreen(viewModel = viewModel)
+            }
+
+            // 37. Public User Profile (PRD v2.2)
+            composable(
+                route = Screen.PublicUserProfile.route,
+                arguments = listOf(navArgument("targetUid") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val targetUid = backStackEntry.arguments?.getString("targetUid") ?: ""
+                PublicUserProfileScreen(
+                    targetUid = targetUid,
+                    viewModel = viewModel,
+                    onNavigateToChat = { uid ->
+                        navController.navigate(Screen.Chat.createRoute(uid))
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            // 38. Edit Profile (PRD v2.2)
+            composable(Screen.EditProfile.route) {
+                EditProfileScreen(
+                    viewModel = viewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

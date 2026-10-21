@@ -25,6 +25,10 @@ class RonovaApplication : Application() {
     }
     val setupRepository by lazy { com.example.data.SetupRepository(this) }
     val internetTransportManager by lazy { com.example.core.network.InternetTransportManager(this, applicationScope) }
+    val firebaseAuthManager by lazy { com.example.core.firebase.FirebaseAuthManager.getInstance() }
+    val firestoreUserRepository by lazy { com.example.core.firebase.FirestoreUserRepository.create(this) }
+    val firestoreFriendRepository by lazy { com.example.core.firebase.FirestoreFriendRepository.create(this) }
+    val firestoreChatRepository by lazy { com.example.core.firebase.FirestoreChatRepository.create(this, database) }
 
     override fun onCreate() {
         super.onCreate()

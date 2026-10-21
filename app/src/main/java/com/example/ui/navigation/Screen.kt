@@ -3,10 +3,21 @@ package com.example.ui.navigation
 sealed class Screen(val route: String) {
     // Onboarding & Setup
     object Splash : Screen("splash")
+    object SignIn : Screen("sign_in")
+    object ProfileInit : Screen("profile_init")
     object Welcome : Screen("welcome")
     object Permissions : Screen("permissions")
     object BluetoothSetup : Screen("bluetooth_setup")
     object IdentitySetup : Screen("identity_setup")
+
+    // Cloud Directory & Social (PRD v2.2)
+    object Directory : Screen("directory")
+    object FriendRequests : Screen("friend_requests")
+    object FriendsList : Screen("friends_list")
+    object EditProfile : Screen("edit_profile")
+    object PublicUserProfile : Screen("public_user_profile/{targetUid}") {
+        fun createRoute(targetUid: String) = "public_user_profile/$targetUid"
+    }
 
     // Core Bottom Navigation (5 destinations per PRD v2.1 Section 9)
     object Home : Screen("home")

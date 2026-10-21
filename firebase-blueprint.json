@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information in Ronova Mesh",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "ronovaId": { "type": "string", "description": "Unique persistent Ronova ID, e.g. RNV-XXXXXX" },
+        "displayName": { "type": "string", "description": "Display name of user" },
+        "photoUrl": { "type": "string", "description": "Avatar URL" },
+        "bio": { "type": "string", "description": "User bio/status message" },
+        "profileVisibility": { "type": "string", "enum": ["public", "friends_only", "private"], "description": "Visibility of profile" },
+        "presencePrivacy": { "type": "string", "enum": ["public", "friends_only", "nobody"], "description": "Visibility of presence status" },
+        "isOnline": { "type": "boolean", "description": "Online presence status" },
+        "presenceUpdatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of presence update" },
+        "accountStatus": { "type": "string", "enum": ["active", "suspended"], "description": "Account status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Account creation time" }
+      },
+      "required": ["uid", "ronovaId", "displayName"]
+    },
+    "FriendRequest": {
+      "title": "FriendRequest",
+      "description": "Friend request sent between two users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderRonovaId": { "type": "string" },
+        "senderDisplayName": { "type": "string" },
+        "senderPhotoUrl": { "type": "string" },
+        "recipientUid": { "type": "string" },
+        "recipientRonovaId": { "type": "string" },
+        "recipientDisplayName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["senderUid", "recipientUid", "status"]
+    },
+    "Friendship": {
+      "title": "Friendship",
+      "description": "Established friendship between two users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userAUid": { "type": "string" },
+        "userBUid": { "type": "string" },
+        "userARonovaId": { "type": "string" },
+        "userBRonovaId": { "type": "string" },
+        "userADisplayName": { "type": "string" },
+        "userBDisplayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userAUid", "userBUid"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Chat conversation metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "lastMessageText": { "type": "string" },
+        "lastMessageTimestamp": { "type": "string", "format": "date-time" },
+        "lastSenderUid": { "type": "string" }
+      },
+      "required": ["participants"]
+    },
+    "DirectMessage": {
+      "title": "DirectMessage",
+      "description": "Message exchanged inside a conversation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "conversationId": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "recipientUid": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "deliveryState": { "type": "string", "enum": ["sent", "delivered", "read"] },
+        "transportType": { "type": "string", "enum": ["internet", "bluetooth_direct", "bluetooth_mesh"] }
+      },
+      "required": ["senderUid", "recipientUid", "text"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User directory and profiles"
+    },
+    "/friend_requests/{requestId}": {
+      "schema": "FriendRequest",
+      "description": "Friend request invitations"
+    },
+    "/friendships/{friendshipId}": {
+      "schema": "Friendship",
+      "description": "Mutual friendships between pairs of users"
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "Conversation threads"
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "DirectMessage",
+      "description": "Chat messages within a conversation"
+    }
+  }
+}

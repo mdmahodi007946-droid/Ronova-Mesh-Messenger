@@ -111,7 +111,9 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToPending: () -> Unit,
     onNavigateToVerify: (String) -> Unit,
-    onNavigateToDiagnostics: () -> Unit
+    onNavigateToDiagnostics: () -> Unit,
+    onNavigateToDirectory: () -> Unit = {},
+    onNavigateToFriends: () -> Unit = {}
 ) {
     val status by viewModel.bluetoothStatus.collectAsState()
     val connectedPeers by viewModel.connectedPeers.collectAsState()
@@ -119,6 +121,8 @@ fun HomeScreen(
     val conversations by viewModel.conversations.collectAsState()
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
     val diagnostics by viewModel.diagnostics.collectAsState()
+    val myProfile by viewModel.myProfile.collectAsState()
+    val friends by viewModel.friends.collectAsState()
 
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -199,22 +203,25 @@ fun HomeScreen(
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = stringResource(R.string.home_node_identity),
+                                            text = myProfile?.displayName ?: stringResource(R.string.home_node_identity),
                                             style = MaterialTheme.typography.titleSmall.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 color = RonovaTextPrimary
-                                            )
+                                            ),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
+                                        val displayId = myProfile?.ronovaId ?: viewModel.myDeviceId
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier.clickable {
                                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Node ID", viewModel.myDeviceId))
+                                                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Ronova ID", displayId))
                                                 android.widget.Toast.makeText(context, context.getString(R.string.home_copied_id), android.widget.Toast.LENGTH_SHORT).show()
                                             }
                                         ) {
                                             Text(
-                                                text = viewModel.myDeviceId,
+                                                text = displayId,
                                                 style = MaterialTheme.typography.bodySmall.copy(
                                                     color = RonovaGoldDark,
                                                     fontWeight = FontWeight.Bold,
@@ -232,16 +239,52 @@ fun HomeScreen(
                                     }
                                 }
                                 Surface(
-                                    color = if (isRelayOn) RonovaGoldLight else Color(0xFFF5F5F5),
+                                    color = if (myProfile?.isOnline == true) RonovaGoldLight else Color(0xFFF5F5F5),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
                                     Text(
-                                        text = if (isRelayOn) stringResource(R.string.home_relay_active) else stringResource(R.string.home_direct_only),
+                                        text = if (myProfile?.isOnline == true) stringResource(R.string.presence_status_online) else stringResource(R.string.presence_status_offline),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isRelayOn) RonovaSuccess else RonovaTextMuted,
+                                        color = if (myProfile?.isOnline == true) RonovaSuccess else RonovaTextMuted,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                     )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Social Quick Buttons: Directory & Friends
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = onNavigateToDirectory,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(38.dp)
+                                        .testTag("home_directory_button"),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = BorderStroke(1.dp, RonovaPinkPrimary.copy(alpha = 0.5f))
+                                ) {
+                                    Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(14.dp), tint = RonovaPinkPrimary)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(stringResource(R.string.nav_directory), fontSize = 12.sp, color = RonovaTextPrimary)
+                                }
+
+                                OutlinedButton(
+                                    onClick = onNavigateToFriends,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(38.dp)
+                                        .testTag("home_friends_button"),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = BorderStroke(1.dp, RonovaGoldPrimary.copy(alpha = 0.5f))
+                                ) {
+                                    Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(14.dp), tint = RonovaGoldDark)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("${stringResource(R.string.nav_friends)} (${friends.size})", fontSize = 12.sp, color = RonovaTextPrimary)
                                 }
                             }
                         }
@@ -834,9 +877,17 @@ fun OneToOneChatScreen(
     var textInput by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    // Clear unread badge on entering
-    LaunchedEffect(deviceId) {
+    val myProfile by viewModel.myProfile.collectAsState()
+
+    // Clear unread badge on entering and sync cloud messages
+    LaunchedEffect(deviceId, myProfile?.uid) {
         viewModel.repository.clearUnread(deviceId)
+        val myUid = myProfile?.uid
+        if (myUid != null) {
+            val convId = com.example.core.firebase.FirestoreChatRepository.generateConversationId(myUid, deviceId)
+            viewModel.firestoreChatRepository.markMessagesAsRead(convId, myUid)
+            viewModel.firestoreChatRepository.syncIncomingMessagesToRoom(convId, deviceId, device?.displayName ?: deviceId)
+        }
     }
 
     // Scroll to latest message on receive
@@ -952,8 +1003,13 @@ fun OneToOneChatScreen(
                     IconButton(
                         onClick = {
                             if (textInput.isNotBlank()) {
-                                viewModel.sendMessage(deviceId, textInput)
+                                val msgToSend = textInput
                                 textInput = ""
+                                viewModel.sendHybridMessage(
+                                    deviceId,
+                                    device?.displayName ?: deviceId,
+                                    msgToSend
+                                )
                             }
                         },
                         modifier = Modifier

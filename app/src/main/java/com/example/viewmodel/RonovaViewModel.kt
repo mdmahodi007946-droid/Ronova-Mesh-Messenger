@@ -22,7 +22,15 @@ import com.example.core.protocol.MeshPacket
 import com.example.core.protocol.MeshPacketType
 import com.example.data.RetentionPolicy
 import com.example.service.BluetoothMeshService
+import android.app.Activity
+import android.content.Context
+import com.example.core.firebase.CloudMessage
+import com.example.core.firebase.FriendRequest
+import com.example.core.firebase.Friendship
+import com.example.core.firebase.UserProfile
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +49,30 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     val audioCallManager = app.audioCallManager
     val repository = app.repository
     val internetTransportManager = app.internetTransportManager
+    val firebaseAuthManager = app.firebaseAuthManager
+    val firestoreUserRepository = app.firestoreUserRepository
+    val firestoreFriendRepository = app.firestoreFriendRepository
+    val firestoreChatRepository = app.firestoreChatRepository
+
+    val currentUser: StateFlow<FirebaseUser?> = firebaseAuthManager.currentUserState
+
+    private val _myProfile = MutableStateFlow<UserProfile?>(null)
+    val myProfile: StateFlow<UserProfile?> = _myProfile.asStateFlow()
+
+    private val _friends = MutableStateFlow<List<UserProfile>>(emptyList())
+    val friends: StateFlow<List<UserProfile>> = _friends.asStateFlow()
+
+    private val _receivedRequests = MutableStateFlow<List<FriendRequest>>(emptyList())
+    val receivedRequests: StateFlow<List<FriendRequest>> = _receivedRequests.asStateFlow()
+
+    private val _sentRequests = MutableStateFlow<List<FriendRequest>>(emptyList())
+    val sentRequests: StateFlow<List<FriendRequest>> = _sentRequests.asStateFlow()
+
+    private val _directoryUsers = MutableStateFlow<List<UserProfile>>(emptyList())
+    val directoryUsers: StateFlow<List<UserProfile>> = _directoryUsers.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     // Core Identity
     val myDeviceId: String = cryptoManager.deviceId
@@ -285,6 +317,91 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
         // Start listening server
         meshManager.startServer()
+
+        // Firebase Auth and Realtime State Lifecycle
+        var userScopeJob: Job? = null
+        viewModelScope.launch {
+            currentUser.collect { user ->
+                userScopeJob?.cancel()
+                if (user != null) {
+                    userScopeJob = launch {
+                        try {
+                            val profile = firestoreUserRepository.createOrInitProfile(user)
+                            _myProfile.value = profile
+                        } catch (e: Exception) {
+                            android.util.Log.w("RonovaVM", "Failed to init profile: ${e.message}")
+                        }
+
+                        launch {
+                            try {
+                                firestoreUserRepository.observeProfile(user.uid).collect { updated ->
+                                    if (updated != null) _myProfile.value = updated
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.w("RonovaVM", "Profile listener error", e)
+                            }
+                        }
+
+                        launch {
+                            try {
+                                firestoreFriendRepository.observeReceivedRequests(user.uid).collect { reqs ->
+                                    _receivedRequests.value = reqs
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.w("RonovaVM", "Received requests error", e)
+                            }
+                        }
+
+                        launch {
+                            try {
+                                firestoreFriendRepository.observeSentRequests(user.uid).collect { reqs ->
+                                    _sentRequests.value = reqs
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.w("RonovaVM", "Sent requests error", e)
+                            }
+                        }
+
+                        launch {
+                            try {
+                                firestoreFriendRepository.observeFriendships(user.uid).collect { friendships ->
+                                    val friendUids = friendships.map {
+                                        if (it.userAUid == user.uid) it.userBUid else it.userAUid
+                                    }
+                                    if (friendUids.isNotEmpty()) {
+                                        firestoreUserRepository.observeUsers(friendUids).collect { friendProfiles ->
+                                            _friends.value = friendProfiles
+                                        }
+                                    } else {
+                                        _friends.value = emptyList()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.w("RonovaVM", "Friendships error", e)
+                            }
+                        }
+
+                        launch {
+                            try {
+                                searchQuery.collect { query ->
+                                    firestoreUserRepository.searchPublicUsers(query, user.uid).collect { users ->
+                                        _directoryUsers.value = users
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.w("RonovaVM", "Directory search error", e)
+                            }
+                        }
+                    }
+                } else {
+                    _myProfile.value = null
+                    _friends.value = emptyList()
+                    _receivedRequests.value = emptyList()
+                    _sentRequests.value = emptyList()
+                    _directoryUsers.value = emptyList()
+                }
+            }
+        }
     }
 
     private suspend fun handleIncomingPacket(packet: MeshPacket, isInternet: Boolean = false) {
@@ -732,4 +849,139 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
             repository.logSecurityEvent("KEYPAIR_REGENERATED", "Generated new cryptographic identity")
         }
     }
+
+    // Firebase Auth & Cloud Actions (PRD v2.2)
+    fun signInWithGoogle(
+        activity: Activity,
+        onSuccess: (FirebaseUser) -> Unit,
+        onError: (String) -> Unit,
+        onCancelled: () -> Unit = {}
+    ) {
+        firebaseAuthManager.signInWithGoogle(activity, viewModelScope, onSuccess, onError, onCancelled)
+    }
+
+    fun attemptAutoSignIn(
+        context: Context,
+        onSuccess: (FirebaseUser) -> Unit,
+        onUnauthenticated: () -> Unit
+    ) {
+        firebaseAuthManager.attemptAutoSignIn(context, viewModelScope, onSuccess, onUnauthenticated)
+    }
+
+    fun signOut(context: Context, onComplete: () -> Unit = {}) {
+        val uid = currentUser.value?.uid
+        if (uid != null) {
+            viewModelScope.launch {
+                firestoreUserRepository.setPresence(uid, false)
+            }
+        }
+        firebaseAuthManager.signOut(context, viewModelScope, onComplete)
+    }
+
+    fun updateUserProfile(
+        displayName: String,
+        bio: String,
+        profileVisibility: String,
+        presencePrivacy: String,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        val uid = currentUser.value?.uid ?: return
+        viewModelScope.launch {
+            try {
+                firestoreUserRepository.updateProfile(uid, displayName, bio, profileVisibility, presencePrivacy)
+                _myProfile.value = _myProfile.value?.copy(
+                    displayName = displayName,
+                    bio = bio,
+                    profileVisibility = profileVisibility,
+                    presencePrivacy = presencePrivacy
+                )
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.localizedMessage ?: "Failed to update profile")
+            }
+        }
+    }
+
+    fun setDirectorySearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun sendFriendRequest(target: UserProfile, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+        val sender = myProfile.value
+        if (sender == null) {
+            onError("You must be logged in to send friend requests")
+            return
+        }
+        viewModelScope.launch {
+            try {
+                firestoreFriendRepository.sendFriendRequest(sender, target)
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.localizedMessage ?: "Failed to send request")
+            }
+        }
+    }
+
+    fun acceptFriendRequest(request: FriendRequest, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                firestoreFriendRepository.acceptFriendRequest(request)
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.localizedMessage ?: "Failed to accept request")
+            }
+        }
+    }
+
+    fun rejectFriendRequest(requestId: String, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            firestoreFriendRepository.rejectFriendRequest(requestId)
+            onComplete()
+        }
+    }
+
+    fun cancelFriendRequest(requestId: String, onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            firestoreFriendRepository.cancelFriendRequest(requestId)
+            onComplete()
+        }
+    }
+
+    fun removeFriend(targetUid: String, onComplete: () -> Unit = {}) {
+        val myUid = currentUser.value?.uid ?: return
+        viewModelScope.launch {
+            firestoreFriendRepository.removeFriendship(myUid, targetUid)
+            onComplete()
+        }
+    }
+
+    fun sendHybridMessage(
+        peerDeviceIdOrUid: String,
+        peerDisplayName: String,
+        text: String,
+        onComplete: (Boolean) -> Unit = {}
+    ) {
+        val sender = myProfile.value
+        val isFriend = friends.value.any { it.uid == peerDeviceIdOrUid }
+        val targetProfile = friends.value.find { it.uid == peerDeviceIdOrUid }
+
+        if (sender != null && isFriend && targetProfile != null && isInternetAvailable.value) {
+            viewModelScope.launch {
+                try {
+                    firestoreChatRepository.sendMessage(sender, targetProfile, text)
+                    onComplete(true)
+                } catch (e: Exception) {
+                    // Fallback to local Bluetooth / mesh queue
+                    sendMessage(peerDeviceIdOrUid, text)
+                    onComplete(false)
+                }
+            }
+        } else {
+            // Local Bluetooth Mesh or direct Bluetooth
+            sendMessage(peerDeviceIdOrUid, text)
+            onComplete(true)
+        }
+    }
 }
+

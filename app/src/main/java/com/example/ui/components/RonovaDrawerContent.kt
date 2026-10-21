@@ -60,6 +60,10 @@ import com.example.ui.theme.RonovaGoldPrimary
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
 
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PersonSearch
+
 data class RonovaDrawerItem(
     val route: String,
     val titleRes: Int,
@@ -84,6 +88,9 @@ fun RonovaNavigationDrawerSheet(
 
     val drawerItems = listOf(
         RonovaDrawerItem(Screen.Home.route, R.string.nav_home, Icons.Default.Home, "drawer_item_home"),
+        RonovaDrawerItem(Screen.FriendsList.route, R.string.nav_friends, Icons.Default.People, "drawer_item_friends"),
+        RonovaDrawerItem(Screen.Directory.route, R.string.nav_directory, Icons.Default.PersonSearch, "drawer_item_directory"),
+        RonovaDrawerItem(Screen.FriendRequests.route, R.string.nav_requests, Icons.Default.Notifications, "drawer_item_requests"),
         RonovaDrawerItem(Screen.Chats.route, R.string.nav_chats, Icons.AutoMirrored.Filled.Chat, "drawer_item_chats", unreadMessagesCount),
         RonovaDrawerItem(Screen.CallHistory.route, R.string.nav_calls, Icons.Default.Call, "drawer_item_calls", missedCallsCount),
         RonovaDrawerItem(Screen.Discovery.route, R.string.drawer_connected_peers, Icons.Default.Bluetooth, "drawer_item_peers"),
