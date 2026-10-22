@@ -64,6 +64,19 @@ class FirebaseAuthManager(
 
     fun getUserId(): String? = auth.currentUser?.uid
 
+    private fun getDefaultWebClientId(context: Context): String? {
+        return try {
+            val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+            if (resId != 0) {
+                val str = context.getString(resId)
+                if (str.isNotBlank()) return str
+            }
+            "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com"
+        } catch (e: Exception) {
+            "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com"
+        }
+    }
+
     fun attemptAutoSignIn(
         context: Context,
         scope: CoroutineScope,
@@ -76,10 +89,9 @@ class FirebaseAuthManager(
             return
         }
 
-        val clientId = try {
-            context.getString(R.string.default_web_client_id)
-        } catch (e: Exception) {
-            Log.w(TAG, "default_web_client_id not found in strings", e)
+        val clientId = getDefaultWebClientId(context)
+        if (clientId == null) {
+            Log.w(TAG, "default_web_client_id not configured in resources")
             onUnauthenticated()
             return
         }
@@ -124,11 +136,10 @@ class FirebaseAuthManager(
         onError: (String) -> Unit,
         onCancelled: () -> Unit = {}
     ) {
-        val clientId = try {
-            activity.getString(R.string.default_web_client_id)
-        } catch (e: Exception) {
+        val clientId = getDefaultWebClientId(activity)
+        if (clientId == null) {
             val msg = "Google Sign-In configuration missing: default_web_client_id"
-            Log.e(TAG, msg, e)
+            Log.e(TAG, msg)
             onError(msg)
             return
         }

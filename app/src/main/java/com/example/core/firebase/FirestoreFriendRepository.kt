@@ -54,12 +54,17 @@ class FirestoreFriendRepository(
     }
 
     fun observeFriendships(myUid: String): Flow<List<Friendship>> {
-        return friendshipsCollection
+        val flowA = friendshipsCollection
+            .whereEqualTo("userAUid", myUid)
             .snapshots()
-            .map { snapshot ->
-                val all = snapshot.toObjects(Friendship::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-                all.filter { it.userAUid == myUid || it.userBUid == myUid }
-            }
+            .map { it.toObjects(Friendship::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE) }
+        val flowB = friendshipsCollection
+            .whereEqualTo("userBUid", myUid)
+            .snapshots()
+            .map { it.toObjects(Friendship::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE) }
+        return kotlinx.coroutines.flow.combine(flowA, flowB) { listA, listB ->
+            (listA + listB).distinctBy { it.id }
+        }
     }
 
     suspend fun sendFriendRequest(sender: UserProfile, recipient: UserProfile) {

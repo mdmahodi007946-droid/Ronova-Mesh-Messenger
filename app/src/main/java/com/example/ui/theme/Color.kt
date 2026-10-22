@@ -38,4 +38,9 @@ val RonovaWarningContainer = Color(0xFFFFF3E0)
 val RonovaError = Color(0xFFD32F2F)
 val RonovaErrorContainer = Color(0xFFFFEBEE)
 
+// Additional accents used across Auth and Directory screens
+val RonovaDarkSurface = Color(0xFF1E1E1E)
+val RonovaGreenAccent = Color(0xFF4CAF50)
+val RonovaRedAccent = Color(0xFFF44336)
+
 

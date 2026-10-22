@@ -74,13 +74,16 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.R
 import com.example.core.firebase.FriendRequest
+import com.example.core.firebase.PresenceStatus
 import com.example.core.firebase.UserProfile
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaDarkSurface
+import com.example.ui.theme.RonovaGoldDark
 import com.example.ui.theme.RonovaGoldLight
 import com.example.ui.theme.RonovaGreenAccent
 import com.example.ui.theme.RonovaPinkPrimary
 import com.example.ui.theme.RonovaRedAccent
+import com.example.ui.theme.RonovaSuccess
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
 import com.example.viewmodel.RonovaViewModel
@@ -223,12 +226,14 @@ fun DirectoryUserCard(
     onAcceptFriend: (FriendRequest) -> Unit,
     onChat: () -> Unit
 ) {
+    val (presenceStatus, presenceText) = user.resolvePresence()
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onCardClick() }
             .testTag("directory_card_${user.ronovaId}"),
-        colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, RonovaCardBorder)
     ) {
         Row(
@@ -265,13 +270,18 @@ fun DirectoryUserCard(
 
                 // Presence dot
                 if (user.presencePrivacy != "nobody") {
+                    val dotColor = when (presenceStatus) {
+                        PresenceStatus.ONLINE -> RonovaSuccess
+                        PresenceStatus.OFFLINE -> RonovaRedAccent
+                        PresenceStatus.UNKNOWN -> RonovaTextMuted
+                    }
                     Box(
                         modifier = Modifier
                             .size(12.dp)
                             .align(Alignment.BottomEnd)
                             .clip(CircleShape)
-                            .background(if (user.isOnline) RonovaGreenAccent else RonovaTextMuted)
-                            .border(1.5.dp, RonovaDarkSurface, CircleShape)
+                            .background(dotColor)
+                            .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
                     )
                 }
             }
@@ -287,12 +297,22 @@ fun DirectoryUserCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = user.ronovaId,
-                    color = RonovaGoldLight,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = user.ronovaId,
+                        color = RonovaGoldDark,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (user.presencePrivacy != "nobody") {
+                        Text(
+                            text = " • $presenceText",
+                            color = RonovaTextMuted,
+                            fontSize = 11.sp,
+                            maxLines = 1
+                        )
+                    }
+                }
                 if (user.bio.isNotEmpty()) {
                     Text(
                         text = user.bio,
@@ -323,11 +343,11 @@ fun DirectoryUserCard(
                 receivedRequest != null -> {
                     Button(
                         onClick = { onAcceptFriend(receivedRequest) },
-                        colors = ButtonDefaults.buttonColors(containerColor = RonovaGreenAccent),
+                        colors = ButtonDefaults.buttonColors(containerColor = RonovaSuccess),
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.testTag("action_accept_${user.ronovaId}")
                     ) {
-                        Text(stringResource(R.string.friend_request_accept), fontSize = 12.sp, color = RonovaDarkSurface, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.friend_request_accept), fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
                 isRequestSent -> {
@@ -458,12 +478,19 @@ fun FriendsListScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(friends, key = { it.uid }) { friend ->
+                    val (presenceStatus, presenceLabel) = friend.resolvePresence()
+                    val presenceColor = when (presenceStatus) {
+                        PresenceStatus.ONLINE -> RonovaSuccess
+                        PresenceStatus.OFFLINE -> RonovaRedAccent
+                        PresenceStatus.UNKNOWN -> RonovaTextMuted
+                    }
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onNavigateToProfile(friend.uid) }
                             .testTag("friend_card_${friend.ronovaId}"),
-                        colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         border = BorderStroke(1.dp, RonovaCardBorder)
                     ) {
                         Row(
@@ -503,8 +530,8 @@ fun FriendsListScreen(
                                         .size(12.dp)
                                         .align(Alignment.BottomEnd)
                                         .clip(CircleShape)
-                                        .background(if (friend.isOnline) RonovaGreenAccent else RonovaTextMuted)
-                                        .border(1.5.dp, RonovaDarkSurface, CircleShape)
+                                        .background(presenceColor)
+                                        .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
                                 )
                             }
 
@@ -521,25 +548,16 @@ fun FriendsListScreen(
                                 )
                                 Text(
                                     text = friend.ronovaId,
-                                    color = RonovaGoldLight,
-                                    fontSize = 12.sp
+                                    color = RonovaGoldDark,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
 
-                                val presenceText = if (friend.isOnline) {
-                                    stringResource(R.string.presence_status_online)
-                                } else if (friend.presenceUpdatedAt != null) {
-                                    val date = friend.presenceUpdatedAt.toDate()
-                                    val formatted = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(date)
-                                    stringResource(R.string.presence_status_last_seen, formatted)
-                                } else {
-                                    stringResource(R.string.presence_status_offline)
-                                }
-
                                 Text(
-                                    text = presenceText,
-                                    color = if (friend.isOnline) RonovaGreenAccent else RonovaTextMuted,
+                                    text = presenceLabel,
+                                    color = presenceColor,
                                     fontSize = 11.5.sp,
-                                    fontWeight = if (friend.isOnline) FontWeight.SemiBold else FontWeight.Normal
+                                    fontWeight = if (presenceStatus == PresenceStatus.ONLINE) FontWeight.SemiBold else FontWeight.Normal
                                 )
                             }
 
@@ -610,7 +628,7 @@ fun FriendRequestsScreen(
         ) {
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = RonovaDarkSurface,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 contentColor = RonovaPinkPrimary
             ) {
                 Tab(
@@ -678,7 +696,7 @@ fun FriendRequestsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("request_card_${req.id}"),
-                            colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(1.dp, RonovaCardBorder)
                         ) {
                             Row(
@@ -725,8 +743,9 @@ fun FriendRequestsScreen(
                                     )
                                     Text(
                                         text = ronovaId,
-                                        color = RonovaGoldLight,
-                                        fontSize = 12.sp
+                                        color = RonovaGoldDark,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 }
 

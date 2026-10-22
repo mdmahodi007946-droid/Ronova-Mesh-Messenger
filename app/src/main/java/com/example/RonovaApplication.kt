@@ -25,13 +25,41 @@ class RonovaApplication : Application() {
     }
     val setupRepository by lazy { com.example.data.SetupRepository(this) }
     val internetTransportManager by lazy { com.example.core.network.InternetTransportManager(this, applicationScope) }
-    val firebaseAuthManager by lazy { com.example.core.firebase.FirebaseAuthManager.getInstance() }
-    val firestoreUserRepository by lazy { com.example.core.firebase.FirestoreUserRepository.create(this) }
-    val firestoreFriendRepository by lazy { com.example.core.firebase.FirestoreFriendRepository.create(this) }
-    val firestoreChatRepository by lazy { com.example.core.firebase.FirestoreChatRepository.create(this, database) }
+    val firebaseAuthManager by lazy {
+        ensureFirebaseInitialized()
+        com.example.core.firebase.FirebaseAuthManager.getInstance()
+    }
+    val firestoreUserRepository by lazy {
+        ensureFirebaseInitialized()
+        com.example.core.firebase.FirestoreUserRepository.create(this)
+    }
+    val firestoreFriendRepository by lazy {
+        ensureFirebaseInitialized()
+        com.example.core.firebase.FirestoreFriendRepository.create(this)
+    }
+    val firestoreChatRepository by lazy {
+        ensureFirebaseInitialized()
+        com.example.core.firebase.FirestoreChatRepository.create(this, database)
+    }
+
+    private fun ensureFirebaseInitialized() {
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
+                val options = com.google.firebase.FirebaseOptions.Builder()
+                    .setApplicationId(packageName)
+                    .setProjectId("ai-studio-applet-webapp-b6997")
+                    .setApiKey("AIzaSyDUMMYKEYINITIALIZATION")
+                    .build()
+                com.google.firebase.FirebaseApp.initializeApp(this, options)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("RonovaApplication", "Firebase initialization fallback: ${e.message}")
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
+        ensureFirebaseInitialized()
         // Initialize crypto identity and prepare Bluetooth listeners
         val id = cryptoManager.deviceId
     }

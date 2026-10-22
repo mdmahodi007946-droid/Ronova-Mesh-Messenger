@@ -64,10 +64,16 @@ import coil.compose.AsyncImage
 import com.example.R
 import com.example.ui.theme.RonovaCardBorder
 import com.example.ui.theme.RonovaDarkSurface
+import com.example.ui.theme.RonovaGoldDark
 import com.example.ui.theme.RonovaGoldLight
 import com.example.ui.theme.RonovaGreenAccent
 import com.example.ui.theme.RonovaPinkPrimary
 import com.example.ui.theme.RonovaRedAccent
+import com.example.ui.theme.RonovaSuccess
+import com.example.ui.theme.RonovaWarning
+import com.example.ui.theme.RonovaWarningContainer
+import com.example.ui.theme.RonovaError
+import com.example.ui.theme.RonovaErrorContainer
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
 import com.example.viewmodel.RonovaViewModel
@@ -148,8 +154,8 @@ fun GoogleSignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
-                    border = BorderStroke(1.dp, RonovaRedAccent.copy(alpha = 0.5f))
+                    colors = CardDefaults.cardColors(containerColor = RonovaWarningContainer),
+                    border = BorderStroke(1.dp, RonovaWarning)
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -158,13 +164,13 @@ fun GoogleSignInScreen(
                         Icon(
                             imageVector = Icons.Default.WifiOff,
                             contentDescription = null,
-                            tint = RonovaRedAccent,
+                            tint = RonovaWarning,
                             modifier = Modifier.size(28.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = stringResource(R.string.sign_in_offline_warn),
-                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary)
                         )
                     }
                 }
@@ -176,21 +182,21 @@ fun GoogleSignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
-                    border = BorderStroke(1.dp, RonovaRedAccent)
+                    colors = CardDefaults.cardColors(containerColor = RonovaErrorContainer),
+                    border = BorderStroke(1.dp, RonovaError)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = stringResource(R.string.sign_in_error_title),
                             style = MaterialTheme.typography.titleSmall.copy(
-                                color = RonovaRedAccent,
+                                color = RonovaError,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = errorMessage ?: "",
-                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
+                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary)
                         )
                     }
                 }
@@ -201,7 +207,7 @@ fun GoogleSignInScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, RonovaCardBorder)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -209,7 +215,7 @@ fun GoogleSignInScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 4.dp)
                     ) {
-                        Icon(Icons.Default.Security, contentDescription = null, tint = RonovaGoldLight, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Security, contentDescription = null, tint = RonovaGoldDark, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Mandatory Google authentication authority", color = RonovaTextPrimary, fontSize = 13.sp)
                     }
@@ -217,7 +223,7 @@ fun GoogleSignInScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 4.dp)
                     ) {
-                        Icon(Icons.Default.CloudDone, contentDescription = null, tint = RonovaGreenAccent, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.CloudDone, contentDescription = null, tint = RonovaSuccess, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Cloud message sync and public user directory", color = RonovaTextPrimary, fontSize = 13.sp)
                     }
@@ -225,7 +231,7 @@ fun GoogleSignInScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 4.dp)
                     ) {
-                        Icon(Icons.Default.Lock, contentDescription = null, tint = RonovaPinkPrimary, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Lock, contentDescription = null, tint = RonovaGoldDark, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Zero-trust security rules and end-to-end privacy", color = RonovaTextPrimary, fontSize = 13.sp)
                     }
@@ -350,7 +356,7 @@ fun ProfileInitScreen(
                     modifier = Modifier
                         .size(88.dp)
                         .clip(CircleShape),
-                    color = RonovaDarkSurface,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     border = BorderStroke(2.dp, RonovaPinkPrimary)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -384,13 +390,13 @@ fun ProfileInitScreen(
             // Ronova ID Display (Read-Only Persistent ID)
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, RonovaCardBorder)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(R.string.profile_init_ronova_id_label),
-                        style = MaterialTheme.typography.labelMedium.copy(color = RonovaGoldLight)
+                        style = MaterialTheme.typography.labelMedium.copy(color = RonovaGoldDark, fontWeight = FontWeight.SemiBold)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(

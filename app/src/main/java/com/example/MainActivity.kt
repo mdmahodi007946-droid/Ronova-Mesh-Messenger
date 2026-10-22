@@ -171,6 +171,17 @@ class MainActivity : ComponentActivity() {
 fun RonovaApp(viewModel: RonovaViewModel) {
     val currentUser by viewModel.currentUser.collectAsState()
     val myProfile by viewModel.myProfile.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (currentUser == null) {
+            viewModel.attemptAutoSignIn(
+                context = context,
+                onSuccess = { /* Reactive StateFlow updates currentUser */ },
+                onUnauthenticated = { /* Stays on GoogleSignInScreen */ }
+            )
+        }
+    }
 
     if (currentUser == null) {
         GoogleSignInScreen(
@@ -190,7 +201,6 @@ fun RonovaApp(viewModel: RonovaViewModel) {
 
     val navController = rememberNavController()
     val callState by viewModel.currentCall.collectAsState()
-    val context = LocalContext.current
 
     var showMicDeniedDialog by remember { mutableStateOf(false) }
     var pendingCallPeerId by remember { mutableStateOf<String?>(null) }

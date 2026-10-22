@@ -90,6 +90,9 @@ interface MessageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessage(message: MessageEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(message: MessageEntity)
+
     @Query("UPDATE messages SET deliveryState = :state, hopCount = :hopCount, routeNodesJson = :routeJson WHERE messageId = :messageId")
     suspend fun updateDeliveryState(messageId: String, state: String, hopCount: Int, routeJson: String)
 
