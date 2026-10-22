@@ -71,9 +71,9 @@ class FirebaseAuthManager(
                 val str = context.getString(resId)
                 if (str.isNotBlank()) return str
             }
-            context.getString(R.string.default_web_client_id)
+            null
         } catch (e: Exception) {
-            Log.w(TAG, "default_web_client_id not yet generated in R: ${e.message}")
+            Log.w(TAG, "default_web_client_id not found: ${e.message}")
             null
         }
     }
