@@ -83,6 +83,15 @@ import com.example.ui.theme.RonovaError
 import com.example.ui.theme.RonovaErrorContainer
 import com.example.ui.theme.RonovaTextMuted
 import com.example.ui.theme.RonovaTextPrimary
+import android.graphics.SurfaceTexture
+import android.media.MediaPlayer
+import android.net.Uri
+import android.util.Log
+import android.view.Surface
+import android.view.TextureView
+import android.view.ViewGroup
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.viewmodel.RonovaViewModel
 import kotlinx.coroutines.launch
 
@@ -90,6 +99,72 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+@Composable
+fun AuthVideoBackground(
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    AndroidView(
+        modifier = modifier.fillMaxSize(),
+        factory = { ctx ->
+            TextureView(ctx).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                    private var mediaPlayer: MediaPlayer? = null
+
+                    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+                        try {
+                            mediaPlayer = MediaPlayer().apply {
+                                setSurface(Surface(surface))
+                                setVolume(0f, 0f)
+                                isLooping = true
+                                val localUri = Uri.parse("android.resource://${ctx.packageName}/${R.raw.auth_bg_video}")
+                                setDataSource(ctx, localUri)
+                                setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
+                                setOnPreparedListener { mp ->
+                                    try {
+                                        mp.start()
+                                    } catch (e: Exception) {
+                                        Log.w("AuthVideo", "Start failed: ${e.message}")
+                                    }
+                                }
+                                setOnErrorListener { _, _, _ ->
+                                    try {
+                                        reset()
+                                        setDataSource(ctx, Uri.parse("https://lisview.com/api/file/from-klickpin-com-curious-social-dialogue-prompts-for-yg2pa"))
+                                        prepareAsync()
+                                    } catch (_: Exception) {}
+                                    true
+                                }
+                                prepareAsync()
+                            }
+                        } catch (e: Exception) {
+                            Log.w("AuthVideo", "Error initializing MediaPlayer: ${e.message}")
+                        }
+                    }
+
+                    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
+
+                    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+                        try {
+                            mediaPlayer?.stop()
+                            mediaPlayer?.release()
+                        } catch (_: Exception) {}
+                        mediaPlayer = null
+                        return true
+                    }
+
+                    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -108,267 +183,292 @@ fun GoogleSignInScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.White
+        containerColor = Color.Black
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 28.dp, vertical = 36.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
-            // Ronova Mesh Emblem: Bluetooth + Wireless Router + Social Mesh Chat
+            // Background Live Video Player
+            AuthVideoBackground(modifier = Modifier.fillMaxSize())
+
+            // Atmospheric gradient overlay for optimal legibility and contrast
             Box(
                 modifier = Modifier
-                    .size(96.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFFEF9C3))
-                    .border(2.dp, Color(0xFFEAB308), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_mesh_antenna_chat),
-                    contentDescription = "Ronova Mesh Chat Emblem",
-                    modifier = Modifier.size(62.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Ronova Mesh",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = RonovaTextPrimary
-                ),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Decentralized mesh communications with secure cloud synchronization",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = RonovaTextMuted,
-                    lineHeight = 22.sp
-                ),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Offline connectivity banner if internet is unavailable
-            if (!isInternetAvailable) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
-                    border = BorderStroke(1.dp, Color(0xFFF59E0B)),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.WifiOff,
-                            contentDescription = null,
-                            tint = Color(0xFFB45309),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Internet connection required for initial Google Sign-In and profile synchronization.",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF78350F))
-                        )
-                    }
-                }
-            }
-
-            // Error display
-            if (errorMessage != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
-                    border = BorderStroke(1.dp, Color(0xFFEF4444)),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = "Authentication Error",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                color = Color(0xFFB91C1C),
-                                fontWeight = FontWeight.Bold
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.40f),
+                                Color.Black.copy(alpha = 0.55f),
+                                Color.Black.copy(alpha = 0.72f)
                             )
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                    )
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 26.dp, vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Official Application Icon Display
+                Box(
+                    modifier = Modifier
+                        .size(98.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color.White.copy(alpha = 0.95f))
+                        .border(2.5.dp, Color(0xFFFACC15), RoundedCornerShape(22.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_image),
+                        contentDescription = "Ronova Mesh App Icon",
+                        modifier = Modifier
+                            .size(76.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = "Ronova Mesh",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    ),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Decentralized mesh communications with secure cloud synchronization",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.White.copy(alpha = 0.90f),
+                        lineHeight = 22.sp
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Offline connectivity warning banner if internet is unavailable
+                if (!isInternetAvailable) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7).copy(alpha = 0.95f)),
+                        border = BorderStroke(1.dp, Color(0xFFF59E0B)),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.WifiOff,
+                                contentDescription = null,
+                                tint = Color(0xFFB45309),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Internet connection required for initial Google Sign-In and profile synchronization.",
+                                style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF78350F))
+                            )
+                        }
+                    }
+                }
+
+                // Error display
+                if (errorMessage != null) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2).copy(alpha = 0.95f)),
+                        border = BorderStroke(1.dp, Color(0xFFEF4444)),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = "Authentication Error",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    color = Color(0xFFB91C1C),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = errorMessage ?: "",
+                                style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF7F1D1D))
+                            )
+                        }
+                    }
+                }
+
+                // Features overview card with modern semi-translucent glass styling
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.7f)),
+                    shape = RoundedCornerShape(18.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFFEF9C3)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color(0xFFCA8A04), modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text("Google Account Identity", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
+                                Text("Fast, passwordless sign-in with your Google account", color = RonovaTextMuted, fontSize = 11.5.sp)
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFECFDF5)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.CloudDone, contentDescription = null, tint = Color(0xFF059669), modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text("Cloud Profile & Directory", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
+                                Text("Persistent user search and friend requests across devices", color = RonovaTextMuted, fontSize = 11.5.sp)
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFFEF3C7)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Bluetooth, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text("Decentralized Bluetooth Mesh", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
+                                Text("Off-grid messaging and voice calls when disconnected", color = RonovaTextMuted, fontSize = 11.5.sp)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Prominent "Continue with Google" Button
+                Button(
+                    onClick = {
+                        val targetActivity = activity ?: context.findActivity() ?: (context as? Activity)
+                        if (targetActivity == null) {
+                            errorMessage = "Cannot start Google Sign-In: Application activity not found. Please restart the app."
+                            return@Button
+                        }
+                        isLoading = true
+                        errorMessage = null
+                        viewModel.signInWithGoogle(
+                            activity = targetActivity,
+                            onSuccess = { _ ->
+                                isLoading = false
+                                onSignedIn()
+                            },
+                            onError = { error ->
+                                isLoading = false
+                                errorMessage = when {
+                                    error.contains("network", ignoreCase = true) || error.contains("connection", ignoreCase = true) ->
+                                        "Network error: Unable to reach Google servers. Please check your internet connection."
+                                    error.contains("cancelled", ignoreCase = true) || error.contains("canceled", ignoreCase = true) ->
+                                        "Google Sign-In was cancelled."
+                                    error.contains("No Google credential", ignoreCase = true) ||
+                                    error.contains("NoCredentialException", ignoreCase = true) ||
+                                    error.contains("No credentials available", ignoreCase = true) ->
+                                        "No Google account found on device. Please add a Google account in your phone's Settings to continue."
+                                    else -> "Authentication failed: $error"
+                                }
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(errorMessage ?: "Authentication failed")
+                                }
+                            },
+                            onCancelled = {
+                                isLoading = false
+                            }
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .testTag("google_sign_in_button"),
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF1F2937),
+                        disabledContainerColor = Color(0xFFF3F4F6),
+                        disabledContentColor = Color(0xFF9CA3AF)
+                    ),
+                    border = BorderStroke(1.5.dp, Color(0xFFE5E7EB)),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp, pressedElevation = 2.dp)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            color = Color(0xFF1F2937),
+                            strokeWidth = 2.5.dp
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = errorMessage ?: "",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF7F1D1D))
+                            text = "Signing in with Google...",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            color = Color(0xFF1F2937)
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_google_logo),
+                            contentDescription = "Google Logo",
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Continue with Google",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.5.sp,
+                            color = Color(0xFF1F2937)
                         )
                     }
-                }
-            }
-
-            // Features overview card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA)),
-                border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFFEF9C3)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color(0xFFCA8A04), modifier = Modifier.size(18.dp))
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text("Google Account Identity", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
-                            Text("Fast, passwordless sign-in with your Google account", color = RonovaTextMuted, fontSize = 11.5.sp)
-                        }
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFECFDF5)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.CloudDone, contentDescription = null, tint = Color(0xFF059669), modifier = Modifier.size(18.dp))
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text("Cloud Profile & Directory", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
-                            Text("Persistent user search and friend requests across devices", color = RonovaTextMuted, fontSize = 11.5.sp)
-                        }
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFFEF3C7)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.Bluetooth, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(18.dp))
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text("Decentralized Bluetooth Mesh", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
-                            Text("Off-grid messaging and voice calls when disconnected", color = RonovaTextMuted, fontSize = 11.5.sp)
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Prominent, Modern "Continue with Google" Button
-            Button(
-                onClick = {
-                    val targetActivity = activity ?: context.findActivity() ?: (context as? Activity)
-                    if (targetActivity == null) {
-                        errorMessage = "Cannot start Google Sign-In: Application activity not found. Please restart the app."
-                        return@Button
-                    }
-                    isLoading = true
-                    errorMessage = null
-                    viewModel.signInWithGoogle(
-                        activity = targetActivity,
-                        onSuccess = { _ ->
-                            isLoading = false
-                            onSignedIn()
-                        },
-                        onError = { error ->
-                            isLoading = false
-                            errorMessage = when {
-                                error.contains("network", ignoreCase = true) || error.contains("connection", ignoreCase = true) ->
-                                    "Network error: Unable to reach Google servers. Please check your internet connection."
-                                error.contains("cancelled", ignoreCase = true) || error.contains("canceled", ignoreCase = true) ->
-                                    "Google Sign-In was cancelled."
-                                error.contains("No Google credential", ignoreCase = true) ||
-                                error.contains("NoCredentialException", ignoreCase = true) ||
-                                error.contains("No credentials available", ignoreCase = true) ->
-                                    "No Google account found on device. Please add a Google account in your phone's Settings to continue."
-                                else -> "Authentication failed: $error"
-                            }
-                            scope.launch {
-                                snackbarHostState.showSnackbar(errorMessage ?: "Authentication failed")
-                            }
-                        },
-                        onCancelled = {
-                            isLoading = false
-                        }
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .testTag("google_sign_in_button"),
-                enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF1F2937),
-                    disabledContainerColor = Color(0xFFF3F4F6),
-                    disabledContentColor = Color(0xFF9CA3AF)
-                ),
-                border = BorderStroke(1.5.dp, Color(0xFFE5E7EB)),
-                shape = RoundedCornerShape(14.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(22.dp),
-                        color = Color(0xFF1F2937),
-                        strokeWidth = 2.5.dp
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Signing in with Google...",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                        color = Color(0xFF1F2937)
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_google_logo),
-                        contentDescription = "Google Logo",
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Continue with Google",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.5.sp,
-                        color = Color(0xFF1F2937)
-                    )
                 }
             }
         }

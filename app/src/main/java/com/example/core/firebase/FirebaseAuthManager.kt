@@ -65,17 +65,16 @@ class FirebaseAuthManager(
     fun getUserId(): String? = auth.currentUser?.uid
 
     private fun getDefaultWebClientId(context: Context): String {
-        try {
+        return try {
+            context.getString(R.string.default_web_client_id)
+        } catch (e: Exception) {
             val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
             if (resId != 0) {
-                val str = context.getString(resId)
-                if (str.isNotBlank()) return str
+                context.getString(resId)
+            } else {
+                throw IllegalStateException("Google Services configuration error: default_web_client_id not found", e)
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "default_web_client_id not found via identifier: ${e.message}")
         }
-        // Fallback to provisioned client ID from google-services.json
-        return "958208327030-ei2clsdubc0bd2bjov1m7ufdoossh5a2.apps.googleusercontent.com"
     }
 
     fun attemptAutoSignIn(
@@ -86,6 +85,7 @@ class FirebaseAuthManager(
     ) {
         val current = auth.currentUser
         if (current != null) {
+            _currentUserState.value = current
             onAuthSuccess(current)
             return
         }
@@ -111,6 +111,7 @@ class FirebaseAuthManager(
                     val authResult = auth.signInWithCredential(authCredential).await()
                     val user = authResult.user
                     if (user != null) {
+                        _currentUserState.value = user
                         onAuthSuccess(user)
                     } else {
                         onUnauthenticated()
@@ -148,6 +149,7 @@ class FirebaseAuthManager(
                     val authResult = auth.signInWithCredential(authCredential).await()
                     val user = authResult.user
                     if (user != null) {
+                        _currentUserState.value = user
                         onSuccess(user)
                     } else {
                         onError("Firebase user is null after sign in")
