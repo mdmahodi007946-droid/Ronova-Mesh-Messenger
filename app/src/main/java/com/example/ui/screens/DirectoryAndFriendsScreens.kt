@@ -32,17 +32,21 @@ import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import com.example.viewmodel.DirectoryUiState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -105,14 +109,15 @@ import java.util.Locale
 fun DirectoryScreen(
     viewModel: RonovaViewModel,
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToChat: (String) -> Unit
+    onNavigateToChat: (String) -> Unit,
+    onNavigateToRequests: (() -> Unit)? = null,
+    onBack: (() -> Unit)? = null
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val users by viewModel.directoryUsers.collectAsState()
+    val directoryUiState by viewModel.directoryUiState.collectAsState()
     val friends by viewModel.friends.collectAsState()
     val sentRequests by viewModel.sentRequests.collectAsState()
     val receivedRequests by viewModel.receivedRequests.collectAsState()
-
     val myProfile by viewModel.myProfile.collectAsState()
 
     Scaffold(
@@ -133,6 +138,50 @@ fun DirectoryScreen(
                         )
                     }
                 },
+                navigationIcon = if (onBack != null) {
+                    {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = RonovaTextPrimary
+                            )
+                        }
+                    }
+                } else {
+                    {}
+                },
+                actions = {
+                    if (onNavigateToRequests != null) {
+                        IconButton(
+                            onClick = onNavigateToRequests,
+                            modifier = Modifier.testTag("action_directory_requests")
+                        ) {
+                            BadgedBox(
+                                badge = {
+                                    if (receivedRequests.isNotEmpty()) {
+                                        Badge(
+                                            containerColor = RonovaPinkPrimary,
+                                            contentColor = Color.White
+                                        ) {
+                                            Text(
+                                                text = "${receivedRequests.size}",
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.HourglassTop,
+                                    contentDescription = stringResource(R.string.requests_title),
+                                    tint = RonovaGoldDark
+                                )
+                            }
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -148,7 +197,7 @@ fun DirectoryScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Search Bar
+            // Search Bar with leading icon & trailing clear button
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setDirectorySearchQuery(it) },
@@ -156,6 +205,18 @@ fun DirectoryScreen(
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = null, tint = RonovaTextMuted)
                 },
+                trailingIcon = if (searchQuery.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { viewModel.clearDirectorySearchQuery() }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear search",
+                                tint = RonovaTextMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                } else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("directory_search_input"),
@@ -171,55 +232,136 @@ fun DirectoryScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (users.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = RonovaTextMuted,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.directory_empty),
-                            fontWeight = FontWeight.Bold,
-                            color = RonovaTextPrimary
-                        )
-                        Text(
-                            text = stringResource(R.string.directory_empty_desc),
-                            color = RonovaTextMuted,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 32.dp, vertical = 4.dp)
-                        )
+            when (val state = directoryUiState) {
+                is DirectoryUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(
+                                color = RonovaPinkPrimary,
+                                modifier = Modifier.size(38.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Searching member directory...",
+                                color = RonovaTextMuted,
+                                fontSize = 13.sp
+                            )
+                        }
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(users, key = { it.uid }) { user ->
-                        val isMe = (user.uid == myProfile?.uid)
-                        val isFriend = friends.any { it.uid == user.uid }
-                        val isSent = sentRequests.any { it.recipientUid == user.uid }
-                        val receivedReq = receivedRequests.find { it.senderUid == user.uid }
+                is DirectoryUiState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = null,
+                                tint = RonovaRedAccent,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "Unable to load directory",
+                                fontWeight = FontWeight.Bold,
+                                color = RonovaTextPrimary,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = state.message,
+                                color = RonovaTextMuted,
+                                fontSize = 12.5.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.retryDirectorySearch() },
+                                colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                is DirectoryUiState.Empty -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (state.isSearch) Icons.Default.Search else Icons.Default.AccountCircle,
+                                contentDescription = null,
+                                tint = RonovaTextMuted,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = if (state.isSearch) stringResource(R.string.directory_empty) else "No members available yet",
+                                fontWeight = FontWeight.Bold,
+                                color = RonovaTextPrimary,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = if (state.isSearch)
+                                    stringResource(R.string.directory_empty_desc)
+                                else
+                                    "Registered Ronova Mesh members will appear here automatically.",
+                                color = RonovaTextMuted,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                            if (state.isSearch) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                OutlinedButton(
+                                    onClick = { viewModel.clearDirectorySearchQuery() },
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("Clear Search", fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+                is DirectoryUiState.Success -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.users, key = { it.uid }) { user ->
+                            val isMe = (user.uid == myProfile?.uid)
+                            val isFriend = friends.any { it.uid == user.uid }
+                            val sentReq = sentRequests.find { it.recipientUid == user.uid }
+                            val receivedReq = receivedRequests.find { it.senderUid == user.uid }
 
-                        DirectoryUserCard(
-                            user = user,
-                            isMe = isMe,
-                            isFriend = isFriend,
-                            isRequestSent = isSent,
-                            receivedRequest = receivedReq,
-                            onCardClick = { onNavigateToProfile(user.uid) },
-                            onAddFriend = { viewModel.sendFriendRequest(user) },
-                            onAcceptFriend = { req -> viewModel.acceptFriendRequest(req) },
-                            onChat = { onNavigateToChat(user.uid) }
-                        )
+                            DirectoryUserCard(
+                                user = user,
+                                isMe = isMe,
+                                isFriend = isFriend,
+                                isRequestSent = (sentReq != null),
+                                sentRequestId = sentReq?.id,
+                                receivedRequest = receivedReq,
+                                onCardClick = { onNavigateToProfile(user.uid) },
+                                onAddFriend = { viewModel.sendFriendRequest(user) },
+                                onCancelRequest = { reqId -> viewModel.cancelFriendRequest(reqId) },
+                                onAcceptFriend = { req -> viewModel.acceptFriendRequest(req) },
+                                onChat = { onNavigateToChat(user.uid) }
+                            )
+                        }
                     }
                 }
             }
@@ -233,9 +375,11 @@ fun DirectoryUserCard(
     isMe: Boolean = false,
     isFriend: Boolean,
     isRequestSent: Boolean,
+    sentRequestId: String? = null,
     receivedRequest: FriendRequest?,
     onCardClick: () -> Unit,
     onAddFriend: () -> Unit,
+    onCancelRequest: ((String) -> Unit)? = null,
     onAcceptFriend: (FriendRequest) -> Unit,
     onChat: () -> Unit
 ) {
@@ -379,13 +523,34 @@ fun DirectoryUserCard(
                     }
                 }
                 isRequestSent -> {
-                    OutlinedButton(
-                        onClick = {},
-                        enabled = false,
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.testTag("status_sent_${user.ronovaId}")
-                    ) {
-                        Text(stringResource(R.string.friend_request_sent), fontSize = 11.sp, color = RonovaTextMuted)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Text(
+                                text = stringResource(R.string.friend_request_sent),
+                                fontSize = 11.sp,
+                                color = RonovaTextMuted,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                            )
+                        }
+                        if (sentRequestId != null && onCancelRequest != null) {
+                            IconButton(
+                                onClick = { onCancelRequest(sentRequestId) },
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .padding(start = 2.dp)
+                                    .testTag("cancel_req_${user.ronovaId}")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cancel request",
+                                    tint = RonovaRedAccent,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 else -> {
@@ -412,7 +577,8 @@ fun FriendsListScreen(
     viewModel: RonovaViewModel,
     onNavigateToChat: (String) -> Unit,
     onVoiceCall: (String) -> Unit,
-    onNavigateToProfile: (String) -> Unit
+    onNavigateToProfile: (String) -> Unit,
+    onBack: (() -> Unit)? = null
 ) {
     val friends by viewModel.friends.collectAsState()
     var friendToRemove by remember { mutableStateOf<UserProfile?>(null) }
@@ -459,6 +625,19 @@ fun FriendsListScreen(
                             color = RonovaTextMuted
                         )
                     }
+                },
+                navigationIcon = if (onBack != null) {
+                    {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = RonovaTextPrimary
+                            )
+                        }
+                    }
+                } else {
+                    {}
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
@@ -626,7 +805,8 @@ fun FriendsListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FriendRequestsScreen(
-    viewModel: RonovaViewModel
+    viewModel: RonovaViewModel,
+    onBack: (() -> Unit)? = null
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val receivedRequests by viewModel.receivedRequests.collectAsState()
@@ -641,6 +821,19 @@ fun FriendRequestsScreen(
                         fontWeight = FontWeight.Bold,
                         color = RonovaTextPrimary
                     )
+                },
+                navigationIcon = if (onBack != null) {
+                    {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = RonovaTextPrimary
+                            )
+                        }
+                    }
+                } else {
+                    {}
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface

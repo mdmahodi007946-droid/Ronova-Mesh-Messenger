@@ -873,6 +873,12 @@ fun RonovaApp(viewModel: RonovaViewModel, activity: ComponentActivity) {
                     },
                     onNavigateToChat = { uid ->
                         navController.navigate(Screen.Chat.createRoute(uid))
+                    },
+                    onNavigateToRequests = {
+                        navController.navigate(Screen.FriendRequests.route)
+                    },
+                    onBack = {
+                        navController.popBackStack()
                     }
                 )
             }
@@ -889,13 +895,21 @@ fun RonovaApp(viewModel: RonovaViewModel, activity: ComponentActivity) {
                     },
                     onNavigateToProfile = { uid ->
                         navController.navigate(Screen.PublicUserProfile.createRoute(uid))
+                    },
+                    onBack = {
+                        navController.popBackStack()
                     }
                 )
             }
 
             // 36. Friend Requests (PRD v2.2)
             composable(Screen.FriendRequests.route) {
-                FriendRequestsScreen(viewModel = viewModel)
+                FriendRequestsScreen(
+                    viewModel = viewModel,
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
             }
 
             // 37. Public User Profile (PRD v2.2)

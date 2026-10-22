@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -156,6 +157,7 @@ class FirestoreUserRepository(
                     "profileVisibility" to profileToRestore.profileVisibility,
                     "presencePrivacy" to profileToRestore.presencePrivacy,
                     "isOnline" to true,
+                    "isDiscoverable" to profileToRestore.isDiscoverable,
                     "presenceUpdatedAt" to FieldValue.serverTimestamp(),
                     "accountStatus" to "active",
                     "createdAt" to FieldValue.serverTimestamp()
@@ -168,9 +170,10 @@ class FirestoreUserRepository(
             return profileToRestore
         }
 
-        // 3. Brand new user: generate one stable, unique Ronova ID
-        val randomNum = Random.nextInt(100000, 999999)
-        val ronovaId = "RNV-$randomNum"
+        // 3. Brand new user: generate one stable, unique Ronova ID (e.g. RNV-7K2M9P)
+        val idChars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+        val idSuffix = (1..6).map { idChars[Random.nextInt(idChars.length)] }.joinToString("")
+        val ronovaId = "RNV-$idSuffix"
         val displayName = if (!firebaseUser.displayName.isNullOrBlank()) {
             firebaseUser.displayName!!
         } else {
@@ -187,6 +190,7 @@ class FirestoreUserRepository(
             "profileVisibility" to "public",
             "presencePrivacy" to "public",
             "isOnline" to true,
+            "isDiscoverable" to true,
             "presenceUpdatedAt" to FieldValue.serverTimestamp(),
             "accountStatus" to "active",
             "createdAt" to FieldValue.serverTimestamp()
@@ -207,6 +211,7 @@ class FirestoreUserRepository(
             profileVisibility = "public",
             presencePrivacy = "public",
             isOnline = true,
+            isDiscoverable = true,
             accountStatus = "active"
         )
         saveCachedProfile(newProfile)
@@ -219,13 +224,15 @@ class FirestoreUserRepository(
         bio: String,
         profileVisibility: String,
         presencePrivacy: String,
-        photoUrl: String? = null
+        photoUrl: String? = null,
+        isDiscoverable: Boolean = true
     ) {
         val updateMap = mutableMapOf<String, Any>(
             "displayName" to displayName.trim(),
             "bio" to bio.trim(),
             "profileVisibility" to profileVisibility,
             "presencePrivacy" to presencePrivacy,
+            "isDiscoverable" to isDiscoverable,
             "presenceUpdatedAt" to FieldValue.serverTimestamp()
         )
         if (photoUrl != null) {
@@ -243,6 +250,7 @@ class FirestoreUserRepository(
                 bio = bio.trim(),
                 profileVisibility = profileVisibility,
                 presencePrivacy = presencePrivacy,
+                isDiscoverable = isDiscoverable,
                 photoUrl = photoUrl ?: current.photoUrl
             )
             saveCachedProfile(updated)
@@ -294,7 +302,7 @@ class FirestoreUserRepository(
                 .map { snapshot ->
                     try {
                         val users = snapshot.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-                        val visible = users.filter { it.uid != currentUid && it.profileVisibility != "private" }
+                        val visible = users.filter { it.uid != currentUid && it.profileVisibility != "private" && it.isDiscoverable }
                         Log.i(TAG, "[DirectorySearch] Browse returned ${visible.size} public users")
                         visible
                     } catch (e: Exception) {
@@ -302,24 +310,31 @@ class FirestoreUserRepository(
                         emptyList()
                     }
                 }
+                .catch { e ->
+                    Log.w(TAG, "[DirectorySearch] Snapshot error during browse: ${e.message}")
+                    emit(emptyList())
+                }
         }
 
         // Targeted search: Query by exact Ronova ID flow and general snapshot flow
-        val idSearchFlow = usersCollection
+        val idSearchFlow: Flow<List<UserProfile>> = usersCollection
             .whereEqualTo("ronovaId", normalizedRonovaId)
             .limit(10)
             .snapshots()
             .map { snap ->
                 snap.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
             }
+            .catch { emit(emptyList()) }
 
-        val generalSearchFlow = usersCollection
+        val generalSearchFlow: Flow<List<UserProfile>> = usersCollection
             .limit(50)
             .snapshots()
             .map { snap ->
                 val all = snap.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
                 all.filter { user ->
-                    user.profileVisibility != "private" && (
+                    user.uid != currentUid &&
+                    user.profileVisibility != "private" &&
+                    user.isDiscoverable && (
                         user.ronovaId.equals(normalizedRonovaId, ignoreCase = true) ||
                         user.ronovaId.lowercase().contains(cleanLower) ||
                         user.displayName.lowercase().contains(cleanLower) ||
@@ -327,9 +342,12 @@ class FirestoreUserRepository(
                     )
                 }
             }
+            .catch { emit(emptyList()) }
 
-        return combine(idSearchFlow, generalSearchFlow) { idResults, generalResults ->
-            val merged = (idResults + generalResults).distinctBy { it.uid }
+        return combine(idSearchFlow, generalSearchFlow) { idResults: List<UserProfile>, generalResults: List<UserProfile> ->
+            val merged = (idResults + generalResults)
+                .filter { it.uid != currentUid && it.profileVisibility != "private" && it.isDiscoverable }
+                .distinctBy { it.uid }
             Log.i(TAG, "[DirectorySearch] Query '$rawQuery' returned ${merged.size} total results")
             merged
         }

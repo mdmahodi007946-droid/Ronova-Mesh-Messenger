@@ -21,6 +21,7 @@ data class UserProfile(
     val profileVisibility: String = "public", // "public", "friends_only", "private"
     val presencePrivacy: String = "public",   // "public", "friends_only", "nobody"
     val isOnline: Boolean = true,
+    val isDiscoverable: Boolean = true,
     @ServerTimestamp val presenceUpdatedAt: Timestamp? = null,
     val accountStatus: String = "active",    // "active", "suspended"
     @ServerTimestamp val createdAt: Timestamp? = null

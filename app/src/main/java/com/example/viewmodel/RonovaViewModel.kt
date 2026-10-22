@@ -40,11 +40,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import org.json.JSONObject
 import java.util.UUID
+
+sealed interface DirectoryUiState {
+    object Loading : DirectoryUiState
+    data class Success(val users: List<UserProfile>, val isSearch: Boolean) : DirectoryUiState
+    data class Empty(val isSearch: Boolean) : DirectoryUiState
+    data class Error(val message: String) : DirectoryUiState
+}
 
 class RonovaViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -75,6 +84,9 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _directoryUsers = MutableStateFlow<List<UserProfile>>(emptyList())
     val directoryUsers: StateFlow<List<UserProfile>> = _directoryUsers.asStateFlow()
+
+    private val _directoryUiState = MutableStateFlow<DirectoryUiState>(DirectoryUiState.Loading)
+    val directoryUiState: StateFlow<DirectoryUiState> = _directoryUiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -393,15 +405,28 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                         launch {
                             try {
                                 searchQuery
-                                    .debounce(250L)
+                                    .debounce(200L)
                                     .flatMapLatest { query ->
+                                        _directoryUiState.value = DirectoryUiState.Loading
                                         firestoreUserRepository.searchPublicUsers(query, user.uid)
+                                            .map { users -> query to users }
+                                            .catch { e ->
+                                                android.util.Log.w("RonovaVM", "Directory search error", e)
+                                                emit(query to emptyList())
+                                            }
                                     }
-                                    .collect { users ->
+                                    .collect { (query, users) ->
                                         _directoryUsers.value = users
+                                        val isSearch = query.trim().isNotEmpty()
+                                        if (users.isEmpty()) {
+                                            _directoryUiState.value = DirectoryUiState.Empty(isSearch)
+                                        } else {
+                                            _directoryUiState.value = DirectoryUiState.Success(users, isSearch)
+                                        }
                                     }
                             } catch (e: Exception) {
-                                android.util.Log.w("RonovaVM", "Directory search error", e)
+                                android.util.Log.w("RonovaVM", "Directory search fatal error", e)
+                                _directoryUiState.value = DirectoryUiState.Error(e.localizedMessage ?: "Failed to load directory")
                             }
                         }
                     }
@@ -411,6 +436,7 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                     _receivedRequests.value = emptyList()
                     _sentRequests.value = emptyList()
                     _directoryUsers.value = emptyList()
+                    _directoryUiState.value = DirectoryUiState.Loading
                 }
             }
         }
@@ -932,6 +958,16 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setDirectorySearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun clearDirectorySearchQuery() {
+        _searchQuery.value = ""
+    }
+
+    fun retryDirectorySearch() {
+        val curr = _searchQuery.value
+        _directoryUiState.value = DirectoryUiState.Loading
+        _searchQuery.value = curr
     }
 
     fun sendFriendRequest(target: UserProfile, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {

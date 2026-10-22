@@ -87,11 +87,23 @@ import com.example.ui.theme.RonovaTextPrimary
 import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.viewmodel.RonovaViewModel
 import kotlinx.coroutines.launch
@@ -100,6 +112,107 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+/**
+ * Animated constellation mesh network canvas.
+ * Renders floating mesh nodes connected by dynamic pulsating links.
+ * Visible through frosted-glass surfaces for genuine backdrop blur rendering.
+ */
+@Composable
+fun NetworkConstellationBackground(
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "constellation")
+    val time by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "time"
+    )
+
+    // Spatial node configuration across screen space
+    val baseNodes = remember {
+        listOf(
+            Triple(0.12f, 0.12f, 5.0f),
+            Triple(0.38f, 0.08f, 4.0f),
+            Triple(0.82f, 0.10f, 6.0f),
+            Triple(0.92f, 0.28f, 4.5f),
+            Triple(0.20f, 0.30f, 6.5f),
+            Triple(0.52f, 0.25f, 5.0f),
+            Triple(0.72f, 0.42f, 6.0f),
+            Triple(0.12f, 0.55f, 4.8f),
+            Triple(0.40f, 0.60f, 7.0f),
+            Triple(0.88f, 0.62f, 5.2f),
+            Triple(0.28f, 0.80f, 6.0f),
+            Triple(0.68f, 0.82f, 5.5f),
+            Triple(0.88f, 0.90f, 4.2f),
+            Triple(0.10f, 0.88f, 6.0f)
+        )
+    }
+
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val maxDist = (w * 0.44f).coerceAtLeast(150.dp.toPx())
+
+        // Calculate dynamic positions with sine/cosine orbital drift
+        val positions = baseNodes.mapIndexed { i, (bx, by, r) ->
+            val angle = time + (i * 0.72f)
+            val dx = kotlin.math.cos(angle) * (16.dp.toPx())
+            val dy = kotlin.math.sin(angle * 1.25f) * (20.dp.toPx())
+            val px = (bx * w + dx).coerceIn(0f, w)
+            val py = (by * h + dy).coerceIn(0f, h)
+            Offset(px, py) to r
+        }
+
+        // Draw connections between proximate nodes
+        for (i in positions.indices) {
+            val (p1, _) = positions[i]
+            for (j in (i + 1) until positions.size) {
+                val (p2, _) = positions[j]
+                val dist = (p1 - p2).getDistance()
+                if (dist < maxDist) {
+                    val proximity = (1f - (dist / maxDist)).coerceIn(0f, 1f)
+                    val alpha = proximity * 0.30f
+                    val lineColor = if ((i + j) % 2 == 0) {
+                        Color(0xFFFFD84D).copy(alpha = alpha) // Golden yellow highlight
+                    } else {
+                        Color(0xFF90CAF9).copy(alpha = alpha * 0.8f) // Ambient mesh cyan
+                    }
+                    drawLine(
+                        color = lineColor,
+                        start = p1,
+                        end = p2,
+                        strokeWidth = 1.2.dp.toPx()
+                    )
+                }
+            }
+        }
+
+        // Draw glowing nodes with halo
+        positions.forEachIndexed { i, (pos, radius) ->
+            val isGold = (i % 3 == 0)
+            val coreColor = if (isGold) Color(0xFFFFE58A) else Color(0xFFFFFFFF)
+            val glowColor = if (isGold) Color(0xFFFFD84D).copy(alpha = 0.28f) else Color(0xFF90CAF9).copy(alpha = 0.22f)
+
+            // Outer soft ambient aura
+            drawCircle(
+                color = glowColor,
+                radius = radius.dp.toPx() * 2.5f,
+                center = pos
+            )
+            // Inner core dot
+            drawCircle(
+                color = coreColor,
+                radius = (radius * 0.75f).dp.toPx(),
+                center = pos
+            )
+        }
+    }
 }
 
 @Composable
@@ -184,27 +297,49 @@ fun GoogleSignInScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.Black
+        containerColor = Color(0xFF080B24) // Dark navy baseline
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Background Live Video Player
+            // Layer 1: Background Live Video Player
             AuthVideoBackground(modifier = Modifier.fillMaxSize())
 
-            // Atmospheric gradient overlay for optimal legibility and contrast
+            // Layer 2: Real-time Mesh Constellation Animation (nodes drift behind glass)
+            NetworkConstellationBackground(modifier = Modifier.fillMaxSize())
+
+            // Layer 3: Atmospheric navy & black gradient overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.40f),
-                                Color.Black.copy(alpha = 0.55f),
-                                Color.Black.copy(alpha = 0.72f)
+                                Color(0xFF080B24).copy(alpha = 0.55f),
+                                Color(0xFF080B24).copy(alpha = 0.68f),
+                                Color(0xFF040614).copy(alpha = 0.85f)
                             )
+                        )
+                    )
+            )
+
+            // Layer 4: Soft white and warm-yellow ambient glow around the authentication area
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(520.dp)
+                    .align(Alignment.Center)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFFD84D).copy(alpha = 0.18f),
+                                Color(0xFFFFE58A).copy(alpha = 0.09f),
+                                Color(0xFFFFFFFF).copy(alpha = 0.05f),
+                                Color(0xFF080B24).copy(alpha = 0.0f)
+                            ),
+                            radius = 650f
                         )
                     )
             )
@@ -213,53 +348,83 @@ fun GoogleSignInScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 26.dp, vertical = 32.dp),
+                    .padding(horizontal = 24.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Glassmorphism App Icon Container
+                // Golden-Yellow Ambient Glow around App Logo
                 Box(
-                    modifier = Modifier
-                        .size(98.dp)
-                        .clip(RoundedCornerShape(26.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.22f),
-                                    Color.White.copy(alpha = 0.08f)
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(140.dp)
+                ) {
+                    // Soft ambient golden-yellow halo
+                    Box(
+                        modifier = Modifier
+                            .size(136.dp)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFFFFD84D).copy(alpha = 0.35f),
+                                        Color(0xFFFFE58A).copy(alpha = 0.15f),
+                                        Color.Transparent
+                                    ),
+                                    radius = 160f
                                 )
                             )
-                        )
-                        .border(
-                            BorderStroke(
-                                1.5.dp,
+                    )
+
+                    // Glassmorphism App Icon Container with 28dp corners & golden border highlight
+                    Box(
+                        modifier = Modifier
+                            .size(96.dp)
+                            .shadow(
+                                elevation = 16.dp,
+                                shape = RoundedCornerShape(28.dp),
+                                ambientColor = Color(0xFF080B24),
+                                spotColor = Color(0xFF080B24)
+                            )
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(
                                 Brush.verticalGradient(
                                     colors = listOf(
-                                        Color(0xFFFDE047).copy(alpha = 0.85f),
-                                        Color.White.copy(alpha = 0.30f)
+                                        Color.White.copy(alpha = 0.20f),
+                                        Color.White.copy(alpha = 0.10f)
                                     )
                                 )
+                            )
+                            .border(
+                                BorderStroke(
+                                    1.4.dp,
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color(0xFFFFD84D).copy(alpha = 0.90f),
+                                            Color(0xFFFFE58A).copy(alpha = 0.45f),
+                                            Color.White.copy(alpha = 0.25f)
+                                        )
+                                    )
+                                ),
+                                RoundedCornerShape(28.dp)
                             ),
-                            RoundedCornerShape(26.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_image),
-                        contentDescription = "Ronova Mesh App Icon",
-                        modifier = Modifier
-                            .size(76.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                    )
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_image),
+                            contentDescription = "Ronova Mesh App Icon",
+                            modifier = Modifier
+                                .size(74.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
                     text = "Ronova Mesh",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
+                        color = Color.White,
+                        letterSpacing = 0.5.sp
                     ),
                     textAlign = TextAlign.Center
                 )
@@ -273,27 +438,27 @@ fun GoogleSignInScreen(
                         lineHeight = 22.sp
                     ),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 12.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp)
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(26.dp))
 
-                // Offline connectivity warning banner if internet is unavailable
+                // Offline connectivity warning banner
                 if (!isInternetAvailable) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(18.dp))
                             .background(Color(0xFFD97706).copy(alpha = 0.25f))
-                            .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .border(1.dp, Color(0xFFFFD84D).copy(alpha = 0.55f), RoundedCornerShape(18.dp))
                             .padding(14.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.WifiOff,
                                 contentDescription = null,
-                                tint = Color(0xFFFDE047),
+                                tint = Color(0xFFFFD84D),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -311,9 +476,9 @@ fun GoogleSignInScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(18.dp))
                             .background(Color(0xFFDC2626).copy(alpha = 0.25f))
-                            .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.55f), RoundedCornerShape(18.dp))
                             .padding(14.dp)
                     ) {
                         Column {
@@ -333,51 +498,78 @@ fun GoogleSignInScreen(
                     }
                 }
 
-                // Features overview card with true glass blur effect
+                // Genuine Glassmorphic Feature Card (30dp corners, 10% white opacity, 26px blur, restrained golden highlight)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.16f),
-                                    Color.White.copy(alpha = 0.07f)
-                                )
-                            )
+                        .shadow(
+                            elevation = 16.dp,
+                            shape = RoundedCornerShape(30.dp),
+                            ambientColor = Color(0xFF080B24).copy(alpha = 0.6f),
+                            spotColor = Color(0xFF080B24)
+                        )
+                        .clip(RoundedCornerShape(30.dp))
+                        .background(Color.White.copy(alpha = 0.10f)) // Glass surface: white at 10% opacity
+                        .then(
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                Modifier.graphicsLayer {
+                                    renderEffect = android.graphics.RenderEffect
+                                        .createBlurEffect(26f, 26f, android.graphics.Shader.TileMode.CLAMP)
+                                        .asComposeRenderEffect()
+                                }
+                            } else Modifier
                         )
                         .border(
                             BorderStroke(
                                 1.2.dp,
                                 Brush.verticalGradient(
                                     colors = listOf(
-                                        Color.White.copy(alpha = 0.45f),
-                                        Color.White.copy(alpha = 0.10f)
+                                        Color.White.copy(alpha = 0.38f),
+                                        Color(0xFFFFE58A).copy(alpha = 0.32f), // Golden-yellow subtle highlight
+                                        Color.White.copy(alpha = 0.12f)
                                     )
                                 )
                             ),
-                            RoundedCornerShape(24.dp)
+                            RoundedCornerShape(30.dp)
                         )
-                        .padding(18.dp)
                 ) {
-                    Column {
+                    // Inner top specular reflection highlight
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.White.copy(alpha = 0.28f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+
+                    Column(
+                        modifier = Modifier.padding(20.dp)
+                    ) {
+                        // Feature 1: Google Identity
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 6.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(38.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.18f))
-                                    .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
+                                    .background(Color.White.copy(alpha = 0.16f))
+                                    .border(1.dp, Color(0xFFFFE58A).copy(alpha = 0.40f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.AccountCircle,
                                     contentDescription = null,
-                                    tint = Color(0xFFFDE047),
-                                    modifier = Modifier.size(20.dp)
+                                    tint = Color(0xFFFFD84D),
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(14.dp))
@@ -386,27 +578,28 @@ fun GoogleSignInScreen(
                                     text = "Google Account Identity",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
-                                    fontSize = 13.5.sp
+                                    fontSize = 14.sp
                                 )
                                 Text(
                                     text = "Fast, passwordless sign-in with your Google account",
-                                    color = Color.White.copy(alpha = 0.82f),
-                                    fontSize = 11.5.sp
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontSize = 12.sp
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
+                        // Feature 2: Cloud Profile & Directory
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 6.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(38.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.18f))
+                                    .background(Color.White.copy(alpha = 0.16f))
                                     .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -414,7 +607,7 @@ fun GoogleSignInScreen(
                                     Icons.Default.CloudDone,
                                     contentDescription = null,
                                     tint = Color(0xFF4ADE80),
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(14.dp))
@@ -423,27 +616,28 @@ fun GoogleSignInScreen(
                                     text = "Cloud Profile & Directory",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
-                                    fontSize = 13.5.sp
+                                    fontSize = 14.sp
                                 )
                                 Text(
-                                    text = "Persistent user search and friend requests across devices",
-                                    color = Color.White.copy(alpha = 0.82f),
-                                    fontSize = 11.5.sp
+                                    text = "Persistent user discovery, Ronova IDs, and cross-device sync",
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontSize = 12.sp
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
+                        // Feature 3: Decentralized Bluetooth Mesh
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 6.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(38.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.18f))
+                                    .background(Color.White.copy(alpha = 0.16f))
                                     .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -451,7 +645,7 @@ fun GoogleSignInScreen(
                                     Icons.Default.Bluetooth,
                                     contentDescription = null,
                                     tint = Color(0xFF60A5FA),
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(14.dp))
@@ -460,12 +654,12 @@ fun GoogleSignInScreen(
                                     text = "Decentralized Bluetooth Mesh",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
-                                    fontSize = 13.5.sp
+                                    fontSize = 14.sp
                                 )
                                 Text(
                                     text = "Off-grid messaging and voice calls when disconnected",
-                                    color = Color.White.copy(alpha = 0.82f),
-                                    fontSize = 11.5.sp
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontSize = 12.sp
                                 )
                             }
                         }
@@ -474,7 +668,7 @@ fun GoogleSignInScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Glassmorphic "Continue with Google" Button
+                // Genuine Glassmorphic "Continue with Google" Button (28dp corners, 12% white opacity, 28px blur)
                 Button(
                     onClick = {
                         val targetActivity = activity ?: context.findActivity() ?: (context as? Activity)
@@ -515,6 +709,12 @@ fun GoogleSignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
+                        .shadow(
+                            elevation = 14.dp,
+                            shape = RoundedCornerShape(28.dp),
+                            ambientColor = Color(0xFF080B24).copy(alpha = 0.7f),
+                            spotColor = Color(0xFF080B24)
+                        )
                         .testTag("google_sign_in_button"),
                     enabled = !isLoading,
                     colors = ButtonDefaults.buttonColors(
@@ -524,31 +724,34 @@ fun GoogleSignInScreen(
                         disabledContentColor = Color.White.copy(alpha = 0.4f)
                     ),
                     contentPadding = PaddingValues(0.dp),
-                    shape = RoundedCornerShape(18.dp)
+                    shape = RoundedCornerShape(28.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.28f),
-                                        Color.White.copy(alpha = 0.14f)
-                                    )
-                                )
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(Color.White.copy(alpha = 0.12f)) // Glass surface at 12% opacity
+                            .then(
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    Modifier.graphicsLayer {
+                                        renderEffect = android.graphics.RenderEffect
+                                            .createBlurEffect(28f, 28f, android.graphics.Shader.TileMode.CLAMP)
+                                            .asComposeRenderEffect()
+                                    }
+                                } else Modifier
                             )
                             .border(
                                 BorderStroke(
-                                    1.5.dp,
+                                    1.2.dp,
                                     Brush.verticalGradient(
                                         colors = listOf(
-                                            Color.White.copy(alpha = 0.65f),
-                                            Color.White.copy(alpha = 0.25f)
+                                            Color.White.copy(alpha = 0.45f),
+                                            Color(0xFFFFD84D).copy(alpha = 0.45f), // Golden yellow highlight
+                                            Color.White.copy(alpha = 0.18f)
                                         )
                                     )
                                 ),
-                                RoundedCornerShape(18.dp)
+                                RoundedCornerShape(28.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -556,7 +759,7 @@ fun GoogleSignInScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(22.dp),
-                                    color = Color.White,
+                                    color = Color(0xFFFFD84D),
                                     strokeWidth = 2.5.dp
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -574,9 +777,9 @@ fun GoogleSignInScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(32.dp)
+                                        .size(34.dp)
                                         .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.92f)),
+                                        .background(Color.White.copy(alpha = 0.95f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Image(

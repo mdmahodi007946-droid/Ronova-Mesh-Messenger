@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "855661887849",
+    "project_id": "gen-lang-client-0513953174",
+    "storage_bucket": "gen-lang-client-0513953174.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855661887849:android:09c99887dd06313475bdf8",
+        "android_client_info": {
+          "package_name": "com.ronova.mesh.messenger.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "855661887849-dbi1b0pd5fucdjldpbe2rbmra34526ig.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ronova.mesh.messenger.app",
+            "certificate_hash": "567f98f8234c35589ae22def6400dd9c2a4a582b"
+          }
+        },
+        {
+          "client_id": "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7kfHHnNtAMvZWlSO94tPnCVE29Jm4E3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -31,6 +31,7 @@ service cloud.firestore {
              (!('profileVisibility' in data) || (data.profileVisibility in ['public', 'friends_only', 'private'])) &&
              (!('presencePrivacy' in data) || (data.presencePrivacy in ['public', 'friends_only', 'nobody'])) &&
              (!('isOnline' in data) || data.isOnline is bool) &&
+             (!('isDiscoverable' in data) || data.isDiscoverable is bool) &&
              (!('presenceUpdatedAt' in data) || data.presenceUpdatedAt == null || data.presenceUpdatedAt is timestamp) &&
              (!('accountStatus' in data) || (data.accountStatus in ['active', 'suspended'])) &&
              (!('createdAt' in data) || data.createdAt == null || data.createdAt is timestamp);
@@ -98,7 +99,7 @@ service cloud.firestore {
                        (!('createdAt' in existing()) || incoming().createdAt == existing().createdAt) &&
                        incoming().diff(existing()).affectedKeys().hasOnly([
                          'displayName', 'photoUrl', 'bio', 'profileVisibility',
-                         'presencePrivacy', 'isOnline', 'presenceUpdatedAt'
+                         'presencePrivacy', 'isOnline', 'isDiscoverable', 'presenceUpdatedAt'
                        ]);
       allow delete: if isOwner(userId);
     }

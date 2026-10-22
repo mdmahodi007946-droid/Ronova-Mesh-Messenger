@@ -13,6 +13,7 @@
         "profileVisibility": { "type": "string", "enum": ["public", "friends_only", "private"], "description": "Visibility of profile" },
         "presencePrivacy": { "type": "string", "enum": ["public", "friends_only", "nobody"], "description": "Visibility of presence status" },
         "isOnline": { "type": "boolean", "description": "Online presence status" },
+        "isDiscoverable": { "type": "boolean", "description": "Whether user is discoverable in public directory" },
         "presenceUpdatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of presence update" },
         "accountStatus": { "type": "string", "enum": ["active", "suspended"], "description": "Account status" },
         "createdAt": { "type": "string", "format": "date-time", "description": "Account creation time" }
