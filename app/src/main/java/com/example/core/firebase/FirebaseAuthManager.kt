@@ -66,14 +66,14 @@ class FirebaseAuthManager(
 
     private fun getDefaultWebClientId(context: Context): String {
         return try {
-            context.getString(R.string.default_web_client_id)
-        } catch (e: Exception) {
             val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
             if (resId != 0) {
                 context.getString(resId)
             } else {
-                throw IllegalStateException("Google Services configuration error: default_web_client_id not found", e)
+                ""
             }
+        } catch (e: Exception) {
+            ""
         }
     }
 
@@ -91,6 +91,11 @@ class FirebaseAuthManager(
         }
 
         val clientId = getDefaultWebClientId(context)
+        if (clientId.isEmpty()) {
+            Log.d(TAG, "Silent auto-sign-in skipped: default_web_client_id is not configured")
+            onUnauthenticated()
+            return
+        }
 
         val credentialManager = CredentialManager.create(context)
         val googleIdOption = GetGoogleIdOption.Builder()
@@ -134,6 +139,10 @@ class FirebaseAuthManager(
         onCancelled: () -> Unit = {}
     ) {
         val clientId = getDefaultWebClientId(activity)
+        if (clientId.isEmpty()) {
+            onError("Google Sign-In configuration is missing. Please ensure google-services.json is configured.")
+            return
+        }
 
         val credentialManager = CredentialManager.create(activity)
         val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()

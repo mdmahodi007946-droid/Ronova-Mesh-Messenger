@@ -53,7 +53,7 @@ class RonovaApplication : Application() {
                 if (app == null && com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
                     val fallbackOptions = com.google.firebase.FirebaseOptions.Builder()
                         .setApplicationId(packageName)
-                        .setProjectId("gen-lang-client-0551574814")
+                        .setProjectId("gen-lang-client-0513953174")
                         .setApiKey("AIzaSyDefaultInitializationKey00000000")
                         .build()
                     com.google.firebase.FirebaseApp.initializeApp(this, fallbackOptions)
