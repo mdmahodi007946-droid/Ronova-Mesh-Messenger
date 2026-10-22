@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -216,13 +217,31 @@ fun GoogleSignInScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Official Application Icon Display
+                // Glassmorphism App Icon Container
                 Box(
                     modifier = Modifier
                         .size(98.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(Color.White.copy(alpha = 0.95f))
-                        .border(2.5.dp, Color(0xFFFACC15), RoundedCornerShape(22.dp)),
+                        .clip(RoundedCornerShape(26.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.22f),
+                                    Color.White.copy(alpha = 0.08f)
+                                )
+                            )
+                        )
+                        .border(
+                            BorderStroke(
+                                1.5.dp,
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFFFDE047).copy(alpha = 0.85f),
+                                        Color.White.copy(alpha = 0.30f)
+                                    )
+                                )
+                            ),
+                            RoundedCornerShape(26.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
@@ -230,7 +249,7 @@ fun GoogleSignInScreen(
                         contentDescription = "Ronova Mesh App Icon",
                         modifier = Modifier
                             .size(76.dp)
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(RoundedCornerShape(20.dp))
                     )
                 }
 
@@ -261,28 +280,26 @@ fun GoogleSignInScreen(
 
                 // Offline connectivity warning banner if internet is unavailable
                 if (!isInternetAvailable) {
-                    Card(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7).copy(alpha = 0.95f)),
-                        border = BorderStroke(1.dp, Color(0xFFF59E0B)),
-                        shape = RoundedCornerShape(14.dp)
+                            .padding(bottom = 16.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFD97706).copy(alpha = 0.25f))
+                            .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .padding(14.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.WifiOff,
                                 contentDescription = null,
-                                tint = Color(0xFFB45309),
+                                tint = Color(0xFFFDE047),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Internet connection required for initial Google Sign-In and profile synchronization.",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF78350F))
+                                style = MaterialTheme.typography.bodySmall.copy(color = Color.White.copy(alpha = 0.95f))
                             )
                         }
                     }
@@ -290,60 +307,96 @@ fun GoogleSignInScreen(
 
                 // Error display
                 if (errorMessage != null) {
-                    Card(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2).copy(alpha = 0.95f)),
-                        border = BorderStroke(1.dp, Color(0xFFEF4444)),
-                        shape = RoundedCornerShape(14.dp)
+                            .padding(bottom = 16.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFDC2626).copy(alpha = 0.25f))
+                            .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .padding(14.dp)
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
+                        Column {
                             Text(
                                 text = "Authentication Error",
                                 style = MaterialTheme.typography.titleSmall.copy(
-                                    color = Color(0xFFB91C1C),
+                                    color = Color(0xFFFCA5A5),
                                     fontWeight = FontWeight.Bold
                                 )
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = errorMessage ?: "",
-                                style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF7F1D1D))
+                                style = MaterialTheme.typography.bodySmall.copy(color = Color.White.copy(alpha = 0.95f))
                             )
                         }
                     }
                 }
 
-                // Features overview card with modern semi-translucent glass styling
-                Card(
+                // Features overview card with true glass blur effect
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.7f)),
-                    shape = RoundedCornerShape(18.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.16f),
+                                    Color.White.copy(alpha = 0.07f)
+                                )
+                            )
+                        )
+                        .border(
+                            BorderStroke(
+                                1.2.dp,
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.45f),
+                                        Color.White.copy(alpha = 0.10f)
+                                    )
+                                )
+                            ),
+                            RoundedCornerShape(24.dp)
+                        )
+                        .padding(18.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 6.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(34.dp)
+                                    .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFFFEF9C3)),
+                                    .background(Color.White.copy(alpha = 0.18f))
+                                    .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color(0xFFCA8A04), modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFDE047),
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
                             Column {
-                                Text("Google Account Identity", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
-                                Text("Fast, passwordless sign-in with your Google account", color = RonovaTextMuted, fontSize = 11.5.sp)
+                                Text(
+                                    text = "Google Account Identity",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 13.5.sp
+                                )
+                                Text(
+                                    text = "Fast, passwordless sign-in with your Google account",
+                                    color = Color.White.copy(alpha = 0.82f),
+                                    fontSize = 11.5.sp
+                                )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -351,19 +404,36 @@ fun GoogleSignInScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(34.dp)
+                                    .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFFECFDF5)),
+                                    .background(Color.White.copy(alpha = 0.18f))
+                                    .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.CloudDone, contentDescription = null, tint = Color(0xFF059669), modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.CloudDone,
+                                    contentDescription = null,
+                                    tint = Color(0xFF4ADE80),
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
                             Column {
-                                Text("Cloud Profile & Directory", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
-                                Text("Persistent user search and friend requests across devices", color = RonovaTextMuted, fontSize = 11.5.sp)
+                                Text(
+                                    text = "Cloud Profile & Directory",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 13.5.sp
+                                )
+                                Text(
+                                    text = "Persistent user search and friend requests across devices",
+                                    color = Color.White.copy(alpha = 0.82f),
+                                    fontSize = 11.5.sp
+                                )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -371,17 +441,32 @@ fun GoogleSignInScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(34.dp)
+                                    .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFFFEF3C7)),
+                                    .background(Color.White.copy(alpha = 0.18f))
+                                    .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Bluetooth, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.Bluetooth,
+                                    contentDescription = null,
+                                    tint = Color(0xFF60A5FA),
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
                             Column {
-                                Text("Decentralized Bluetooth Mesh", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
-                                Text("Off-grid messaging and voice calls when disconnected", color = RonovaTextMuted, fontSize = 11.5.sp)
+                                Text(
+                                    text = "Decentralized Bluetooth Mesh",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 13.5.sp
+                                )
+                                Text(
+                                    text = "Off-grid messaging and voice calls when disconnected",
+                                    color = Color.White.copy(alpha = 0.82f),
+                                    fontSize = 11.5.sp
+                                )
                             }
                         }
                     }
@@ -389,7 +474,7 @@ fun GoogleSignInScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Prominent "Continue with Google" Button
+                // Glassmorphic "Continue with Google" Button
                 Button(
                     onClick = {
                         val targetActivity = activity ?: context.findActivity() ?: (context as? Activity)
@@ -429,45 +514,87 @@ fun GoogleSignInScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp)
+                        .height(56.dp)
                         .testTag("google_sign_in_button"),
                     enabled = !isLoading,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF1F2937),
-                        disabledContainerColor = Color(0xFFF3F4F6),
-                        disabledContentColor = Color(0xFF9CA3AF)
+                        containerColor = Color.Transparent,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.White.copy(alpha = 0.08f),
+                        disabledContentColor = Color.White.copy(alpha = 0.4f)
                     ),
-                    border = BorderStroke(1.5.dp, Color(0xFFE5E7EB)),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp, pressedElevation = 2.dp)
+                    contentPadding = PaddingValues(0.dp),
+                    shape = RoundedCornerShape(18.dp)
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(22.dp),
-                            color = Color(0xFF1F2937),
-                            strokeWidth = 2.5.dp
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Signing in with Google...",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                            color = Color(0xFF1F2937)
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google_logo),
-                            contentDescription = "Google Logo",
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Continue with Google",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.5.sp,
-                            color = Color(0xFF1F2937)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.28f),
+                                        Color.White.copy(alpha = 0.14f)
+                                    )
+                                )
+                            )
+                            .border(
+                                BorderStroke(
+                                    1.5.dp,
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.65f),
+                                            Color.White.copy(alpha = 0.25f)
+                                        )
+                                    )
+                                ),
+                                RoundedCornerShape(18.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isLoading) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.5.dp
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Signing in with Google...",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 15.sp,
+                                    color = Color.White
+                                )
+                            }
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.92f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ic_google_logo),
+                                        contentDescription = "Google Logo",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Text(
+                                    text = "Continue with Google",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color.White,
+                                    letterSpacing = 0.3.sp
+                                )
+                            }
+                        }
                     }
                 }
             }
