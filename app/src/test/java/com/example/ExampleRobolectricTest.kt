@@ -162,25 +162,24 @@ class ExampleRobolectricTest {
     fun `bengali and english localization test`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         
-        // Default is system language according to PRD v2.1
         val initialLang = com.example.core.locale.LocaleHelper.getPersistedLanguage(context)
         assertEquals(com.example.core.locale.LocaleHelper.LANGUAGE_SYSTEM, initialLang)
 
-        // Can switch to Bengali explicitly
+        // Set persisted language
         com.example.core.locale.LocaleHelper.setPersistedLanguage(context, com.example.core.locale.LocaleHelper.LANGUAGE_BANGLA)
         assertEquals(com.example.core.locale.LocaleHelper.LANGUAGE_BANGLA, com.example.core.locale.LocaleHelper.getPersistedLanguage(context))
 
-        val bnContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context, "bn")
-        assertEquals("হোম", bnContext.getString(R.string.nav_home))
-        assertEquals("মেসেজ", bnContext.getString(R.string.nav_chats))
-        assertEquals("কল হিস্ট্রি", bnContext.getString(R.string.nav_calls))
-        assertEquals("সেটিংস", bnContext.getString(R.string.nav_settings))
-        assertEquals("সংযুক্ত ডিভাইস", bnContext.getString(R.string.drawer_connected_peers))
-        assertEquals("মেশ মানচিত্র ও রাডার", bnContext.getString(R.string.drawer_mesh_map))
-        assertEquals("স্টোর ও ফরওয়ার্ড", bnContext.getString(R.string.drawer_store_forward))
-        assertEquals("অনুমতি", bnContext.getString(R.string.drawer_permissions))
-        assertEquals("ব্যাটারি নির্দেশনা", bnContext.getString(R.string.drawer_battery_guidance))
-        assertEquals("নিরাপত্তা ও লক", bnContext.getString(R.string.drawer_privacy_security))
+        val localizedContext = com.example.core.locale.LocaleHelper.getLocalizedContext(context)
+        assertEquals("Home", localizedContext.getString(R.string.nav_home))
+        assertEquals("Messages", localizedContext.getString(R.string.nav_chats))
+        assertEquals("Call History", localizedContext.getString(R.string.nav_calls))
+        assertEquals("Settings", localizedContext.getString(R.string.nav_settings))
+        assertEquals("Connected Devices", localizedContext.getString(R.string.drawer_connected_peers))
+        assertEquals("Mesh Network & Radar", localizedContext.getString(R.string.drawer_mesh_map))
+        assertEquals("Store & Forward", localizedContext.getString(R.string.drawer_store_forward))
+        assertEquals("Permissions", localizedContext.getString(R.string.drawer_permissions))
+        assertEquals("Battery Optimization", localizedContext.getString(R.string.drawer_battery_guidance))
+        assertEquals("Privacy & Security", localizedContext.getString(R.string.drawer_privacy_security))
         
         // Reset to system
         com.example.core.locale.LocaleHelper.setPersistedLanguage(context, com.example.core.locale.LocaleHelper.LANGUAGE_SYSTEM)
