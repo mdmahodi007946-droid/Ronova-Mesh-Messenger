@@ -795,7 +795,7 @@ fun BluetoothSetupScreen(
 
                 val canEnter = status == BluetoothStatus.READY || status == BluetoothStatus.CONNECTED
                 Ronova3DButton(
-                    text = "পরবর্তী ধাপ: পরিচয় যাচাই",
+                    text = "Next Step: Verify Identity",
                     onClick = onSetupComplete,
                     enabled = canEnter,
                     modifier = Modifier.fillMaxWidth(),
@@ -907,7 +907,7 @@ fun IdentitySetupScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "কপি",
+                                    text = "Copy",
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = RonovaGoldDark

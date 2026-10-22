@@ -293,7 +293,7 @@ Feel free to reach out for assistance or feedback.</string>
     <string name="identity_spec_hmac">• Packet Integrity: HMAC-SHA256</string>
     <string name="identity_spec_relay">• Relay Privacy: Intermediate nodes blindly forward encrypted payloads without decryption access</string>
     <string name="identity_specs_title">Cryptographic Standards</string>
-    <string name="lang_bangla">বাংলা</string>
+    <string name="lang_bangla">English</string>
     <string name="lang_english">English</string>
     <string name="lang_system">System Default</string>
     <string name="message_content_label">Message Content</string>
@@ -485,7 +485,7 @@ Feel free to reach out for assistance or feedback.</string>
     <string name="settings_diagnostics_sub">Real-time packet exchange and error monitoring</string>
     <string name="settings_help">Help &amp; Support</string>
     <string name="settings_help_sub">Frequently asked questions and support contacts</string>
-    <string name="settings_language_section">Language / ভাষা</string>
+    <string name="settings_language_section">Language</string>
     <string name="settings_language_subtitle">Choose English or Bengali</string>
     <string name="settings_language_title">App Language</string>
     <string name="settings_mesh_section">Mesh Network &amp; Calling</string>
@@ -611,7 +611,7 @@ Feel free to reach out for assistance or feedback.</string>
     <!-- PRD v2.2 Firebase, Directory and Social Strings -->
     <string name="sign_in_title">Sign in to Ronova Mesh</string>
     <string name="sign_in_subtitle">Connect your Google account to access verified cloud identity, public directory, and hybrid mesh routing.</string>
-    <string name="sign_in_google_btn">Sign in with Google</string>
+    <string name="sign_in_google_btn">Continue with Google</string>
     <string name="sign_in_offline_warn">No internet connection detected. Internet features require connectivity; Bluetooth mesh remains available offline.</string>
     <string name="sign_in_error_title">Sign-In Failed</string>
     <string name="sign_in_error_generic">Could not complete Google Sign-In. Please check your network and try again.</string>

@@ -1301,12 +1301,12 @@ fun PendingMessagesScreen(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
-                                        text = "প্রাপক: ${msg.recipientDeviceId}",
+                                        text = "Recipient: ${msg.recipientDeviceId}",
                                         fontSize = 11.sp,
                                         color = RonovaTextMuted
                                     )
                                     Text(
-                                        text = "অবস্থা: ${msg.deliveryState}",
+                                        text = "Status: ${msg.deliveryState}",
                                         fontSize = 10.sp,
                                         color = RonovaWarning
                                     )

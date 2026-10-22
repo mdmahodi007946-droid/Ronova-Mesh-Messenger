@@ -215,7 +215,7 @@ fun TrustedDevicesScreen(
                                     onClick = { viewModel.setDeviceTrust(dev.deviceId, "UNTRUSTED") },
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Text("প্রত্যাহার", fontSize = 11.sp, color = RonovaTextMuted)
+                                    Text("Revoke", fontSize = 11.sp, color = RonovaTextMuted)
                                 }
                             }
                         }
@@ -1009,7 +1009,7 @@ fun BatteryGuidanceScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
                 title = stringResource(R.string.drawer_battery_guidance),
-                subtitle = "নিরবচ্ছিন্ন মেশ নেটওয়ার্ক সচল রাখার উপায়",
+                subtitle = "Keep mesh networking active in background",
                 onBack = onBack
             )
 
@@ -1034,12 +1034,12 @@ fun BatteryGuidanceScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
                                     Text(
-                                        text = "মেশ ফোরগ্রাউন্ড সার্ভিস",
+                                        text = "Mesh Foreground Service",
                                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                         color = RonovaTextPrimary
                                     )
                                     Text(
-                                        text = "স্ক্রিন লক থাকা অবস্থাতেও ব্যাকগ্রাউন্ড ব্লুটুথ সংযোগ ও মেসেজ রিলে সচল রাখে।",
+                                        text = "Maintains background Bluetooth connections and message relaying even when the screen is locked.",
                                         fontSize = 11.5.sp,
                                         color = RonovaTextMuted,
                                         lineHeight = 16.sp
@@ -1067,34 +1067,34 @@ fun BatteryGuidanceScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "ডিভাইস প্রস্তুতকারকদের ব্যাটারি অপ্টিমাইজেশন",
+                                text = "Device Battery Optimizations",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = RonovaTextPrimary
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "• Samsung: সেটিংস → অ্যাপস → Ronova Mesh → ব্যাটারি → 'Unrestricted' নির্বাচন করুন।",
+                                text = "• Samsung: Settings → Apps → Ronova Mesh → Battery → Select 'Unrestricted'.",
                                 fontSize = 12.sp,
                                 color = RonovaTextPrimary,
                                 lineHeight = 17.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "• Xiaomi/MIUI: 'Autostart' সক্রিয় করুন এবং ব্যাটারি সেভারে 'No restrictions' দিন।",
+                                text = "• Xiaomi/MIUI: Enable 'Autostart' and set Battery Saver to 'No restrictions'.",
                                 fontSize = 12.sp,
                                 color = RonovaTextPrimary,
                                 lineHeight = 17.sp
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "• Google Pixel: সেটিংস → অ্যাপস → Ronova Mesh → অ্যাপ ব্যাটারি ব্যবহার → Unrestricted নির্বাচন করুন।",
+                                text = "• Google Pixel: Settings → Apps → Ronova Mesh → App battery usage → Select 'Unrestricted'.",
                                 fontSize = 12.sp,
                                 color = RonovaTextPrimary,
                                 lineHeight = 17.sp
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "সতর্কতা: ব্যাটারি অপ্টিমাইজেশন মুক্ত না থাকলে স্ক্রিন বন্ধের কিছু সময় পর অ্যান্ড্রয়েড ওএস ব্লুটুথ ব্যাকগ্রাউন্ড সকেট বন্ধ করে দিতে পারে।",
+                                text = "Note: If battery optimizations are not disabled, Android OS may terminate Bluetooth sockets when the screen is turned off.",
                                 fontSize = 11.5.sp,
                                 color = RonovaWarning,
                                 lineHeight = 16.sp
@@ -1134,7 +1134,7 @@ fun BatteryGuidanceScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "সিস্টেম ব্যাটারি সেটিংস খুলুন",
+                            text = "Open System Battery Settings",
                             fontWeight = FontWeight.Bold,
                             color = RonovaTextPrimary,
                             fontSize = 14.sp
@@ -1272,7 +1272,7 @@ fun NotificationSettingsScreen(
                                     color = RonovaTextPrimary
                                 )
                                 Text(
-                                    text = "ইনকামিং মেসেজের জন্য মৃদু টোন বাজান",
+                                    text = "Play gentle tone for incoming messages",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = RonovaTextSecondary
                                 )
@@ -2273,7 +2273,7 @@ fun SettingsHubScreen(
                     SettingsTileCard(
                         icon = Icons.Default.Info,
                         title = "About Ronova Mesh",
-                        subtitle = "Version 2.1 • Md Rony Ahmed (Owner & Developer)",
+                        subtitle = "Version 2.3 • Md Rony Ahmed (Owner & Developer)",
                         onClick = onNavigateToAbout
                     )
                 }
@@ -2421,7 +2421,7 @@ fun AboutScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "Version 2.1 Release",
+                            text = "Version 2.3 Release",
                             fontSize = 12.sp,
                             color = RonovaGoldDark,
                             fontWeight = FontWeight.Bold,
@@ -2505,7 +2505,7 @@ fun AboutScreen(
                                 color = RonovaTextMuted
                             )
                             Text(
-                                text = "Md Rony Ahmed (রনি আহমেদ)",
+                                text = "Md Rony Ahmed (Ronova Ltd)",
                                 fontWeight = FontWeight.Bold,
                                 color = RonovaTextPrimary,
                                 fontSize = 14.sp

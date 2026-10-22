@@ -407,14 +407,14 @@ fun RonovaGlassButton(
 @Composable
 fun StatusBadge(status: BluetoothStatus) {
     val (bgColor, textColor, label) = when (status) {
-        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "মেশে সংযুক্ত")
-        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "স্ক্যান হচ্ছে…")
-        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "সংযোগ হচ্ছে…")
-        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "মেশ প্রস্তুত")
-        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "অনুমতি প্রয়োজন")
-        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "ব্লুটুথ বন্ধ")
-        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "সমর্থিত নয়")
-        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "মেশ ত্রুটি")
+        BluetoothStatus.CONNECTED -> Triple(Color(0xFFECFDF5), RonovaSuccess, "Connected")
+        BluetoothStatus.DISCOVERING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Scanning…")
+        BluetoothStatus.CONNECTING -> Triple(Color(0xFFFFFBEB), RonovaWarning, "Connecting…")
+        BluetoothStatus.READY -> Triple(RonovaGoldLight, RonovaGoldDark, "Mesh Ready")
+        BluetoothStatus.PERMISSION_REQUIRED -> Triple(Color(0xFFFEF2F2), RonovaError, "Permission Needed")
+        BluetoothStatus.DISABLED -> Triple(Color(0xFFF3F4F6), Color.Gray, "Bluetooth Off")
+        BluetoothStatus.UNSUPPORTED -> Triple(Color(0xFFFEF2F2), RonovaError, "Unsupported")
+        BluetoothStatus.ERROR -> Triple(Color(0xFFFEF2F2), RonovaError, "Mesh Error")
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -474,14 +474,14 @@ fun MeshStatusChipRow(
     var isExpanded by remember { mutableStateOf(false) }
 
     val (dotColor, statusText) = when (status) {
-        BluetoothStatus.CONNECTED -> Pair(RonovaSuccess, "মেশে সংযুক্ত ($activeConnections টি ডিভাইস)")
-        BluetoothStatus.DISCOVERING -> Pair(RonovaWarning, "নোড খোঁজা হচ্ছে…")
-        BluetoothStatus.CONNECTING -> Pair(RonovaWarning, "সংযোগ স্থাপন হচ্ছে…")
-        BluetoothStatus.READY -> Pair(RonovaGoldDark, "মেশ রেডিও প্রস্তুত")
-        BluetoothStatus.PERMISSION_REQUIRED -> Pair(RonovaError, "ব্লুটুথ অনুমতি প্রয়োজন")
-        BluetoothStatus.DISABLED -> Pair(Color(0xFFE53935), "ব্লুটুথ বন্ধ রয়েছে")
-        BluetoothStatus.UNSUPPORTED -> Pair(RonovaError, "ব্লুটুথ সমর্থিত নয়")
-        BluetoothStatus.ERROR -> Pair(RonovaError, "মেশ ত্রুটি")
+        BluetoothStatus.CONNECTED -> Pair(RonovaSuccess, "Connected ($activeConnections devices)")
+        BluetoothStatus.DISCOVERING -> Pair(RonovaWarning, "Scanning nodes…")
+        BluetoothStatus.CONNECTING -> Pair(RonovaWarning, "Establishing link…")
+        BluetoothStatus.READY -> Pair(RonovaGoldDark, "Mesh radio ready")
+        BluetoothStatus.PERMISSION_REQUIRED -> Pair(RonovaError, "Bluetooth permission needed")
+        BluetoothStatus.DISABLED -> Pair(Color(0xFFE53935), "Bluetooth is disabled")
+        BluetoothStatus.UNSUPPORTED -> Pair(RonovaError, "Bluetooth unsupported")
+        BluetoothStatus.ERROR -> Pair(RonovaError, "Mesh error")
     }
 
     Column(
@@ -526,7 +526,7 @@ fun MeshStatusChipRow(
                     modifier = Modifier.height(26.dp)
                 ) {
                     Text(
-                        text = "চালু করুন",
+                        text = "Turn On",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = RonovaTextPrimary,
@@ -535,7 +535,7 @@ fun MeshStatusChipRow(
                 }
             } else {
                 Text(
-                    text = if (isDiscoverable) "দৃশ্যমান" else "লুকানো",
+                    text = if (isDiscoverable) "Discoverable" else "Hidden",
                     fontSize = 11.sp,
                     color = RonovaTextMuted,
                     fontWeight = FontWeight.Medium
