@@ -45,7 +45,19 @@ class RonovaApplication : Application() {
     private fun ensureFirebaseInitialized() {
         try {
             if (com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
-                com.google.firebase.FirebaseApp.initializeApp(this)
+                val app = try {
+                    com.google.firebase.FirebaseApp.initializeApp(this)
+                } catch (e: Exception) {
+                    null
+                }
+                if (app == null && com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
+                    val fallbackOptions = com.google.firebase.FirebaseOptions.Builder()
+                        .setApplicationId(packageName)
+                        .setProjectId("gen-lang-client-0551574814")
+                        .setApiKey("AIzaSyDefaultInitializationKey00000000")
+                        .build()
+                    com.google.firebase.FirebaseApp.initializeApp(this, fallbackOptions)
+                }
             }
         } catch (e: Exception) {
             android.util.Log.w("RonovaApplication", "Firebase initialization: ${e.message}")
