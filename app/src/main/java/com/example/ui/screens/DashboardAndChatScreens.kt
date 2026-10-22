@@ -73,8 +73,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.core.database.ConversationEntity
 import com.example.core.database.MessageEntity
+import com.example.core.firebase.UserProfile
 import com.example.ui.components.MessageBubble
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatCard
@@ -867,12 +869,23 @@ fun OneToOneChatScreen(
     onBack: () -> Unit,
     onVoiceCall: (String) -> Unit,
     onNavigateToDetails: (String) -> Unit,
-    onNavigateToVerify: (String) -> Unit
+    onNavigateToVerify: (String) -> Unit,
+    onNavigateToProfile: ((String) -> Unit)? = null
 ) {
     val messages by viewModel.repository.getMessagesForConversation(deviceId)
         .collectAsState(initial = emptyList())
     val device by viewModel.repository.getDeviceByIdFlow(deviceId)
         .collectAsState(initial = null)
+    val friends by viewModel.friends.collectAsState()
+    val friendUser = friends.find { it.uid == deviceId || it.ronovaId == deviceId }
+
+    var peerProfile by remember { mutableStateOf<UserProfile?>(friendUser) }
+
+    LaunchedEffect(deviceId) {
+        if (peerProfile == null) {
+            peerProfile = viewModel.getUserProfile(deviceId)
+        }
+    }
 
     var textInput by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
@@ -886,7 +899,7 @@ fun OneToOneChatScreen(
         if (myUid != null) {
             val convId = com.example.core.firebase.FirestoreChatRepository.generateConversationId(myUid, deviceId)
             viewModel.firestoreChatRepository.markMessagesAsRead(convId, myUid)
-            viewModel.firestoreChatRepository.syncIncomingMessagesToRoom(convId, deviceId, device?.displayName ?: deviceId)
+            viewModel.firestoreChatRepository.syncIncomingMessagesToRoom(convId, deviceId, peerProfile?.displayName ?: device?.displayName ?: deviceId)
         }
     }
 
@@ -897,15 +910,29 @@ fun OneToOneChatScreen(
         }
     }
 
+    val peerDisplayName = peerProfile?.displayName ?: device?.displayName ?: deviceId
+    val peerSubtitle = peerProfile?.ronovaId ?: "${stringResource(R.string.e2e_encrypted_status)} • ${if (device?.trustStatus == "TRUSTED") stringResource(R.string.verified_status) else stringResource(R.string.unverified_status)}"
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFFAFAFA)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             RonovaTopBar(
-                title = device?.displayName ?: deviceId,
-                subtitle = "${stringResource(R.string.e2e_encrypted_status)} • ${if (device?.trustStatus == "TRUSTED") stringResource(R.string.verified_status) else stringResource(R.string.unverified_status)}",
+                title = peerDisplayName,
+                subtitle = peerSubtitle,
                 onBack = onBack,
+                statusBadge = if (peerProfile?.isOnline == true) {
+                    {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .size(9.dp)
+                                .clip(CircleShape)
+                                .background(RonovaSuccess)
+                        )
+                    }
+                } else null,
                 actions = {
                     com.example.ui.components.HeaderAction(
                         icon = Icons.Default.Call,
@@ -916,7 +943,13 @@ fun OneToOneChatScreen(
                     com.example.ui.components.HeaderAction(
                         icon = Icons.Default.Info,
                         contentDescription = stringResource(R.string.device_info_title),
-                        onClick = { onNavigateToVerify(deviceId) },
+                        onClick = {
+                            if (onNavigateToProfile != null) {
+                                onNavigateToProfile(peerProfile?.uid ?: deviceId)
+                            } else {
+                                onNavigateToVerify(deviceId)
+                            }
+                        },
                         testTag = "chat_verify_button"
                     )
                 }

@@ -213,14 +213,14 @@ fun RonovaTopBar(
                 if (drawerAction != null) {
                     HeaderAction(
                         icon = Icons.Default.Menu,
-                        contentDescription = "মেনু",
+                        contentDescription = "Menu",
                         onClick = drawerAction,
                         testTag = "top_bar_menu_button"
                     )
                 } else if (onBack != null) {
                     HeaderAction(
                         icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "পেছনে যান",
+                        contentDescription = "Back",
                         onClick = onBack,
                         testTag = "top_bar_back_button"
                     )

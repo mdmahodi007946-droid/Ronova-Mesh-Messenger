@@ -1951,6 +1951,33 @@ fun SettingsHubScreen(
     val isRelayOn by viewModel.isRelayOptedIn.collectAsState()
     val isLocked by viewModel.isProfileLocked.collectAsState()
     val currentLang by viewModel.languagePreference.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val myProfile by viewModel.myProfile.collectAsState()
+    var showSignOutDialog by remember { mutableStateOf(false) }
+
+    if (showSignOutDialog) {
+        AlertDialog(
+            onDismissRequest = { showSignOutDialog = false },
+            title = { Text("Sign Out") },
+            text = { Text("Are you sure you want to sign out from Ronova Mesh? Your local mesh data will be preserved, but cloud synchronization will be paused.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSignOutDialog = false
+                        viewModel.signOut(context)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RonovaRedAccent)
+                ) {
+                    Text("Sign Out")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showSignOutDialog = false }) {
+                    Text(stringResource(R.string.dialog_close))
+                }
+            }
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -1969,6 +1996,83 @@ fun SettingsHubScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                // Section 0: Account & Session
+                item {
+                    Text(
+                        text = "Account & Authentication",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = RonovaGoldDark
+                        ),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                    )
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(14.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        border = BorderStroke(1.dp, RonovaCardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFFEF9C3)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = null,
+                                        tint = Color(0xFFCA8A04),
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = myProfile?.displayName ?: currentUser?.displayName ?: "Ronova User",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = RonovaTextPrimary
+                                    )
+                                    Text(
+                                        text = myProfile?.ronovaId ?: viewModel.myDeviceId,
+                                        style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFCA8A04), fontWeight = FontWeight.SemiBold)
+                                    )
+                                    if (!currentUser?.email.isNullOrEmpty()) {
+                                        Text(
+                                            text = currentUser?.email ?: "",
+                                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted, fontSize = 11.5.sp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            OutlinedButton(
+                                onClick = { showSignOutDialog = true },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp)
+                                    .testTag("settings_sign_out_button"),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaRedAccent),
+                                border = BorderStroke(1.dp, RonovaRedAccent.copy(alpha = 0.6f)),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Sign Out", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            }
+                        }
+                    }
+                }
+
                 // Section 1: User Profile & Security (PRD v2.1)
                 item {
                     Text(
@@ -2036,11 +2140,11 @@ fun SettingsHubScreen(
                     )
                 }
 
-                // Section 2: Language Preference (PRD v2.1 Section 4)
+                // Section 2: Language Preference (English Only)
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "ভাষা / Language",
+                        text = "Language & Localization",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = RonovaPinkDark
@@ -2075,41 +2179,14 @@ fun SettingsHubScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "ভাষা নির্বাচন / Language Preference",
+                                        text = "Language Preference",
                                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                                     )
                                     Text(
-                                        text = "Current: " + when (currentLang) {
-                                            "bn" -> "বাংলা (Bengali)"
-                                            "en" -> "English"
-                                            else -> "System Default"
-                                        },
+                                        text = "English (Active)",
                                         fontSize = 11.5.sp,
                                         color = RonovaTextMuted
                                     )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                val langs = listOf("" to "System", "bn" to "বাংলা", "en" to "English")
-                                langs.forEach { (code, label) ->
-                                    val isSelected = currentLang == code
-                                    Button(
-                                        onClick = { viewModel.setLanguagePreference(code) },
-                                        modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = if (isSelected) RonovaGoldPrimary else Color(0xFFF3F4F6),
-                                            contentColor = if (isSelected) RonovaTextPrimary else RonovaTextSecondary
-                                        ),
-                                        shape = RoundedCornerShape(10.dp)
-                                    ) {
-                                        Text(text = label, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
-                                    }
                                 }
                             }
                         }

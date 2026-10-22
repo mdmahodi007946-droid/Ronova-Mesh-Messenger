@@ -68,20 +68,43 @@ class FirestoreFriendRepository(
     }
 
     suspend fun sendFriendRequest(sender: UserProfile, recipient: UserProfile) {
+        require(sender.uid != recipient.uid) { "Cannot send friend request to yourself" }
+        require(sender.uid.isNotBlank() && recipient.uid.isNotBlank()) { "UIDs must not be blank" }
+
         val requestId = "${sender.uid}_${recipient.uid}"
-        val requestData = mapOf(
-            "senderUid" to sender.uid,
-            "senderRonovaId" to sender.ronovaId,
-            "senderDisplayName" to sender.displayName,
-            "senderPhotoUrl" to sender.photoUrl,
-            "recipientUid" to recipient.uid,
-            "recipientRonovaId" to recipient.ronovaId,
-            "recipientDisplayName" to recipient.displayName,
-            "status" to "pending",
-            "createdAt" to FieldValue.serverTimestamp(),
-            "updatedAt" to FieldValue.serverTimestamp()
-        )
-        requestsCollection.document(requestId).set(requestData).await()
+        val existingDoc = requestsCollection.document(requestId).get().await()
+
+        if (existingDoc.exists()) {
+            val status = existingDoc.getString("status")
+            if (status == "pending") {
+                Log.i(TAG, "[FriendRequest] Request already pending: $requestId")
+                return
+            }
+            // Existing cancelled or rejected request: re-activate as pending
+            requestsCollection.document(requestId).update(
+                mapOf(
+                    "status" to "pending",
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+            Log.i(TAG, "[FriendRequest] Reactivated request to pending: $requestId")
+        } else {
+            val requestData = mapOf(
+                "id" to requestId,
+                "senderUid" to sender.uid,
+                "senderRonovaId" to sender.ronovaId,
+                "senderDisplayName" to sender.displayName,
+                "senderPhotoUrl" to sender.photoUrl,
+                "recipientUid" to recipient.uid,
+                "recipientRonovaId" to recipient.ronovaId,
+                "recipientDisplayName" to recipient.displayName,
+                "status" to "pending",
+                "createdAt" to FieldValue.serverTimestamp(),
+                "updatedAt" to FieldValue.serverTimestamp()
+            )
+            requestsCollection.document(requestId).set(requestData).await()
+            Log.i(TAG, "[FriendRequest] Created new pending request: $requestId")
+        }
     }
 
     suspend fun acceptFriendRequest(request: FriendRequest) {
@@ -99,6 +122,7 @@ class FirestoreFriendRepository(
         val isSenderA = request.senderUid < request.recipientUid
 
         val friendshipData = mapOf(
+            "id" to friendshipId,
             "userAUid" to if (isSenderA) request.senderUid else request.recipientUid,
             "userBUid" to if (isSenderA) request.recipientUid else request.senderUid,
             "userARonovaId" to if (isSenderA) request.senderRonovaId else request.recipientRonovaId,
@@ -109,6 +133,7 @@ class FirestoreFriendRepository(
         )
 
         friendshipsCollection.document(friendshipId).set(friendshipData).await()
+        Log.i(TAG, "[FriendRequest] Accepted request and created friendship: $friendshipId")
     }
 
     suspend fun rejectFriendRequest(requestId: String) {
@@ -118,6 +143,7 @@ class FirestoreFriendRepository(
                 "updatedAt" to FieldValue.serverTimestamp()
             )
         ).await()
+        Log.i(TAG, "[FriendRequest] Rejected request: $requestId")
     }
 
     suspend fun cancelFriendRequest(requestId: String) {
@@ -127,14 +153,17 @@ class FirestoreFriendRepository(
                 "updatedAt" to FieldValue.serverTimestamp()
             )
         ).await()
+        Log.i(TAG, "[FriendRequest] Cancelled request: $requestId")
     }
 
     suspend fun removeFriendship(uid1: String, uid2: String) {
         val friendshipId = generateFriendshipId(uid1, uid2)
         try {
             friendshipsCollection.document(friendshipId).delete().await()
+            Log.i(TAG, "[FriendRequest] Removed friendship: $friendshipId")
         } catch (e: Exception) {
-            Log.e(TAG, "Error removing friendship $friendshipId", e)
+            Log.e(TAG, "[FriendRequest] Error removing friendship $friendshipId", e)
+            throw e
         }
     }
 }

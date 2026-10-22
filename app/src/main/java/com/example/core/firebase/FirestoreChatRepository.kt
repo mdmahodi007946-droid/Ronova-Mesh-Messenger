@@ -74,10 +74,11 @@ class FirestoreChatRepository(
             .collection("messages").document(messageId)
             .set(messageData).await()
 
-        // 2. Update parent conversation metadata
+        // 2. Update parent conversation metadata with deterministically sorted participants
+        val sortedParticipants = listOf(senderProfile.uid, recipientProfile.uid).sorted()
         val convData = mapOf(
             "id" to convId,
-            "participants" to listOf(senderProfile.uid, recipientProfile.uid),
+            "participants" to sortedParticipants,
             "lastMessageText" to text,
             "lastMessageTimestamp" to FieldValue.serverTimestamp(),
             "lastSenderUid" to senderProfile.uid

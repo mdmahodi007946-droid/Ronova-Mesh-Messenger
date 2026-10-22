@@ -21,22 +21,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonRemove
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,12 +53,14 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -791,18 +799,84 @@ fun PublicUserProfileScreen(
     targetUid: String,
     viewModel: RonovaViewModel,
     onNavigateToChat: (String) -> Unit,
+    onNavigateToVoiceCall: (String) -> Unit = {},
     onBack: () -> Unit
 ) {
     val directoryUsers by viewModel.directoryUsers.collectAsState()
     val friends by viewModel.friends.collectAsState()
-    val targetUser = directoryUsers.find { it.uid == targetUid } ?: friends.find { it.uid == targetUid }
+    val sentRequests by viewModel.sentRequests.collectAsState()
+    val receivedRequests by viewModel.receivedRequests.collectAsState()
+
+    var userProfile by remember { mutableStateOf<UserProfile?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var showRemoveDialog by remember { mutableStateOf(false) }
+    var showBlockDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(targetUid) {
+        isLoading = true
+        val inFriends = friends.find { it.uid == targetUid }
+        val inDirectory = directoryUsers.find { it.uid == targetUid }
+        userProfile = inFriends ?: inDirectory ?: viewModel.getUserProfile(targetUid)
+        isLoading = false
+    }
 
     val isFriend = friends.any { it.uid == targetUid }
+    val incomingReq = receivedRequests.find { it.senderUid == targetUid }
+    val outgoingReq = sentRequests.find { it.recipientUid == targetUid }
+
+    if (showRemoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text("Remove Friend") },
+            text = { Text("Are you sure you want to remove ${userProfile?.displayName ?: "this user"} from your friends list?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showRemoveDialog = false
+                        viewModel.removeFriend(targetUid)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RonovaRedAccent)
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showRemoveDialog = false }) {
+                    Text(stringResource(R.string.dialog_close))
+                }
+            }
+        )
+    }
+
+    if (showBlockDialog) {
+        AlertDialog(
+            onDismissRequest = { showBlockDialog = false },
+            title = { Text("Block User") },
+            text = { Text("Are you sure you want to block ${userProfile?.displayName ?: "this user"}? You will no longer receive messages or calls from them.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showBlockDialog = false
+                        viewModel.blockUser(targetUid)
+                        onBack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RonovaRedAccent)
+                ) {
+                    Text("Block")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showBlockDialog = false }) {
+                    Text(stringResource(R.string.dialog_close))
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(targetUser?.displayName ?: "Profile", fontWeight = FontWeight.Bold) },
+                title = { Text(userProfile?.displayName ?: "User Profile", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -811,135 +885,249 @@ fun PublicUserProfileScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color.White
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (!targetUser?.photoUrl.isNullOrEmpty()) {
-                AsyncImage(
-                    model = targetUser?.photoUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(2.dp, RonovaPinkPrimary, CircleShape)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(RonovaDarkSurface)
-                        .border(2.dp, RonovaPinkPrimary, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = targetUser?.displayName?.take(1)?.uppercase() ?: "R",
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = RonovaPinkPrimary
-                    )
-                }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = RonovaGoldDark)
             }
+        } else {
+            val user = userProfile
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = targetUser?.displayName ?: "Ronova Member",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, color = RonovaTextPrimary)
-            )
-
-            Text(
-                text = targetUser?.ronovaId ?: "",
-                style = MaterialTheme.typography.titleMedium.copy(color = RonovaGoldLight, letterSpacing = 1.sp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Presence indicator
-            if (targetUser != null && targetUser.presencePrivacy != "nobody") {
-                val isOnline = targetUser.isOnline
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(RonovaDarkSurface)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
+                if (!user?.photoUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = user?.photoUrl,
+                        contentDescription = "Profile Photo",
+                        modifier = Modifier
+                            .size(108.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, Color(0xFFEAB308), CircleShape)
+                    )
+                } else {
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
+                            .size(108.dp)
                             .clip(CircleShape)
-                            .background(if (isOnline) RonovaGreenAccent else RonovaTextMuted)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (isOnline) stringResource(R.string.presence_status_online) else stringResource(R.string.presence_status_offline),
-                        color = if (isOnline) RonovaGreenAccent else RonovaTextMuted,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Bio
-            if (!targetUser?.bio.isNullOrBlank()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
-                    border = BorderStroke(1.dp, RonovaCardBorder)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                            .background(Color(0xFFFEF9C3))
+                            .border(3.dp, Color(0xFFEAB308), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            text = stringResource(R.string.profile_init_bio_label),
-                            style = MaterialTheme.typography.labelSmall.copy(color = RonovaGoldLight)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = targetUser?.bio ?: "",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = RonovaTextPrimary)
+                            text = user?.displayName?.take(1)?.uppercase() ?: "R",
+                            fontSize = 42.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFCA8A04)
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-            if (isFriend) {
-                Button(
-                    onClick = { onNavigateToChat(targetUid) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.action_chat), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    text = user?.displayName ?: "Ronova Member",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, color = RonovaTextPrimary)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = user?.ronovaId ?: "",
+                    style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFCA8A04), letterSpacing = 1.sp, fontWeight = FontWeight.SemiBold)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Real presence badge
+                if (user != null && user.presencePrivacy != "nobody") {
+                    val isOnline = user.isOnline
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (isOnline) Color(0xFFECFDF5) else Color(0xFFF3F4F6))
+                            .border(1.dp, if (isOnline) Color(0xFF10B981) else Color(0xFFD1D5DB), RoundedCornerShape(16.dp))
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(9.dp)
+                                .clip(CircleShape)
+                                .background(if (isOnline) Color(0xFF10B981) else Color.Gray)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isOnline) "Active Now" else "Offline",
+                            color = if (isOnline) Color(0xFF047857) else Color.Gray,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
-            } else if (targetUser != null) {
-                Button(
-                    onClick = { viewModel.sendFriendRequest(targetUser) },
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Bio
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA)),
+                    border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "About",
+                            style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFFCA8A04), fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = if (!user?.bio.isNullOrBlank()) user?.bio ?: "" else "No bio provided.",
+                            style = MaterialTheme.typography.bodyMedium.copy(color = RonovaTextPrimary, lineHeight = 20.sp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Dynamic Action Buttons
+                if (isFriend) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Button(
+                            onClick = { onNavigateToChat(targetUid) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .testTag("profile_chat_btn"),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEAB308), contentColor = Color(0xFF1F2937)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Message", fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = { onNavigateToVoiceCall(targetUid) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .testTag("profile_call_btn"),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981), contentColor = Color.White),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Voice Call", fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = { showRemoveDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .testTag("profile_remove_friend_btn"),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = RonovaRedAccent),
+                        border = BorderStroke(1.dp, RonovaRedAccent.copy(alpha = 0.5f)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.PersonRemove, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Remove Friend", fontWeight = FontWeight.SemiBold)
+                    }
+                } else if (incomingReq != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Button(
+                            onClick = { viewModel.acceptFriendRequest(incomingReq) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .testTag("profile_accept_req_btn"),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Accept Request", fontWeight = FontWeight.Bold)
+                        }
+
+                        OutlinedButton(
+                            onClick = { viewModel.rejectFriendRequest(incomingReq.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Decline", color = RonovaRedAccent)
+                        }
+                    }
+                } else if (outgoingReq != null) {
+                    OutlinedButton(
+                        onClick = { viewModel.cancelFriendRequest(outgoingReq.id) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .testTag("profile_cancel_req_btn"),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Color(0xFFEAB308))
+                    ) {
+                        Icon(Icons.Default.HourglassTop, contentDescription = null, tint = Color(0xFFCA8A04))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Friend Request Sent • Cancel", color = Color(0xFFCA8A04), fontWeight = FontWeight.SemiBold)
+                    }
+                } else if (user != null) {
+                    Button(
+                        onClick = { viewModel.sendFriendRequest(user) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .testTag("profile_add_friend_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEAB308), contentColor = Color(0xFF1F2937)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.PersonAdd, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Friend", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Block Option
+                OutlinedButton(
+                    onClick = { showBlockDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                        .height(48.dp)
+                        .testTag("profile_block_user_btn"),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray),
+                    border = BorderStroke(1.dp, Color.LightGray),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(Icons.Default.PersonAdd, contentDescription = null)
+                    Icon(Icons.Default.Block, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.friend_request_send), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Block User", fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -954,10 +1142,14 @@ fun EditProfileScreen(
     onBack: () -> Unit
 ) {
     val myProfile by viewModel.myProfile.collectAsState()
+    val isInternetAvailable by viewModel.isInternetAvailable.collectAsState()
     val context = LocalContext.current
 
     var displayName by remember(myProfile) {
         mutableStateOf(myProfile?.displayName ?: "")
+    }
+    var photoUrl by remember(myProfile) {
+        mutableStateOf(myProfile?.photoUrl ?: "")
     }
     var bio by remember(myProfile) {
         mutableStateOf(myProfile?.bio ?: "")
@@ -969,13 +1161,22 @@ fun EditProfileScreen(
         mutableStateOf(myProfile?.presencePrivacy ?: "public")
     }
     var isSaving by remember { mutableStateOf(false) }
+    var saveError by remember { mutableStateOf<String?>(null) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            photoUrl = uri.toString()
+        }
+    }
 
     if (showSignOutDialog) {
         AlertDialog(
             onDismissRequest = { showSignOutDialog = false },
-            title = { Text(stringResource(R.string.sign_out_dialog_title)) },
-            text = { Text(stringResource(R.string.sign_out_dialog_desc)) },
+            title = { Text("Sign Out") },
+            text = { Text("Are you sure you want to sign out of Ronova Mesh on this device?") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -984,7 +1185,7 @@ fun EditProfileScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = RonovaRedAccent)
                 ) {
-                    Text(stringResource(R.string.sign_out_btn))
+                    Text("Sign Out")
                 }
             },
             dismissButton = {
@@ -1007,25 +1208,101 @@ fun EditProfileScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color.White
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Profile Photo with Picker
+            Box(
+                contentAlignment = Alignment.BottomEnd,
+                modifier = Modifier.padding(vertical = 12.dp)
+            ) {
+                if (photoUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = "Profile Photo",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, Color(0xFFEAB308), CircleShape)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFEF9C3))
+                            .border(2.dp, Color(0xFFEAB308), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = displayName.take(1).ifBlank { "R" }.uppercase(),
+                            fontSize = 38.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFCA8A04)
+                        )
+                    }
+                }
+
+                Surface(
+                    onClick = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    shape = CircleShape,
+                    color = Color(0xFFEAB308),
+                    shadowElevation = 3.dp,
+                    modifier = Modifier.size(34.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoCamera,
+                            contentDescription = "Change Photo",
+                            tint = Color(0xFF1F2937),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Offline Sync Notice
+            if (!isInternetAvailable) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Device is offline. Changes will be saved locally and synced to the cloud when connected.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF78350F),
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+
             // Ronova ID Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = RonovaDarkSurface),
-                border = BorderStroke(1.dp, RonovaCardBorder)
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA)),
+                border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
+                shape = RoundedCornerShape(14.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(R.string.profile_init_ronova_id_label),
-                        style = MaterialTheme.typography.labelMedium.copy(color = RonovaGoldLight)
+                        style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFFCA8A04), fontWeight = FontWeight.Bold)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -1041,29 +1318,37 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Display Name
             OutlinedTextField(
                 value = displayName,
                 onValueChange = { displayName = it },
                 label = { Text(stringResource(R.string.profile_init_display_name_label)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("edit_profile_name_input"),
                 singleLine = true,
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = RonovaPinkPrimary,
-                    unfocusedBorderColor = RonovaCardBorder
+                    focusedBorderColor = Color(0xFFEAB308),
+                    unfocusedBorderColor = Color(0xFFD1D5DB)
                 )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Bio
             OutlinedTextField(
                 value = bio,
                 onValueChange = { bio = it },
                 label = { Text(stringResource(R.string.profile_init_bio_label)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("edit_profile_bio_input"),
                 maxLines = 3,
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = RonovaPinkPrimary,
-                    unfocusedBorderColor = RonovaCardBorder
+                    focusedBorderColor = Color(0xFFEAB308),
+                    unfocusedBorderColor = Color(0xFFD1D5DB)
                 )
             )
 
@@ -1071,7 +1356,8 @@ fun EditProfileScreen(
 
             Text(
                 text = stringResource(R.string.profile_visibility_label),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.fillMaxWidth()
             )
             listOf(
                 "public" to stringResource(R.string.opt_visibility_public),
@@ -1085,7 +1371,7 @@ fun EditProfileScreen(
                     RadioButton(
                         selected = (profileVisibility == key),
                         onClick = { profileVisibility = key },
-                        colors = RadioButtonDefaults.colors(selectedColor = RonovaPinkPrimary)
+                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFEAB308))
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = label, color = RonovaTextPrimary, fontSize = 14.sp)
@@ -1096,7 +1382,8 @@ fun EditProfileScreen(
 
             Text(
                 text = stringResource(R.string.presence_privacy_label),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.fillMaxWidth()
             )
             listOf(
                 "public" to stringResource(R.string.opt_presence_public),
@@ -1110,20 +1397,31 @@ fun EditProfileScreen(
                     RadioButton(
                         selected = (presencePrivacy == key),
                         onClick = { presencePrivacy = key },
-                        colors = RadioButtonDefaults.colors(selectedColor = RonovaPinkPrimary)
+                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFEAB308))
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = label, color = RonovaTextPrimary, fontSize = 14.sp)
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            if (saveError != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = saveError ?: "",
+                    color = RonovaRedAccent,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
                     isSaving = true
+                    saveError = null
                     viewModel.updateUserProfile(
                         displayName = displayName.ifBlank { "Ronova Member" },
+                        photoUrl = photoUrl,
                         bio = bio,
                         profileVisibility = profileVisibility,
                         presencePrivacy = presencePrivacy,
@@ -1131,29 +1429,39 @@ fun EditProfileScreen(
                             isSaving = false
                             onBack()
                         },
-                        onError = {
+                        onError = { err ->
                             isSaving = false
+                            saveError = err
                         }
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(50.dp)
+                    .testTag("edit_profile_save_btn"),
                 enabled = !isSaving,
-                colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFEAB308),
+                    contentColor = Color(0xFF1F2937)
+                ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(stringResource(R.string.profile_edit_save), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                if (isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color(0xFF1F2937), strokeWidth = 2.dp)
+                } else {
+                    Text(stringResource(R.string.profile_edit_save), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Sign Out Option
+            // Working Sign Out Button in Profile
             OutlinedButton(
                 onClick = { showSignOutDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(50.dp)
+                    .testTag("profile_sign_out_button"),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, RonovaRedAccent)
             ) {

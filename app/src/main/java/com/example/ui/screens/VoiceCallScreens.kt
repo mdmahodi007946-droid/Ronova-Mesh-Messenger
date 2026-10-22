@@ -66,6 +66,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.R
 import com.example.core.audio.CallState
 import com.example.core.database.CallHistoryEntity
@@ -95,6 +96,11 @@ fun OutgoingVoiceCallScreen(
 ) {
     val call by viewModel.currentCall.collectAsState()
     val device by viewModel.repository.getDeviceByIdFlow(deviceId).collectAsState(initial = null)
+    val friends by viewModel.friends.collectAsState()
+    val friendUser = friends.find { it.uid == deviceId || it.ronovaId == deviceId }
+
+    val peerDisplayName = friendUser?.displayName ?: device?.displayName ?: deviceId
+    val peerSubtitle = friendUser?.ronovaId ?: deviceId
 
     LaunchedEffect(call.state) {
         if (call.state == CallState.ENDED || call.state == CallState.FAILED || call.state == CallState.IDLE) {
@@ -135,7 +141,7 @@ fun OutgoingVoiceCallScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = device?.displayName ?: deviceId,
+                    text = peerDisplayName,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = RonovaTextPrimary
@@ -143,13 +149,13 @@ fun OutgoingVoiceCallScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = deviceId,
-                    style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
+                    text = peerSubtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFCA8A04), fontWeight = FontWeight.SemiBold)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = stringResource(R.string.call_signalling),
-                    style = MaterialTheme.typography.bodyMedium.copy(color = RonovaPinkPrimary)
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFFCA8A04))
                 )
             }
 
@@ -161,21 +167,32 @@ fun OutgoingVoiceCallScreen(
                     modifier = Modifier
                         .size(pulseSize.dp)
                         .clip(CircleShape)
-                        .background(RonovaPinkContainer.copy(alpha = 0.5f))
+                        .background(Color(0xFFFEF9C3).copy(alpha = 0.6f))
                 )
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(RonovaPinkPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Call,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(40.dp)
+                if (!friendUser?.photoUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = friendUser?.photoUrl,
+                        contentDescription = "Contact Photo",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, Color(0xFFEAB308), CircleShape)
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFEAB308)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Call,
+                            contentDescription = null,
+                            tint = Color(0xFF1F2937),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
             }
 
@@ -222,6 +239,11 @@ fun IncomingVoiceCallScreen(
     onBack: () -> Unit
 ) {
     val call by viewModel.currentCall.collectAsState()
+    val friends by viewModel.friends.collectAsState()
+    val friendUser = friends.find { it.uid == deviceId || it.ronovaId == deviceId }
+    val peerDisplayName = friendUser?.displayName ?: call.peerName.ifEmpty { deviceId }
+    val peerSubtitle = friendUser?.ronovaId ?: deviceId
+
     val context = LocalContext.current
     var showMicRationale by remember { mutableStateOf(false) }
 
@@ -251,7 +273,7 @@ fun IncomingVoiceCallScreen(
                         showMicRationale = false
                         micLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = RonovaPinkPrimary)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEAB308), contentColor = Color(0xFF1F2937))
                 ) {
                     Text(stringResource(R.string.perm_grant_button))
                 }
@@ -285,13 +307,13 @@ fun IncomingVoiceCallScreen(
                 Text(
                     text = stringResource(R.string.call_incoming_title),
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = RonovaPinkDark,
+                        color = Color(0xFFCA8A04),
                         fontWeight = FontWeight.SemiBold
                     )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = call.peerName.ifEmpty { deviceId },
+                    text = peerDisplayName,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = RonovaTextPrimary
@@ -299,24 +321,43 @@ fun IncomingVoiceCallScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = deviceId,
-                    style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
+                    text = peerSubtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFCA8A04), fontWeight = FontWeight.SemiBold)
                 )
             }
 
             Box(
                 modifier = Modifier
-                    .size(96.dp)
-                    .clip(CircleShape)
-                    .background(RonovaPinkLight),
+                    .size(100.dp)
+                    .clip(CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Call,
-                    contentDescription = null,
-                    tint = RonovaPinkPrimary,
-                    modifier = Modifier.size(52.dp)
-                )
+                if (!friendUser?.photoUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = friendUser?.photoUrl,
+                        contentDescription = "Caller Photo",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, Color(0xFFEAB308), CircleShape)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFEF9C3))
+                            .border(3.dp, Color(0xFFEAB308), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Call,
+                            contentDescription = null,
+                            tint = Color(0xFFCA8A04),
+                            modifier = Modifier.size(52.dp)
+                        )
+                    }
+                }
             }
 
             Row(

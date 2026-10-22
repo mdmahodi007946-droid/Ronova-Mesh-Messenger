@@ -95,38 +95,38 @@ fun GoogleSignInScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color.White
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 28.dp, vertical = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // App Branding Icon
+            // Ronova Mesh Emblem
             Box(
                 modifier = Modifier
-                    .size(96.dp)
+                    .size(92.dp)
                     .clip(CircleShape)
-                    .background(RonovaDarkSurface)
-                    .border(2.dp, RonovaPinkPrimary, CircleShape),
+                    .background(Color(0xFFFEF9C3))
+                    .border(2.dp, Color(0xFFEAB308), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Hub,
-                    contentDescription = null,
-                    tint = RonovaPinkPrimary,
-                    modifier = Modifier.size(52.dp)
+                    contentDescription = "Ronova Mesh Logo",
+                    tint = Color(0xFFCA8A04),
+                    modifier = Modifier.size(50.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = stringResource(R.string.sign_in_title),
+                text = "Ronova Mesh",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = RonovaTextPrimary
@@ -134,19 +134,19 @@ fun GoogleSignInScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(R.string.sign_in_subtitle),
+                text = "Decentralized mesh communications with secure cloud synchronization",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = RonovaTextMuted,
                     lineHeight = 22.sp
                 ),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 12.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Offline connectivity banner if internet is unavailable
             if (!isInternetAvailable) {
@@ -154,23 +154,24 @@ fun GoogleSignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = RonovaWarningContainer),
-                    border = BorderStroke(1.dp, RonovaWarning)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                    border = BorderStroke(1.dp, Color(0xFFF59E0B)),
+                    shape = RoundedCornerShape(14.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.WifiOff,
                             contentDescription = null,
-                            tint = RonovaWarning,
-                            modifier = Modifier.size(28.dp)
+                            tint = Color(0xFFB45309),
+                            modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = stringResource(R.string.sign_in_offline_warn),
-                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary)
+                            text = "Internet connection required for initial Google Sign-In and profile synchronization.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF78350F))
                         )
                     }
                 }
@@ -182,84 +183,129 @@ fun GoogleSignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = RonovaErrorContainer),
-                    border = BorderStroke(1.dp, RonovaError)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
+                    border = BorderStroke(1.dp, Color(0xFFEF4444)),
+                    shape = RoundedCornerShape(14.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            text = stringResource(R.string.sign_in_error_title),
+                            text = "Authentication Error",
                             style = MaterialTheme.typography.titleSmall.copy(
-                                color = RonovaError,
+                                color = Color(0xFFB91C1C),
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = errorMessage ?: "",
-                            style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary)
+                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF7F1D1D))
                         )
                     }
                 }
             }
 
-            // Security Highlights
+            // Features overview card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, RonovaCardBorder)
+                    .padding(vertical = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA)),
+                border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        modifier = Modifier.padding(vertical = 6.dp)
                     ) {
-                        Icon(Icons.Default.Security, contentDescription = null, tint = RonovaGoldDark, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Mandatory Google authentication authority", color = RonovaTextPrimary, fontSize = 13.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFFEF9C3)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color(0xFFCA8A04), modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("Google Account Identity", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
+                            Text("Fast, passwordless sign-in with your Google account", color = RonovaTextMuted, fontSize = 11.5.sp)
+                        }
                     }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        modifier = Modifier.padding(vertical = 6.dp)
                     ) {
-                        Icon(Icons.Default.CloudDone, contentDescription = null, tint = RonovaSuccess, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Cloud message sync and public user directory", color = RonovaTextPrimary, fontSize = 13.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFECFDF5)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.CloudDone, contentDescription = null, tint = Color(0xFF059669), modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("Cloud Profile & Directory", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
+                            Text("Persistent user search and friend requests across devices", color = RonovaTextMuted, fontSize = 11.5.sp)
+                        }
                     }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        modifier = Modifier.padding(vertical = 6.dp)
                     ) {
-                        Icon(Icons.Default.Lock, contentDescription = null, tint = RonovaGoldDark, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Zero-trust security rules and end-to-end privacy", color = RonovaTextPrimary, fontSize = 13.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFFEF3C7)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Hub, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(18.dp))
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("Decentralized Bluetooth Mesh", fontWeight = FontWeight.SemiBold, color = RonovaTextPrimary, fontSize = 13.sp)
+                            Text("Off-grid messaging and voice calls when disconnected", color = RonovaTextMuted, fontSize = 11.5.sp)
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // Interactive Google Sign-In Button
+            // Prominent "Continue with Google" Button
             Button(
                 onClick = {
                     if (activity == null) {
-                        errorMessage = "Activity context is required for Credential Manager"
+                        errorMessage = "Application context error: Activity is required for Google Sign-In"
                         return@Button
                     }
                     isLoading = true
                     errorMessage = null
                     viewModel.signInWithGoogle(
                         activity = activity,
-                        onSuccess = { user ->
+                        onSuccess = { _ ->
                             isLoading = false
                             onSignedIn()
                         },
                         onError = { error ->
                             isLoading = false
-                            errorMessage = error
+                            errorMessage = when {
+                                error.contains("network", ignoreCase = true) || error.contains("connection", ignoreCase = true) ->
+                                    "Network error: Unable to reach Google servers. Please check your internet connection."
+                                error.contains("cancelled", ignoreCase = true) || error.contains("canceled", ignoreCase = true) ->
+                                    "Google Sign-In was cancelled."
+                                error.contains("No Google credential", ignoreCase = true) ->
+                                    "No Google account selected. Please choose your Google account to proceed."
+                                else -> "Authentication failed: $error"
+                            }
                             scope.launch {
-                                snackbarHostState.showSnackbar(error)
+                                snackbarHostState.showSnackbar(errorMessage ?: "Authentication failed")
                             }
                         },
                         onCancelled = {
@@ -273,31 +319,40 @@ fun GoogleSignInScreen(
                     .testTag("google_sign_in_button"),
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = RonovaPinkPrimary,
-                    contentColor = RonovaTextPrimary
+                    containerColor = Color(0xFFEAB308),
+                    contentColor = Color(0xFF1F2937),
+                    disabledContainerColor = Color(0xFFFDE047).copy(alpha = 0.5f),
+                    disabledContentColor = Color(0xFF6B7280)
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(14.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = RonovaTextPrimary,
+                        modifier = Modifier.size(22.dp),
+                        color = Color(0xFF1F2937),
                         strokeWidth = 2.5.dp
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Signing in...", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        text = "Signing in with Google...",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = Color(0xFF1F2937)
+                    )
                 } else {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = RonovaTextPrimary
+                        tint = Color(0xFF1F2937)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = stringResource(R.string.sign_in_google_btn),
+                        text = "Continue with Google",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = Color(0xFF1F2937)
                     )
                 }
             }

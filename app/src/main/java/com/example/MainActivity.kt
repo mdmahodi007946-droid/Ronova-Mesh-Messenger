@@ -581,6 +581,9 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     },
                     onNavigateToVerify = {
                         navController.navigate(Screen.VerifyDevice.createRoute(deviceId))
+                    },
+                    onNavigateToProfile = { uid ->
+                        navController.navigate(Screen.PublicUserProfile.createRoute(uid))
                     }
                 )
             }
@@ -818,7 +821,8 @@ fun RonovaApp(viewModel: RonovaViewModel) {
             composable(Screen.UserProfile.route) {
                 UserProfileScreen(
                     viewModel = viewModel,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) }
                 )
             }
 
@@ -905,6 +909,9 @@ fun RonovaApp(viewModel: RonovaViewModel) {
                     viewModel = viewModel,
                     onNavigateToChat = { uid ->
                         navController.navigate(Screen.Chat.createRoute(uid))
+                    },
+                    onNavigateToVoiceCall = { uid ->
+                        onSafeVoiceCall(uid)
                     },
                     onBack = { navController.popBackStack() }
                 )

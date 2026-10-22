@@ -38,6 +38,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import org.json.JSONObject
 import java.util.UUID
 
@@ -362,32 +367,39 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                             }
                         }
 
+                        @OptIn(ExperimentalCoroutinesApi::class)
                         launch {
                             try {
-                                firestoreFriendRepository.observeFriendships(user.uid).collect { friendships ->
-                                    val friendUids = friendships.map {
-                                        if (it.userAUid == user.uid) it.userBUid else it.userAUid
-                                    }
-                                    if (friendUids.isNotEmpty()) {
-                                        firestoreUserRepository.observeUsers(friendUids).collect { friendProfiles ->
-                                            _friends.value = friendProfiles
+                                firestoreFriendRepository.observeFriendships(user.uid)
+                                    .flatMapLatest { friendships ->
+                                        val friendUids = friendships.map {
+                                            if (it.userAUid == user.uid) it.userBUid else it.userAUid
                                         }
-                                    } else {
-                                        _friends.value = emptyList()
+                                        if (friendUids.isNotEmpty()) {
+                                            firestoreUserRepository.observeUsers(friendUids)
+                                        } else {
+                                            flowOf(emptyList())
+                                        }
                                     }
-                                }
+                                    .collect { friendProfiles ->
+                                        _friends.value = friendProfiles
+                                    }
                             } catch (e: Exception) {
                                 android.util.Log.w("RonovaVM", "Friendships error", e)
                             }
                         }
 
+                        @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
                         launch {
                             try {
-                                searchQuery.collect { query ->
-                                    firestoreUserRepository.searchPublicUsers(query, user.uid).collect { users ->
+                                searchQuery
+                                    .debounce(250L)
+                                    .flatMapLatest { query ->
+                                        firestoreUserRepository.searchPublicUsers(query, user.uid)
+                                    }
+                                    .collect { users ->
                                         _directoryUsers.value = users
                                     }
-                                }
                             } catch (e: Exception) {
                                 android.util.Log.w("RonovaVM", "Directory search error", e)
                             }
@@ -872,10 +884,23 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         val uid = currentUser.value?.uid
         if (uid != null) {
             viewModelScope.launch {
-                firestoreUserRepository.setPresence(uid, false)
+                try {
+                    firestoreUserRepository.setPresence(uid, false)
+                } catch (_: Exception) {}
             }
         }
+        _myProfile.value = null
+        _friends.value = emptyList()
+        _receivedRequests.value = emptyList()
+        _sentRequests.value = emptyList()
+        _directoryUsers.value = emptyList()
         firebaseAuthManager.signOut(context, viewModelScope, onComplete)
+    }
+
+    suspend fun getUserProfile(uid: String): UserProfile? {
+        return friends.value.find { it.uid == uid }
+            ?: directoryUsers.value.find { it.uid == uid }
+            ?: firestoreUserRepository.getProfileOnce(uid)
     }
 
     fun updateUserProfile(
@@ -883,18 +908,20 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         bio: String,
         profileVisibility: String,
         presencePrivacy: String,
+        photoUrl: String? = null,
         onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {}
     ) {
         val uid = currentUser.value?.uid ?: return
         viewModelScope.launch {
             try {
-                firestoreUserRepository.updateProfile(uid, displayName, bio, profileVisibility, presencePrivacy)
+                firestoreUserRepository.updateProfile(uid, displayName, bio, profileVisibility, presencePrivacy, photoUrl)
                 _myProfile.value = _myProfile.value?.copy(
                     displayName = displayName,
                     bio = bio,
                     profileVisibility = profileVisibility,
-                    presencePrivacy = presencePrivacy
+                    presencePrivacy = presencePrivacy,
+                    photoUrl = photoUrl ?: _myProfile.value?.photoUrl ?: ""
                 )
                 onSuccess()
             } catch (e: Exception) {
@@ -936,14 +963,18 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     fun rejectFriendRequest(requestId: String, onComplete: () -> Unit = {}) {
         viewModelScope.launch {
-            firestoreFriendRepository.rejectFriendRequest(requestId)
+            try {
+                firestoreFriendRepository.rejectFriendRequest(requestId)
+            } catch (_: Exception) {}
             onComplete()
         }
     }
 
     fun cancelFriendRequest(requestId: String, onComplete: () -> Unit = {}) {
         viewModelScope.launch {
-            firestoreFriendRepository.cancelFriendRequest(requestId)
+            try {
+                firestoreFriendRepository.cancelFriendRequest(requestId)
+            } catch (_: Exception) {}
             onComplete()
         }
     }
@@ -951,7 +982,20 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     fun removeFriend(targetUid: String, onComplete: () -> Unit = {}) {
         val myUid = currentUser.value?.uid ?: return
         viewModelScope.launch {
-            firestoreFriendRepository.removeFriendship(myUid, targetUid)
+            try {
+                firestoreFriendRepository.removeFriendship(myUid, targetUid)
+            } catch (_: Exception) {}
+            onComplete()
+        }
+    }
+
+    fun blockUser(targetUid: String, onComplete: () -> Unit = {}) {
+        val myUid = currentUser.value?.uid ?: return
+        viewModelScope.launch {
+            try {
+                firestoreFriendRepository.removeFriendship(myUid, targetUid)
+                repository.updateDeviceTrust(targetUid, "BLOCKED")
+            } catch (_: Exception) {}
             onComplete()
         }
     }

@@ -3,13 +3,16 @@ package com.example.core.firebase
 import android.content.Context
 import android.util.Log
 import com.example.R
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import kotlin.random.Random
@@ -40,10 +43,15 @@ class FirestoreUserRepository(
     }
 
     suspend fun getProfileOnce(uid: String): UserProfile? {
-        val snapshot = usersCollection.document(uid).get().await()
-        return if (snapshot.exists()) {
-            snapshot.toObject(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-        } else {
+        return try {
+            val snapshot = usersCollection.document(uid).get().await()
+            if (snapshot.exists()) {
+                snapshot.toObject(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to get profile for $uid: ${e.message}")
             null
         }
     }
@@ -52,17 +60,22 @@ class FirestoreUserRepository(
         val uid = firebaseUser.uid
         val existing = getProfileOnce(uid)
         if (existing != null) {
-            // Update online presence
-            usersCollection.document(uid).update(
-                mapOf(
-                    "isOnline" to true,
-                    "presenceUpdatedAt" to FieldValue.serverTimestamp()
-                )
-            ).await()
+            // Document already exists: preserve all custom fields (displayName, photoUrl, bio, ronovaId).
+            // Only update active online presence.
+            try {
+                usersCollection.document(uid).update(
+                    mapOf(
+                        "isOnline" to true,
+                        "presenceUpdatedAt" to FieldValue.serverTimestamp()
+                    )
+                ).await()
+            } catch (e: Exception) {
+                Log.w(TAG, "Presence update error on login: ${e.message}")
+            }
             return existing.copy(isOnline = true)
         }
 
-        // Generate collision-safe Ronova ID
+        // Generate stable unique Ronova ID (only for brand new users)
         val randomNum = Random.nextInt(100000, 999999)
         val ronovaId = "RNV-$randomNum"
         val displayName = if (!firebaseUser.displayName.isNullOrBlank()) {
@@ -106,16 +119,20 @@ class FirestoreUserRepository(
         displayName: String,
         bio: String,
         profileVisibility: String,
-        presencePrivacy: String
+        presencePrivacy: String,
+        photoUrl: String? = null
     ) {
-        usersCollection.document(uid).update(
-            mapOf(
-                "displayName" to displayName.trim(),
-                "bio" to bio.trim(),
-                "profileVisibility" to profileVisibility,
-                "presencePrivacy" to presencePrivacy
-            )
-        ).await()
+        val updateMap = mutableMapOf<String, Any>(
+            "displayName" to displayName.trim(),
+            "bio" to bio.trim(),
+            "profileVisibility" to profileVisibility,
+            "presencePrivacy" to presencePrivacy,
+            "presenceUpdatedAt" to FieldValue.serverTimestamp()
+        )
+        if (photoUrl != null) {
+            updateMap["photoUrl"] = photoUrl
+        }
+        usersCollection.document(uid).update(updateMap).await()
     }
 
     suspend fun setPresence(uid: String, isOnline: Boolean) {
@@ -132,28 +149,65 @@ class FirestoreUserRepository(
     }
 
     fun searchPublicUsers(query: String, currentUid: String): Flow<List<UserProfile>> {
-        val cleanQuery = query.trim().lowercase()
+        val rawQuery = query.trim()
+        val isAuth = FirebaseAuth.getInstance().currentUser != null
+
+        // Non-sensitive diagnostic log
+        Log.i(TAG, "[DirectorySearch] Executing query: '$rawQuery', AuthState: $isAuth")
+
+        if (!isAuth) {
+            Log.w(TAG, "[DirectorySearch] Aborted: User is unauthenticated")
+            return flowOf(emptyList())
+        }
+
+        val cleanLower = rawQuery.lowercase()
+        val normalizedRonovaId = when {
+            rawQuery.startsWith("RNV-", ignoreCase = true) -> rawQuery.uppercase().replace(" ", "")
+            rawQuery.startsWith("RNV", ignoreCase = true) -> "RNV-${rawQuery.substring(3).trim()}"
+            rawQuery.all { it.isDigit() } && rawQuery.length in 5..7 -> "RNV-$rawQuery"
+            else -> rawQuery.uppercase()
+        }
+
+        // Bounded query with limit to avoid fetching entire collection
         return usersCollection
             .whereEqualTo("accountStatus", "active")
+            .limit(50)
             .snapshots()
             .map { snapshot ->
-                val allUsers = snapshot.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-                allUsers.filter { user ->
-                    user.uid != currentUid &&
-                    user.profileVisibility != "private" &&
-                    (cleanQuery.isEmpty() ||
-                     user.ronovaId.lowercase().contains(cleanQuery) ||
-                     user.displayName.lowercase().contains(cleanQuery) ||
-                     user.bio.lowercase().contains(cleanQuery))
+                try {
+                    val allUsers = snapshot.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
+                    val filtered = allUsers.filter { user ->
+                        user.uid != currentUid &&
+                        user.profileVisibility != "private" &&
+                        (cleanLower.isEmpty() ||
+                         user.ronovaId.equals(normalizedRonovaId, ignoreCase = true) ||
+                         user.ronovaId.lowercase().contains(cleanLower) ||
+                         user.displayName.lowercase().contains(cleanLower) ||
+                         user.bio.lowercase().contains(cleanLower))
+                    }
+                    Log.i(TAG, "[DirectorySearch] Success: Returned ${filtered.size} public users for query '$rawQuery'")
+                    filtered
+                } catch (e: Exception) {
+                    Log.e(TAG, "[DirectorySearch] Mapping failed: ${e.javaClass.simpleName} - ${e.message}")
+                    emptyList()
                 }
             }
     }
 
     fun observeUsers(uids: List<String>): Flow<List<UserProfile>> {
-        if (uids.isEmpty()) return flow { emit(emptyList()) }
-        return usersCollection.snapshots().map { snapshot ->
-            val allUsers = snapshot.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-            allUsers.filter { it.uid in uids }
+        if (uids.isEmpty()) return flowOf(emptyList())
+        val distinctUids = uids.distinct().take(30)
+        val flows = distinctUids.map { uid ->
+            usersCollection.document(uid).snapshots().map { snapshot ->
+                if (snapshot.exists()) {
+                    snapshot.toObject(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
+                } else {
+                    null
+                }
+            }
+        }
+        return combine(flows) { profiles ->
+            profiles.filterNotNull()
         }
     }
 }

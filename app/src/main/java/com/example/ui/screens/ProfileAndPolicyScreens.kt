@@ -29,12 +29,14 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Person
+import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
@@ -96,14 +98,16 @@ import java.util.Locale
 
 /**
  * User Profile Screen (PRD v2.1 Section 6 & 7)
- * Configures display name, radar visibility, and device name privacy.
+ * Displays user identity, Ronova ID, bio, and settings.
  */
 @Composable
 fun UserProfileScreen(
     viewModel: RonovaViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToEditProfile: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val myProfile by viewModel.myProfile.collectAsState()
     val customNickname by viewModel.customNickname.collectAsState()
     val radarVisibility by viewModel.radarVisibility.collectAsState()
     val showDeviceName by viewModel.showDeviceName.collectAsState()
@@ -134,7 +138,7 @@ fun UserProfileScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Header Profile Card
+                // Header Profile Card showing Firestore profile
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -142,38 +146,77 @@ fun UserProfileScreen(
                         shape = RoundedCornerShape(16.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, RonovaCardBorder)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(54.dp)
-                                    .clip(CircleShape)
-                                    .background(RonovaGoldPrimary),
-                                contentAlignment = Alignment.Center
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                if (!myProfile?.photoUrl.isNullOrEmpty()) {
+                                    AsyncImage(
+                                        model = myProfile?.photoUrl,
+                                        contentDescription = "Profile Photo",
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, Color(0xFFEAB308), CircleShape)
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(60.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFFEF9C3))
+                                            .border(2.dp, Color(0xFFEAB308), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = (myProfile?.displayName ?: nicknameInput).take(1).ifBlank { "R" }.uppercase(),
+                                            fontSize = 26.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFCA8A04)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = myProfile?.displayName?.ifBlank { null } ?: nicknameInput.ifEmpty { "Ronova Member" },
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = RonovaTextPrimary
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = myProfile?.ronovaId ?: viewModel.myDeviceId,
+                                        style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFCA8A04), fontWeight = FontWeight.SemiBold)
+                                    )
+                                }
+                            }
+
+                            if (!myProfile?.bio.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Text(
-                                    text = nicknameInput.take(1).uppercase(),
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = RonovaTextPrimary
+                                    text = myProfile?.bio ?: "",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextPrimary, lineHeight = 18.sp)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = nicknameInput.ifEmpty { stringResource(R.string.user_profile_title) },
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = RonovaTextPrimary
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = viewModel.myDeviceId,
-                                    style = MaterialTheme.typography.bodySmall.copy(color = RonovaTextMuted)
-                                )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = onNavigateToEditProfile,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp)
+                                    .testTag("user_profile_edit_btn"),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFEAB308),
+                                    contentColor = Color(0xFF1F2937)
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Edit Profile & Photo", fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
                             }
                         }
                     }

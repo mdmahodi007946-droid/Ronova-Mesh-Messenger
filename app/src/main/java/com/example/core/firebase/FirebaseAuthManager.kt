@@ -71,9 +71,10 @@ class FirebaseAuthManager(
                 val str = context.getString(resId)
                 if (str.isNotBlank()) return str
             }
-            "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com"
+            context.getString(R.string.default_web_client_id)
         } catch (e: Exception) {
-            "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com"
+            Log.w(TAG, "default_web_client_id not yet generated in R: ${e.message}")
+            null
         }
     }
 
