@@ -248,8 +248,26 @@ fun UserProfileScreen(
                             RonovaGlassButton(
                                 text = stringResource(R.string.profile_save_btn),
                                 onClick = {
-                                    viewModel.setCustomNickname(nicknameInput.trim())
-                                    Toast.makeText(context, context.getString(R.string.settings_saved_toast), Toast.LENGTH_SHORT).show()
+                                    val trimmed = nicknameInput.trim()
+                                    viewModel.setCustomNickname(trimmed)
+                                    val current = myProfile
+                                    if (current != null && trimmed.isNotEmpty()) {
+                                        viewModel.updateUserProfile(
+                                            displayName = trimmed,
+                                            bio = current.bio,
+                                            profileVisibility = current.profileVisibility,
+                                            presencePrivacy = current.presencePrivacy,
+                                            photoUrl = current.photoUrl,
+                                            onSuccess = {
+                                                Toast.makeText(context, context.getString(R.string.settings_saved_toast), Toast.LENGTH_SHORT).show()
+                                            },
+                                            onError = { err ->
+                                                Toast.makeText(context, "Saved locally. Cloud: $err", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    } else {
+                                        Toast.makeText(context, context.getString(R.string.settings_saved_toast), Toast.LENGTH_SHORT).show()
+                                    }
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 testTag = "save_nickname_btn"

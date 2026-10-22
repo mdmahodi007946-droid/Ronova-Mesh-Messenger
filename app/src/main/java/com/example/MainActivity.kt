@@ -156,11 +156,10 @@ class MainActivity : ComponentActivity() {
 
             CompositionLocalProvider(
                 androidx.activity.compose.LocalActivityResultRegistryOwner provides this,
-                LocalContext provides localizedContext,
                 LocalConfiguration provides localizedConfiguration
             ) {
                 RonovaTheme(isBangla = isBangla) {
-                    RonovaApp(viewModel = viewModel)
+                    RonovaApp(viewModel = viewModel, activity = this@MainActivity)
                 }
             }
         }
@@ -168,7 +167,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun RonovaApp(viewModel: RonovaViewModel) {
+fun RonovaApp(viewModel: RonovaViewModel, activity: ComponentActivity) {
     val currentUser by viewModel.currentUser.collectAsState()
     val myProfile by viewModel.myProfile.collectAsState()
     val context = LocalContext.current
@@ -176,7 +175,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
     LaunchedEffect(Unit) {
         if (currentUser == null) {
             viewModel.attemptAutoSignIn(
-                context = context,
+                context = activity,
                 onSuccess = { /* Reactive StateFlow updates currentUser */ },
                 onUnauthenticated = { /* Stays on GoogleSignInScreen */ }
             )
@@ -186,6 +185,7 @@ fun RonovaApp(viewModel: RonovaViewModel) {
     if (currentUser == null) {
         GoogleSignInScreen(
             viewModel = viewModel,
+            activity = activity,
             onSignedIn = { /* Reactive StateFlow updates currentUser */ }
         )
         return

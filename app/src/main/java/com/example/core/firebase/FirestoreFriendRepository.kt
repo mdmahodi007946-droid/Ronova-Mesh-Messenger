@@ -71,6 +71,18 @@ class FirestoreFriendRepository(
         require(sender.uid != recipient.uid) { "Cannot send friend request to yourself" }
         require(sender.uid.isNotBlank() && recipient.uid.isNotBlank()) { "UIDs must not be blank" }
 
+        // If recipient already sent a pending request to us, auto-accept it immediately
+        val reverseRequestId = "${recipient.uid}_${sender.uid}"
+        val reverseDoc = requestsCollection.document(reverseRequestId).get().await()
+        if (reverseDoc.exists() && reverseDoc.getString("status") == "pending") {
+            val revRequest = reverseDoc.toObject(FriendRequest::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
+            if (revRequest != null) {
+                Log.i(TAG, "[FriendRequest] Reciprocal pending request found from ${recipient.uid}. Auto-accepting.")
+                acceptFriendRequest(revRequest)
+                return
+            }
+        }
+
         val requestId = "${sender.uid}_${recipient.uid}"
         val existingDoc = requestsCollection.document(requestId).get().await()
 

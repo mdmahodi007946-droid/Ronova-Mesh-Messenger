@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import com.example.R
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
@@ -76,11 +78,13 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.core.database.ConversationEntity
 import com.example.core.database.MessageEntity
+import com.example.core.firebase.PresenceStatus
 import com.example.core.firebase.UserProfile
 import com.example.ui.components.MessageBubble
 import com.example.ui.components.RonovaTopBar
 import com.example.ui.components.StatCard
 import com.example.ui.components.StatusBadge
+import com.example.ui.theme.RonovaRedAccent
 import com.example.ui.theme.RonovaGoldContainer
 import com.example.ui.theme.RonovaGoldDark
 import com.example.ui.theme.RonovaGoldLight
@@ -911,49 +915,152 @@ fun OneToOneChatScreen(
     }
 
     val peerDisplayName = peerProfile?.displayName ?: device?.displayName ?: deviceId
-    val peerSubtitle = peerProfile?.ronovaId ?: "${stringResource(R.string.e2e_encrypted_status)} • ${if (device?.trustStatus == "TRUSTED") stringResource(R.string.verified_status) else stringResource(R.string.unverified_status)}"
+    val (presenceStatus, presenceText) = peerProfile?.resolvePresence() ?: Pair(PresenceStatus.UNKNOWN, "Offline")
+    val presenceDotColor = when (presenceStatus) {
+        PresenceStatus.ONLINE -> RonovaSuccess
+        PresenceStatus.OFFLINE -> RonovaRedAccent
+        PresenceStatus.UNKNOWN -> RonovaTextMuted
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFFAFAFA)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            RonovaTopBar(
-                title = peerDisplayName,
-                subtitle = peerSubtitle,
-                onBack = onBack,
-                statusBadge = if (peerProfile?.isOnline == true) {
-                    {
-                        Box(
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, RonovaCardBorder.copy(alpha = 0.6f)),
+                shadowElevation = 1.dp,
+                modifier = Modifier.fillMaxWidth().height(60.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        com.example.ui.components.HeaderAction(
+                            icon = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            onClick = onBack,
+                            testTag = "top_bar_back_button"
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        // Tappable Avatar + Identity block
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(end = 4.dp)
-                                .size(9.dp)
-                                .clip(CircleShape)
-                                .background(RonovaSuccess)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    if (onNavigateToProfile != null) {
+                                        onNavigateToProfile(peerProfile?.uid ?: deviceId)
+                                    } else {
+                                        onNavigateToVerify(deviceId)
+                                    }
+                                }
+                                .padding(horizontal = 4.dp, vertical = 4.dp)
+                        ) {
+                            Box {
+                                if (!peerProfile?.photoUrl.isNullOrEmpty()) {
+                                    AsyncImage(
+                                        model = peerProfile?.photoUrl,
+                                        contentDescription = "User Avatar",
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(CircleShape)
+                                            .border(1.5.dp, Color(0xFFEAB308), CircleShape)
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFFEF9C3))
+                                            .border(1.5.dp, Color(0xFFEAB308), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = peerDisplayName.take(1).uppercase(),
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFCA8A04),
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                }
+
+                                // Presence dot
+                                Box(
+                                    modifier = Modifier
+                                        .size(11.dp)
+                                        .align(Alignment.BottomEnd)
+                                        .clip(CircleShape)
+                                        .background(presenceDotColor)
+                                        .border(1.5.dp, Color.White, CircleShape)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Column {
+                                Text(
+                                    text = peerDisplayName,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        fontSize = 15.sp
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = if (peerProfile?.ronovaId?.isNotEmpty() == true) {
+                                        "${peerProfile?.ronovaId} • $presenceText"
+                                    } else {
+                                        presenceText
+                                    },
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = RonovaTextMuted,
+                                        fontSize = 11.sp
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        com.example.ui.components.HeaderAction(
+                            icon = Icons.Default.Call,
+                            contentDescription = stringResource(R.string.chat_call),
+                            onClick = { onVoiceCall(deviceId) },
+                            testTag = "chat_voice_call_button"
+                        )
+                        com.example.ui.components.HeaderAction(
+                            icon = Icons.Default.Info,
+                            contentDescription = stringResource(R.string.device_info_title),
+                            onClick = {
+                                if (onNavigateToProfile != null) {
+                                    onNavigateToProfile(peerProfile?.uid ?: deviceId)
+                                } else {
+                                    onNavigateToVerify(deviceId)
+                                }
+                            },
+                            testTag = "chat_verify_button"
                         )
                     }
-                } else null,
-                actions = {
-                    com.example.ui.components.HeaderAction(
-                        icon = Icons.Default.Call,
-                        contentDescription = stringResource(R.string.chat_call),
-                        onClick = { onVoiceCall(deviceId) },
-                        testTag = "chat_voice_call_button"
-                    )
-                    com.example.ui.components.HeaderAction(
-                        icon = Icons.Default.Info,
-                        contentDescription = stringResource(R.string.device_info_title),
-                        onClick = {
-                            if (onNavigateToProfile != null) {
-                                onNavigateToProfile(peerProfile?.uid ?: deviceId)
-                            } else {
-                                onNavigateToVerify(deviceId)
-                            }
-                        },
-                        testTag = "chat_verify_button"
-                    )
                 }
-            )
+            }
 
             // Encryption disclaimer pill
             Box(

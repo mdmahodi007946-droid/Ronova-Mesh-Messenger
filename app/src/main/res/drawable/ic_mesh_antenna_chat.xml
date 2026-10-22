@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Modern Chat Bubble with Bluetooth & Wireless Router Waves -->
+    <!-- Chat Bubble Outer -->
+    <path
+        android:fillColor="#EAB308"
+        android:pathData="M24,4C12.95,4 4,12.06 4,22C4,26.54 5.9,30.68 9.08,33.79L7.33,41.22C7.11,42.15 8.01,42.92 8.87,42.52L17.52,38.5C19.57,39.46 21.73,40 24,40C35.05,40 44,31.94 44,22C44,12.06 35.05,4 24,4Z" />
+    
+    <!-- Inner Chat Bubble Fill in Rich Warm Gold -->
+    <path
+        android:fillColor="#CA8A04"
+        android:pathData="M24,6.5C14.33,6.5 6.5,13.44 6.5,22C6.5,25.96 8.16,29.58 10.94,32.3L9.56,38.16L16.43,35.09C18.73,36.01 21.28,36.5 24,36.5C33.67,36.5 41.5,29.56 41.5,22C41.5,14.44 33.67,6.5 24,6.5Z" />
+
+    <!-- Bluetooth Emblem inside the chat bubble in Crisp White -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,12L24,20.17L18.41,14.59L16.58,16.41L23.17,23L16.58,29.59L18.41,31.41L24,25.83L24,34L29.41,28.59L25.83,25L29.41,21.41L24,12ZM26,16.83L27.17,18L26,19.17L26,16.83ZM26,26.83L27.17,28L26,29.17L26,26.83Z" />
+
+    <!-- Wireless Router Waves on Left & Right in Translucent White -->
+    <path
+        android:fillColor="#FEF08A"
+        android:pathData="M33.5,15C35.6,17.1 36.8,19.9 36.8,23C36.8,26.1 35.6,28.9 33.5,31L35,32.5C37.5,29.9 39,26.6 39,23C39,19.4 37.5,16.1 35,13.5L33.5,15Z" />
+    <path
+        android:fillColor="#FEF08A"
+        android:pathData="M14.5,15L13,13.5C10.5,16.1 9,19.4 9,23C9,26.6 10.5,29.9 13,32.5L14.5,31C12.4,28.9 11.2,26.1 11.2,23C11.2,19.9 12.4,17.1 14.5,15Z" />
+</vector>

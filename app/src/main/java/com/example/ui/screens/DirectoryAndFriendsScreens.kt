@@ -113,6 +113,8 @@ fun DirectoryScreen(
     val sentRequests by viewModel.sentRequests.collectAsState()
     val receivedRequests by viewModel.receivedRequests.collectAsState()
 
+    val myProfile by viewModel.myProfile.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -202,12 +204,14 @@ fun DirectoryScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(users, key = { it.uid }) { user ->
+                        val isMe = (user.uid == myProfile?.uid)
                         val isFriend = friends.any { it.uid == user.uid }
                         val isSent = sentRequests.any { it.recipientUid == user.uid }
                         val receivedReq = receivedRequests.find { it.senderUid == user.uid }
 
                         DirectoryUserCard(
                             user = user,
+                            isMe = isMe,
                             isFriend = isFriend,
                             isRequestSent = isSent,
                             receivedRequest = receivedReq,
@@ -226,6 +230,7 @@ fun DirectoryScreen(
 @Composable
 fun DirectoryUserCard(
     user: UserProfile,
+    isMe: Boolean = false,
     isFriend: Boolean,
     isRequestSent: Boolean,
     receivedRequest: FriendRequest?,
@@ -336,6 +341,21 @@ fun DirectoryUserCard(
 
             // Action Button
             when {
+                isMe -> {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFFEF9C3),
+                        border = BorderStroke(1.dp, Color(0xFFEAB308))
+                    ) {
+                        Text(
+                            text = "You",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFCA8A04),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
                 isFriend -> {
                     IconButton(
                         onClick = onChat,

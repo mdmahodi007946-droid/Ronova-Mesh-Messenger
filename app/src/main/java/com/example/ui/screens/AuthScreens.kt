@@ -1,7 +1,10 @@
 package com.example.ui.screens
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -20,10 +23,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
@@ -55,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,13 +86,19 @@ import com.example.ui.theme.RonovaTextPrimary
 import com.example.viewmodel.RonovaViewModel
 import kotlinx.coroutines.launch
 
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 @Composable
 fun GoogleSignInScreen(
     viewModel: RonovaViewModel,
+    activity: Activity? = null,
     onSignedIn: () -> Unit
 ) {
     val context = LocalContext.current
-    val activity = context as? Activity
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -106,20 +119,19 @@ fun GoogleSignInScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Ronova Mesh Emblem
+            // Ronova Mesh Emblem: Bluetooth + Wireless Router + Social Mesh Chat
             Box(
                 modifier = Modifier
-                    .size(92.dp)
+                    .size(96.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFFEF9C3))
                     .border(2.dp, Color(0xFFEAB308), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Hub,
-                    contentDescription = "Ronova Mesh Logo",
-                    tint = Color(0xFFCA8A04),
-                    modifier = Modifier.size(50.dp)
+                Image(
+                    painter = painterResource(id = R.drawable.ic_mesh_antenna_chat),
+                    contentDescription = "Ronova Mesh Chat Emblem",
+                    modifier = Modifier.size(62.dp)
                 )
             }
 
@@ -265,7 +277,7 @@ fun GoogleSignInScreen(
                                 .background(Color(0xFFFEF3C7)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Hub, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Bluetooth, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(18.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -278,17 +290,18 @@ fun GoogleSignInScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Prominent "Continue with Google" Button
+            // Prominent, Modern "Continue with Google" Button
             Button(
                 onClick = {
-                    if (activity == null) {
-                        errorMessage = "Application context error: Activity is required for Google Sign-In"
+                    val targetActivity = activity ?: context.findActivity() ?: (context as? Activity)
+                    if (targetActivity == null) {
+                        errorMessage = "Cannot start Google Sign-In: Application activity not found. Please restart the app."
                         return@Button
                     }
                     isLoading = true
                     errorMessage = null
                     viewModel.signInWithGoogle(
-                        activity = activity,
+                        activity = targetActivity,
                         onSuccess = { _ ->
                             isLoading = false
                             onSignedIn()
@@ -300,8 +313,10 @@ fun GoogleSignInScreen(
                                     "Network error: Unable to reach Google servers. Please check your internet connection."
                                 error.contains("cancelled", ignoreCase = true) || error.contains("canceled", ignoreCase = true) ->
                                     "Google Sign-In was cancelled."
-                                error.contains("No Google credential", ignoreCase = true) ->
-                                    "No Google account selected. Please choose your Google account to proceed."
+                                error.contains("No Google credential", ignoreCase = true) ||
+                                error.contains("NoCredentialException", ignoreCase = true) ||
+                                error.contains("No credentials available", ignoreCase = true) ->
+                                    "No Google account found on device. Please add a Google account in your phone's Settings to continue."
                                 else -> "Authentication failed: $error"
                             }
                             scope.launch {
@@ -319,11 +334,12 @@ fun GoogleSignInScreen(
                     .testTag("google_sign_in_button"),
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFEAB308),
+                    containerColor = Color.White,
                     contentColor = Color(0xFF1F2937),
-                    disabledContainerColor = Color(0xFFFDE047).copy(alpha = 0.5f),
-                    disabledContentColor = Color(0xFF6B7280)
+                    disabledContainerColor = Color(0xFFF3F4F6),
+                    disabledContentColor = Color(0xFF9CA3AF)
                 ),
+                border = BorderStroke(1.5.dp, Color(0xFFE5E7EB)),
                 shape = RoundedCornerShape(14.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp, pressedElevation = 1.dp)
             ) {
@@ -336,22 +352,21 @@ fun GoogleSignInScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Signing in with Google...",
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp,
                         color = Color(0xFF1F2937)
                     )
                 } else {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color(0xFF1F2937)
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_google_logo),
+                        contentDescription = "Google Logo",
+                        modifier = Modifier.size(22.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Continue with Google",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.5.sp,
                         color = Color(0xFF1F2937)
                     )
                 }

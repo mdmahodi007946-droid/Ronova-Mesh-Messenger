@@ -33,13 +33,13 @@ val LightColorScheme = lightColorScheme(
 @Composable
 fun RonovaTheme(
     @Suppress("UNUSED_PARAMETER") darkTheme: Boolean = false,
-    isBangla: Boolean = true,
+    isBangla: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    // Strictly Light Mode only - uses adaptive typography for English and Bangla
+    // English-first modern typography and clean M3 light color scheme
     MaterialTheme(
         colorScheme = LightColorScheme,
-        typography = getAppTypography(isBangla),
+        typography = getAppTypography(isBangla = false),
         content = content
     )
 }

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
-    <string name="firestore_database_id" translatable="false">ai-studio-android-ronovame-74e1030b-c4d4-4407-8d42-0d11dd726ce2</string>
-    <string name="recaptcha_site_key" translatable="false">6Lf03fotAAAAAD04jt3h9jVQqSzY4_WGSNEzn4VV</string>
+    <string name="firestore_database_id" translatable="false">ai-studio-android-ronovame-af9b45b2-5fb5-46e1-aab8-8c72c18ed4e2</string>
 </resources>
