@@ -1,4 +1,7 @@
 {
+  "database": {
+    "rules": "database.rules.json"
+  },
   "firestore": [
     {
       "database": "ai-studio-android-ronovame-9b334994-74a4-4ad6-913b-9e32939b22ec",
