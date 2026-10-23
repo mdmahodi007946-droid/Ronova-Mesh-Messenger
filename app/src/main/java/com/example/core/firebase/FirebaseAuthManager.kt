@@ -65,22 +65,15 @@ class FirebaseAuthManager(
     fun getUserId(): String? = auth.currentUser?.uid
 
     private fun getDefaultWebClientId(context: Context): String {
-        val direct = try {
-            context.getString(R.string.default_web_client_id).trim()
-        } catch (_: Exception) {
-            ""
-        }
-        if (direct.isNotEmpty()) return direct
-
         return try {
             val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
             if (resId != 0) {
                 context.getString(resId).trim()
             } else {
-                ""
+                "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com"
             }
         } catch (_: Exception) {
-            ""
+            "855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com"
         }
     }
 
