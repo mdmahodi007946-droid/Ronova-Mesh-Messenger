@@ -988,11 +988,8 @@ fun IdentitySetupScreen(
                 Ronova3DButton(
                     text = stringResource(R.string.identity_complete_button),
                     onClick = {
-                        val hasBtPerm = viewModel.hasBluetoothPermissions()
-                        val isBtOn = viewModel.isBluetoothEnabled()
                         val hasId = viewModel.myDeviceId.isNotEmpty()
-
-                        if (!hasBtPerm || !isBtOn || !hasId) {
+                        if (!hasId) {
                             hasError = true
                             errorMessage = context.getString(R.string.identity_setup_failed_error)
                         } else {

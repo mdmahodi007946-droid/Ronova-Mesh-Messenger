@@ -10,9 +10,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Call
@@ -171,12 +180,17 @@ fun RonovaApp(viewModel: RonovaViewModel, activity: ComponentActivity) {
     val currentUser by viewModel.currentUser.collectAsState()
     val myProfile by viewModel.myProfile.collectAsState()
     val context = LocalContext.current
+    var isProfileCompleted by remember(currentUser) {
+        mutableStateOf(viewModel.isProfileInitCompleted())
+    }
 
     LaunchedEffect(Unit) {
         if (currentUser == null) {
             viewModel.attemptAutoSignIn(
                 context = activity,
-                onSuccess = { /* Reactive StateFlow updates currentUser */ },
+                onSuccess = {
+                    isProfileCompleted = viewModel.isProfileInitCompleted()
+                },
                 onUnauthenticated = { /* Stays on GoogleSignInScreen */ }
             )
         }
@@ -186,15 +200,49 @@ fun RonovaApp(viewModel: RonovaViewModel, activity: ComponentActivity) {
         GoogleSignInScreen(
             viewModel = viewModel,
             activity = activity,
-            onSignedIn = { /* Reactive StateFlow updates currentUser */ }
+            onSignedIn = {
+                isProfileCompleted = viewModel.isProfileInitCompleted()
+            }
         )
         return
     }
 
-    if (myProfile != null && myProfile?.displayName.isNullOrBlank()) {
+    // Loading indicator while profile is being generated / retrieved from cloud
+    if (myProfile == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF080B24)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(
+                    color = Color(0xFFFFD84D),
+                    modifier = Modifier.size(38.dp),
+                    strokeWidth = 3.dp
+                )
+                Spacer(modifier = Modifier.height(18.dp))
+                Text(
+                    text = "Setting up your Ronova Mesh account...",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
+                )
+            }
+        }
+        return
+    }
+
+    // First-time profile initialization / Ronova ID confirmation
+    if (!isProfileCompleted) {
         ProfileInitScreen(
             viewModel = viewModel,
-            onProfileCompleted = { /* Profile saved in Firestore and local state */ }
+            onProfileCompleted = {
+                viewModel.markProfileInitCompleted()
+                isProfileCompleted = true
+            }
         )
         return
     }
@@ -420,6 +468,12 @@ fun RonovaApp(viewModel: RonovaViewModel, activity: ComponentActivity) {
                 SplashScreen(
                     viewModel = viewModel,
                     onNavigateNext = { startDest ->
+                        if (viewModel.currentUser.value != null && isProfileCompleted) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
+                            return@SplashScreen
+                        }
                         when (startDest) {
                             is com.example.data.StartDestination.Home -> {
                                 navController.navigate(Screen.Home.route) {

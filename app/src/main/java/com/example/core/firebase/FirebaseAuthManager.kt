@@ -138,6 +138,31 @@ class FirebaseAuthManager(
         }
     }
 
+    private suspend fun processCredentialResult(
+        credential: androidx.credentials.Credential,
+        onSuccess: (FirebaseUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
+            if (googleIdToken.isBlank()) {
+                onError("Received empty Google ID token from Google Play Services")
+                return
+            }
+            val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+            val authResult = auth.signInWithCredential(authCredential).await()
+            val user = authResult.user
+            if (user != null) {
+                _currentUserState.value = user
+                onSuccess(user)
+            } else {
+                onError("Firebase user is null after sign in")
+            }
+        } else {
+            onError("Unexpected credential type: ${credential::class.java.simpleName}")
+        }
+    }
+
     fun signInWithGoogle(
         activity: Activity,
         scope: CoroutineScope,
@@ -152,33 +177,56 @@ class FirebaseAuthManager(
         }
 
         val credentialManager = CredentialManager.create(activity)
-        val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()
-        val request = GetCredentialRequest.Builder().addCredentialOption(signInOption).build()
 
         scope.launch {
+            var primaryException: Exception? = null
+
+            // Primary Attempt: GetSignInWithGoogleOption
             try {
+                val signInOption = GetSignInWithGoogleOption.Builder(serverClientId = clientId).build()
+                val request = GetCredentialRequest.Builder().addCredentialOption(signInOption).build()
                 val result = credentialManager.getCredential(activity, request)
-                val credential = result.credential
-                if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                    val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                    val authCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-                    val authResult = auth.signInWithCredential(authCredential).await()
-                    val user = authResult.user
-                    if (user != null) {
-                        _currentUserState.value = user
-                        onSuccess(user)
-                    } else {
-                        onError("Firebase user is null after sign in")
-                    }
-                } else {
-                    onError("Unexpected credential type: ${credential::class.java.simpleName}")
-                }
+                processCredentialResult(result.credential, onSuccess, onError)
+                return@launch
             } catch (e: GetCredentialCancellationException) {
-                Log.w(TAG, "Google Sign-In flow cancelled: ${e.message}", e)
-                onCancelled()
+                Log.w(TAG, "GetSignInWithGoogleOption cancelled: ${e.message}", e)
+                val msg = e.message ?: ""
+                val isExplicitUserDismissal = msg.contains("activity is cancelled by the user", ignoreCase = true) ||
+                        msg.contains("User cancelled", ignoreCase = true)
+                if (isExplicitUserDismissal) {
+                    onCancelled()
+                    return@launch
+                }
+                primaryException = e
             } catch (e: Exception) {
-                Log.e(TAG, "Google Sign-In failed", e)
-                onError(e.localizedMessage ?: "Sign in failed")
+                Log.w(TAG, "GetSignInWithGoogleOption exception: ${e.message}", e)
+                primaryException = e
+            }
+
+            // Secondary Fallback Attempt: GetGoogleIdOption without authorized accounts filter
+            try {
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setServerClientId(clientId)
+                    .setFilterByAuthorizedAccounts(false)
+                    .setAutoSelectEnabled(false)
+                    .build()
+                val request = GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
+                val result = credentialManager.getCredential(activity, request)
+                processCredentialResult(result.credential, onSuccess, onError)
+            } catch (e: GetCredentialCancellationException) {
+                Log.w(TAG, "Fallback Google Sign-In cancelled: ${e.message}", e)
+                val msg = e.message ?: ""
+                val isExplicitUserDismissal = msg.contains("activity is cancelled by the user", ignoreCase = true) ||
+                        msg.contains("User cancelled", ignoreCase = true)
+                if (isExplicitUserDismissal) {
+                    onCancelled()
+                } else {
+                    onError("Google Sign-In was cancelled or rejected by Play Services ($msg). Please check device Google accounts.")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Fallback Google Sign-In failed", e)
+                val errorMsg = e.localizedMessage ?: primaryException?.localizedMessage ?: "Sign in failed"
+                onError(errorMsg)
             }
         }
     }

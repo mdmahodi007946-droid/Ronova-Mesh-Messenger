@@ -239,8 +239,17 @@ class FirestoreUserRepository(
             updateMap["photoUrl"] = photoUrl
         }
 
-        // Write directly to Firestore
-        usersCollection.document(uid).update(updateMap).await()
+        // Write directly to Firestore with fallback
+        try {
+            usersCollection.document(uid).update(updateMap).await()
+        } catch (e: Exception) {
+            Log.w(TAG, "Update profile failed in Firestore: ${e.message}, falling back to set with merge")
+            try {
+                usersCollection.document(uid).set(updateMap, com.google.firebase.firestore.SetOptions.merge()).await()
+            } catch (e2: Exception) {
+                Log.w(TAG, "Fallback set profile also failed: ${e2.message}")
+            }
+        }
 
         // Update local SharedPreferences cache
         val current = getCachedProfile(uid) ?: getProfileOnce(uid)

@@ -967,6 +967,17 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun isProfileInitCompleted(): Boolean {
+        val uid = currentUser.value?.uid ?: return false
+        return prefs.getBoolean("pref_profile_init_completed_$uid", false)
+    }
+
+    fun markProfileInitCompleted() {
+        val uid = currentUser.value?.uid ?: return
+        prefs.edit().putBoolean("pref_profile_init_completed_$uid", true).apply()
+        completeSetup()
+    }
+
     fun setDirectorySearchQuery(query: String) {
         _searchQuery.value = query
     }
