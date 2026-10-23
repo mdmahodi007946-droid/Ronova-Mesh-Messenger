@@ -1,0 +1,39 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["ronovaId", "displayName", "isDiscoverable"]
+      }
+    },
+    "friend_requests": {
+      "$requestId": {
+        ".read": "auth != null && (data.child('senderUid').val() === auth.uid || data.child('recipientUid').val() === auth.uid || newData.child('senderUid').val() === auth.uid || newData.child('recipientUid').val() === auth.uid)",
+        ".write": "auth != null",
+        ".indexOn": ["senderUid", "recipientUid", "status"]
+      }
+    },
+    "friendships": {
+      "$friendshipId": {
+        ".read": "auth != null && (data.child('userAUid').val() === auth.uid || data.child('userBUid').val() === auth.uid || newData.child('userAUid').val() === auth.uid || newData.child('userBUid').val() === auth.uid)",
+        ".write": "auth != null",
+        ".indexOn": ["userAUid", "userBUid"]
+      }
+    },
+    "conversations": {
+      "$conversationId": {
+        ".read": "auth != null && data.child('participants').hasChild(auth.uid)",
+        ".write": "auth != null && (data.child('participants').hasChild(auth.uid) || newData.child('participants').hasChild(auth.uid))",
+        "messages": {
+          "$messageId": {
+            ".read": "auth != null && (data.child('senderUid').val() === auth.uid || data.child('recipientUid').val() === auth.uid)",
+            ".write": "auth != null && newData.child('senderUid').val() === auth.uid"
+          }
+        }
+      }
+    }
+  }
+}

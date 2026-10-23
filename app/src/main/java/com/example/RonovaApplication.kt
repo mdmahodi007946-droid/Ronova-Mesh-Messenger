@@ -52,9 +52,10 @@ class RonovaApplication : Application() {
                 }
                 if (app == null && com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
                     val fallbackOptions = com.google.firebase.FirebaseOptions.Builder()
-                        .setApplicationId(packageName)
+                        .setApplicationId("1:855661887849:android:09c99887dd06313475bdf8")
                         .setProjectId("gen-lang-client-0513953174")
-                        .setApiKey("AIzaSyDefaultInitializationKey00000000")
+                        .setApiKey("AIzaSyA7kfHHnNtAMvZWlSO94tPnCVE29Jm4E3I")
+                        .setStorageBucket("gen-lang-client-0513953174.firebasestorage.app")
                         .build()
                     com.google.firebase.FirebaseApp.initializeApp(this, fallbackOptions)
                 }

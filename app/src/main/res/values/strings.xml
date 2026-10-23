@@ -277,7 +277,7 @@ Feel free to reach out for assistance or feedback.</string>
     <string name="home_spec_platform_desc">Android Native • Kotlin</string>
     <string name="home_spec_platform_title">Platform</string>
     <string name="home_specs_title">System Architecture &amp; Specs</string>
-    <string name="home_specs_version">Ronova Mesh v2.1</string>
+    <string name="home_specs_version">Ronova Mesh v2.5</string>
     <string name="home_store_fwd_stat">Store &amp; Forward</string>
     <string name="home_view_all">View All</string>
     <string name="hops_traversed_label">Hops Traversed Label</string>
@@ -470,7 +470,7 @@ Feel free to reach out for assistance or feedback.</string>
     <string name="security_regenerate_warning">Generating new keys will change your public cryptographic fingerprint. Previous peers will need to re-verify your identity.</string>
     <string name="settings_about">About Ronova Mesh</string>
     <string name="settings_about_sub">Developer Md Rony Ahmed &amp; project info</string>
-    <string name="settings_about_subtitle">Version 2.1 • Md Rony Ahmed Contact &amp; Open Source Info</string>
+    <string name="settings_about_subtitle">Version 2.5 • Md Rony Ahmed Contact &amp; Open Source Info</string>
     <string name="settings_approved_contacts">Approved Contacts</string>
     <string name="settings_approved_contacts_sub">Manage contacts authorized to call and message when locked</string>
     <string name="settings_archived">Archived Messages</string>

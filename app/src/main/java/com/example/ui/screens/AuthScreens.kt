@@ -498,7 +498,7 @@ fun GoogleSignInScreen(
                     }
                 }
 
-                // Genuine Glassmorphic Feature Card (30dp corners, 10% white opacity, 26px blur, restrained golden highlight)
+                // Genuine Glassmorphic Feature Card (30dp corners, 10% white opacity, 26px backdrop blur, restrained golden highlight)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -509,31 +509,30 @@ fun GoogleSignInScreen(
                             spotColor = Color(0xFF080B24)
                         )
                         .clip(RoundedCornerShape(30.dp))
-                        .background(Color.White.copy(alpha = 0.10f)) // Glass surface: white at 10% opacity
-                        .then(
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                Modifier.graphicsLayer {
+                ) {
+                    // Layer A: Backdrop blur layer (blurs background constellation behind the card)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .graphicsLayer {
                                     renderEffect = android.graphics.RenderEffect
                                         .createBlurEffect(26f, 26f, android.graphics.Shader.TileMode.CLAMP)
                                         .asComposeRenderEffect()
                                 }
-                            } else Modifier
-                        )
-                        .border(
-                            BorderStroke(
-                                1.2.dp,
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.38f),
-                                        Color(0xFFFFE58A).copy(alpha = 0.32f), // Golden-yellow subtle highlight
-                                        Color.White.copy(alpha = 0.12f)
-                                    )
-                                )
-                            ),
-                            RoundedCornerShape(30.dp)
-                        )
-                ) {
-                    // Inner top specular reflection highlight
+                        ) {
+                            NetworkConstellationBackground(modifier = Modifier.fillMaxSize())
+                        }
+                    }
+
+                    // Layer B: Frosted glass surface (white at 10% opacity)
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.White.copy(alpha = 0.10f))
+                    )
+
+                    // Layer C: Subtle top inner specular reflection highlight
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -542,13 +541,34 @@ fun GoogleSignInScreen(
                                 Brush.horizontalGradient(
                                     colors = listOf(
                                         Color.Transparent,
-                                        Color.White.copy(alpha = 0.28f),
+                                        Color.White.copy(alpha = 0.35f),
+                                        Color(0xFFFFE58A).copy(alpha = 0.25f),
                                         Color.Transparent
                                     )
                                 )
                             )
                     )
 
+                    // Layer D: Translucent border with restrained golden highlight
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .border(
+                                BorderStroke(
+                                    1.2.dp,
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.38f),
+                                            Color(0xFFFFE58A).copy(alpha = 0.32f),
+                                            Color.White.copy(alpha = 0.12f)
+                                        )
+                                    )
+                                ),
+                                RoundedCornerShape(30.dp)
+                            )
+                    )
+
+                    // Layer E: Foreground content — 100% SHARP, UNBLURRED, HIGH CONTRAST
                     Column(
                         modifier = Modifier.padding(20.dp)
                     ) {
@@ -668,7 +688,7 @@ fun GoogleSignInScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // Genuine Glassmorphic "Continue with Google" Button (28dp corners, 12% white opacity, 28px blur)
+                // Genuine Glassmorphic "Continue with Google" Button (28dp corners, 12% white opacity, 28px backdrop blur)
                 Button(
                     onClick = {
                         val targetActivity = activity ?: context.findActivity() ?: (context as? Activity)
@@ -730,72 +750,95 @@ fun GoogleSignInScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(28.dp))
-                            .background(Color.White.copy(alpha = 0.12f)) // Glass surface at 12% opacity
-                            .then(
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    Modifier.graphicsLayer {
+                    ) {
+                        // Layer A: Backdrop blur layer
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .graphicsLayer {
                                         renderEffect = android.graphics.RenderEffect
                                             .createBlurEffect(28f, 28f, android.graphics.Shader.TileMode.CLAMP)
                                             .asComposeRenderEffect()
                                     }
-                                } else Modifier
-                            )
-                            .border(
-                                BorderStroke(
-                                    1.2.dp,
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.White.copy(alpha = 0.45f),
-                                            Color(0xFFFFD84D).copy(alpha = 0.45f), // Golden yellow highlight
-                                            Color.White.copy(alpha = 0.18f)
-                                        )
-                                    )
-                                ),
-                                RoundedCornerShape(28.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isLoading) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(22.dp),
-                                    color = Color(0xFFFFD84D),
-                                    strokeWidth = 2.5.dp
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = "Signing in with Google...",
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 15.sp,
-                                    color = Color.White
-                                )
-                            }
-                        } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(34.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.95f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.ic_google_logo),
-                                        contentDescription = "Google Logo",
-                                        modifier = Modifier.size(20.dp)
+                                NetworkConstellationBackground(modifier = Modifier.fillMaxSize())
+                            }
+                        }
+
+                        // Layer B: Frosted glass surface at 12% opacity
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.White.copy(alpha = 0.12f))
+                        )
+
+                        // Layer C: Translucent border with golden yellow highlight
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .border(
+                                    BorderStroke(
+                                        1.2.dp,
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.45f),
+                                                Color(0xFFFFD84D).copy(alpha = 0.45f),
+                                                Color.White.copy(alpha = 0.18f)
+                                            )
+                                        )
+                                    ),
+                                    RoundedCornerShape(28.dp)
+                                )
+                        )
+
+                        // Layer D: Crisp, sharp foreground content (never blurred)
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isLoading) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(22.dp),
+                                        color = Color(0xFFFFD84D),
+                                        strokeWidth = 2.5.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = "Signing in with Google...",
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 15.sp,
+                                        color = Color.White
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(14.dp))
-                                Text(
-                                    text = "Continue with Google",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    color = Color.White,
-                                    letterSpacing = 0.3.sp
-                                )
+                            } else {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.White.copy(alpha = 0.95f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.ic_google_logo),
+                                            contentDescription = "Google Logo",
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Text(
+                                        text = "Continue with Google",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = Color.White,
+                                        letterSpacing = 0.3.sp
+                                    )
+                                }
                             }
                         }
                     }

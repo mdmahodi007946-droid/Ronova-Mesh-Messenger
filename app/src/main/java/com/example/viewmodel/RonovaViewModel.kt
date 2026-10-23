@@ -41,6 +41,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -90,6 +91,7 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _directoryRefreshTrigger = MutableStateFlow(0)
 
     // Core Identity
     val myDeviceId: String = cryptoManager.deviceId
@@ -404,25 +406,34 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
                         @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
                         launch {
                             try {
-                                searchQuery
+                                combine(searchQuery, _directoryRefreshTrigger) { q: String, _: Int -> q }
                                     .debounce(200L)
                                     .flatMapLatest { query ->
                                         _directoryUiState.value = DirectoryUiState.Loading
                                         firestoreUserRepository.searchPublicUsers(query, user.uid)
-                                            .map { users -> query to users }
+                                            .map { users -> Result.success(query to users) }
                                             .catch { e ->
                                                 android.util.Log.w("RonovaVM", "Directory search error", e)
-                                                emit(query to emptyList())
+                                                emit(Result.failure(e))
                                             }
                                     }
-                                    .collect { (query, users) ->
-                                        _directoryUsers.value = users
-                                        val isSearch = query.trim().isNotEmpty()
-                                        if (users.isEmpty()) {
-                                            _directoryUiState.value = DirectoryUiState.Empty(isSearch)
-                                        } else {
-                                            _directoryUiState.value = DirectoryUiState.Success(users, isSearch)
-                                        }
+                                    .collect { result ->
+                                        result.fold(
+                                            onSuccess = { (query, users) ->
+                                                _directoryUsers.value = users
+                                                val isSearch = query.trim().isNotEmpty()
+                                                if (users.isEmpty()) {
+                                                    _directoryUiState.value = DirectoryUiState.Empty(isSearch)
+                                                } else {
+                                                    _directoryUiState.value = DirectoryUiState.Success(users, isSearch)
+                                                }
+                                            },
+                                            onFailure = { e ->
+                                                _directoryUiState.value = DirectoryUiState.Error(
+                                                    e.localizedMessage ?: "Failed to connect to member directory. Please check network."
+                                                )
+                                            }
+                                        )
                                     }
                             } catch (e: Exception) {
                                 android.util.Log.w("RonovaVM", "Directory search fatal error", e)
@@ -965,9 +976,8 @@ class RonovaViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun retryDirectorySearch() {
-        val curr = _searchQuery.value
         _directoryUiState.value = DirectoryUiState.Loading
-        _searchQuery.value = curr
+        _directoryRefreshTrigger.value = _directoryRefreshTrigger.value + 1
     }
 
     fun sendFriendRequest(target: UserProfile, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {

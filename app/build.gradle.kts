@@ -16,8 +16,8 @@ android {
     applicationId = "com.ronova.mesh.messenger.app"
     minSdk = 24
     targetSdk = 36
-    versionCode = 4
-    versionName = "2.3"
+    versionCode = 5
+    versionName = "2.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

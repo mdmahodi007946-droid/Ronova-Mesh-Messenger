@@ -312,7 +312,7 @@ class FirestoreUserRepository(
                 }
                 .catch { e ->
                     Log.w(TAG, "[DirectorySearch] Snapshot error during browse: ${e.message}")
-                    emit(emptyList())
+                    throw e
                 }
         }
 
@@ -324,7 +324,10 @@ class FirestoreUserRepository(
             .map { snap ->
                 snap.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
             }
-            .catch { emit(emptyList()) }
+            .catch { e ->
+                Log.w(TAG, "[DirectorySearch] idSearchFlow error: ${e.message}")
+                emit(emptyList())
+            }
 
         val generalSearchFlow: Flow<List<UserProfile>> = usersCollection
             .limit(50)
@@ -332,7 +335,6 @@ class FirestoreUserRepository(
             .map { snap ->
                 val all = snap.toObjects(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
                 all.filter { user ->
-                    user.uid != currentUid &&
                     user.profileVisibility != "private" &&
                     user.isDiscoverable && (
                         user.ronovaId.equals(normalizedRonovaId, ignoreCase = true) ||
@@ -342,11 +344,14 @@ class FirestoreUserRepository(
                     )
                 }
             }
-            .catch { emit(emptyList()) }
+            .catch { e ->
+                Log.w(TAG, "[DirectorySearch] generalSearchFlow error: ${e.message}")
+                throw e
+            }
 
         return combine(idSearchFlow, generalSearchFlow) { idResults: List<UserProfile>, generalResults: List<UserProfile> ->
             val merged = (idResults + generalResults)
-                .filter { it.uid != currentUid && it.profileVisibility != "private" && it.isDiscoverable }
+                .filter { it.profileVisibility != "private" && it.isDiscoverable }
                 .distinctBy { it.uid }
             Log.i(TAG, "[DirectorySearch] Query '$rawQuery' returned ${merged.size} total results")
             merged

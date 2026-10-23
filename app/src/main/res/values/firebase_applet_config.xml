@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
     <string name="firestore_database_id" translatable="false">ai-studio-android-ronovame-9b334994-74a4-4ad6-913b-9e32939b22ec</string>
-    <string name="default_web_client_id" translatable="false"></string>
+    <string name="default_web_client_id" translatable="false">855661887849-n84hc8vamtmocgtam90u9760gblsckdm.apps.googleusercontent.com</string>
 </resources>
